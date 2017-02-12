@@ -18,15 +18,19 @@ const maps = {};
 const recordData = (data) => {
   data.forEach((score, index) => {
     const mapId = getUniqueMapId(score);
+    const acc = 100 * (score.count300 + score.count100 / 3 + score.count50 / 6) / (score.countmiss + score.count50 + score.count100 + score.count300);
     if (!maps[mapId]) {
       maps[mapId] = {
         m: score.enabled_mods,
         b: score.beatmap_id,
-        pp: score.pp,
+        pp: [score.pp],
+        acc: [parseFloat(acc.toFixed(2))],
         x: getMagnitudeByIndex(index),
       };
     } else {
       maps[mapId].x += getMagnitudeByIndex(index);
+      maps[mapId].pp.push(score.pp);
+      maps[mapId].acc.push(parseFloat(acc.toFixed(2)));
     }
   });
 };
@@ -43,7 +47,7 @@ uniqueUsersList.reduce((promise, user, index) => {
   return promise.then(() => {
     console.log(`Recording data for user #${index}`)
     return Promise.all([
-      timeout(60),
+      timeout(100),
       fetchUser(user),
     ]);
   })

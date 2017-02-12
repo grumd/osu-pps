@@ -1,27 +1,179 @@
 <html>
   <head>
     <title>osu-pps</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+      .container {
+        padding-bottom: 40px;
+      }
+      .btn.apply {
+        width: 100%;
+      }
+      .pp-input {
+        display: inline;
+        width: 45px;
+      }
+      .pp-head {
+        width: 111px;
+      }
+      .mod-head {
+        width: 80px;
+      }
+      .ow-head {
+        width: 160px;
+      }
+      #show-more-div {
+        text-align: center;
+      }
+    </style>
   </head>
   <body>
     <script type="text/javascript">
-      $(document).ready(function(){
-        $.getJSON("result-array.json", function(data) {
-          var sorted = data.sort((a, b) => b.x - a.x);
-          var rows = [];
-          $.each(sorted.slice(0, 10), function(index, value) {
-            rows.push("<li id='" + index + "'>" + value.pp + "</li>");
-          });
+      var data = [];
+      var showCount = 20;
+      function modAllowed(selectValue, hasMod) {
+        return selectValue === 'any' || (selectValue === 'yes' && hasMod) || (selectValue === 'no' && !hasMod);
+      }
+      function filterData(rawData) {
+        var searchText = $('#search').val() || '';
+        var pp = {
+          min: parseFloat($('#pp-min').val()) || 0,
+          max: parseFloat($('#pp-max').val()) || 9999,
+        };
+        var mods = {
+          dt: $('#dt').val(),
+          hd: $('#hd').val(),
+          hr: $('#hr').val(),
+          fl: $('#fl').val(),
+        };
+        return rawData.filter((map) => {
+          var mapMods = {
+            dt: (map.m & 64) == 64,
+            hd: (map.m & 8) == 8,
+            hr: (map.m & 16) == 16,
+            fl: (map.m & 1024) == 1024,
+          };
+          // var mapLink = `http://osu.ppy.sh/b/${map.b}`;
+          // var linkText = map.art ? `${map.art} - ${map.t} [${map.v}]` : mapLink;
+          // (mapLink.includes(searchText) || linkText.includes(searchText))
 
-          $("<ul/>", {
-            "class": "my-new-list",
-            html: rows.join("")
-          }).appendTo(".table");
+          return map.pp >= pp.min && map.pp <= pp.max
+            && modAllowed(mods.dt, mapMods.dt)
+            && modAllowed(mods.hd, mapMods.hd)
+            && modAllowed(mods.hr, mapMods.hr)
+            && modAllowed(mods.fl, mapMods.fl);
+        });
+      }
+      function updateTable() {
+        var tableBody = $('#table-body');
+        tableBody.empty();
+
+        var filteredData = filterData(data);
+
+        $.each(filteredData.slice(0, showCount), function(index, value) {
+          var okGlyph = '<span class="glyphicon glyphicon-ok"></span>';
+          var mods = {
+            dt: (value.m & 64) == 64,
+            hd: (value.m & 8) == 8,
+            hr: (value.m & 16) == 16,
+            fl: (value.m & 1024) == 1024,
+          };
+          var mapLink = `http://osu.ppy.sh/b/${value.b}`;
+          var linkText = value.art ? `${value.art} - ${value.t} [${value.v}]` : mapLink;
+
+          var row = $('<tr></tr>');
+          row.append($('<td></td>').append($('<a></a>').attr('href', mapLink).text(linkText)));
+          row.append($('<td class="text-center"></td>').text((+value.pp).toFixed(0)));
+          row.append($('<td class="text-center"></td>').append(mods.dt ? $(okGlyph) : null));
+          row.append($('<td class="text-center"></td>').append(mods.hd ? $(okGlyph) : null));
+          row.append($('<td class="text-center"></td>').append(mods.hr ? $(okGlyph) : null));
+          row.append($('<td class="text-center"></td>').append(mods.fl ? $(okGlyph) : null));
+          row.append($('<td class="text-center"></td>').text((+value.x).toFixed(0)));
+          tableBody.append(row);
+        });
+        $('#show-more-div').empty();
+        if (filteredData.length > 0 && showCount < filteredData.length) {
+          $('#show-more-div').append($('<button onclick="showMore()" class="btn btn-success show-more-btn">show more</button>'));
+        }
+        if (filteredData.length === 0) {
+          $('#show-more-div').text('nothing to show, sorry');
+        }
+      }
+      function showMore() {
+        showCount += 20;
+        updateTable();
+      }
+      function applyFilters() {
+        showCount = 20;
+        updateTable();
+      }
+      $(document).ready(function(){
+        $.getJSON("result-array-with-info.json", function(rawData) {
+          data = rawData.sort((a, b) => b.x - a.x);
+          updateTable();
         });
       });
     </script>
-    List of top pp maps
-    <div id="table">
+    <div class="container">
+      <h2>list of farm maps</h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <td>
+              <!-- <input id="search" type="text" class="form-control input-sm" placeholder="search..." /> -->
+            </td>
+            <td class="pp-head">
+              <input id="pp-min" type="text" class="form-control pp-input input-sm" placeholder="min" />
+              <input id="pp-max" type="text" class="form-control pp-input input-sm" placeholder="max" />
+            </td>
+            <td class="mod-head">
+              <select id="dt" class="form-control input-sm">
+                <option>any</option>
+                <option>yes</option>
+                <option>no</option>
+              </select>
+            </td>
+            <td class="mod-head">
+              <select id="hd" class="form-control input-sm">
+                <option>any</option>
+                <option>yes</option>
+                <option>no</option>
+              </select>
+            </td>
+            <td class="mod-head">
+              <select id="hr" class="form-control input-sm">
+                <option>any</option>
+                <option>yes</option>
+                <option>no</option>
+              </select>
+            </td>
+            <td class="mod-head">
+              <select id="fl" class="form-control input-sm">
+                <option>any</option>
+                <option>yes</option>
+                <option>no</option>
+              </select>
+            </td>
+            <td class="ow-head">
+              <button type="button" class="btn btn-sm btn-primary apply" onclick="applyFilters()">apply filters</button>
+            </td>
+          </tr>
+          <tr>
+            <th>map link</th>
+            <th class="text-center">pp</th>
+            <th class="text-center">dt</th>
+            <th class="text-center">hd</th>
+            <th class="text-center">hr</th>
+            <th class="text-center">fl</th>
+            <th class="text-center ow-head">overweightness</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+        </tbody>
+      </table>
+      <div id="show-more-div" />
     </div>
   </body>
 </html>
