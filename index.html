@@ -10,7 +10,7 @@
           var sorted = data.sort((a, b) => b.x - a.x);
           var rows = [];
           $.each(sorted.slice(0, 10), function(index, value) {
-            rows.push("<li id='" + index + "'>" + val + "</li>");
+            rows.push("<li id='" + index + "'>" + value.pp + "</li>");
           });
 
           $("<ul/>", {
