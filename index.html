@@ -1,0 +1,27 @@
+<html>
+  <head>
+    <title>osu-pps</title>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+      $(document).ready(function(){
+        $.getJSON("result-array.json", function(data) {
+          var sorted = data.sort((a, b) => b.x - a.x);
+          var rows = [];
+          $.each(sorted.slice(0, 10), function(index, value) {
+            rows.push("<li id='" + index + "'>" + val + "</li>");
+          });
+
+          $("<ul/>", {
+            "class": "my-new-list",
+            html: rows.join("")
+          }).appendTo(".table");
+        });
+      });
+    </script>
+    List of top pp maps
+    <div id="table">
+    </div>
+  </body>
+</html>
