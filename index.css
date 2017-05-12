@@ -1,0 +1,70 @@
+.container {
+  padding-bottom: 40px;
+  width: 1280px;
+}
+input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+td {
+  vertical-align: middle !important;
+}
+.img-td > img {
+  height: 60px;
+  width: 80px;
+}
+.btn.apply {
+  width: 100%;
+}
+.pp-input {
+  display: inline;
+  max-width: 40px;
+  padding: 5px;
+}
+.min-max-head {
+  width: 102px;
+}
+.length-head {
+  width: 110px;
+}
+.mod-head {
+  width: 70px;
+}
+.mod-head > select {
+  padding: 5px;
+}
+.ow-head {
+  width: 160px;
+}
+#show-more-div, #loading {
+  text-align: center;
+}
+.time-pick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  width: 43px;
+  padding-left: 0;
+  padding-right: 0;
+  font-size: 12px;
+}
+.time-pick > input {
+  border: none;
+  width: 17px;
+}
+.minute {
+  text-align: right;
+}
+.bpm {
+  margin-right: 5px;
+}
+.slow {
+  color: darkblue;
+}
+.fast {
+  color: darkred;
+}
