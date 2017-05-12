@@ -28,12 +28,12 @@ function filterData(rawData) {
   };
   var length = {
     min: formattedToSeconds(
-      parseFloat($('#len-min-min').val()) || 0,
-      parseFloat($('#len-sec-min').val()) || 0
+      parseFloat($('#len-min-min').val()),
+      parseFloat($('#len-sec-min').val())
     ),
     max: formattedToSeconds(
-      parseFloat($('#len-min-max').val()) || 99,
-      parseFloat($('#len-sec-max').val()) || 59
+      parseFloat($('#len-min-max').val()),
+      parseFloat($('#len-sec-max').val())
     ),
   };
   var mods = {
