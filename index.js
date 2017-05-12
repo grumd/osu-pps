@@ -50,6 +50,9 @@ function filterData(rawData) {
       fl: (map.m & 1024) == 1024,
       ht: (map.m & 256) == 256,
     };
+
+    const realBpm = mapMods.dt ? (map.bpm * 1.5) : mapMods.ht ? (map.bpm * 0.75) : map.bpm;
+
     var mapLink = `http://osu.ppy.sh/b/${map.b}`;
     var linkText = (`${map.art} - ${map.t} [${map.v}]`).toLowerCase();
     var searchWords = searchText.toLowerCase().split(' ');
@@ -59,7 +62,7 @@ function filterData(rawData) {
 
     return searchMatches
       && matchesMaxMin(map.pp99, pp.min, pp.max)
-      && matchesMaxMin(map.bpm, bpm.min, bpm.max)
+      && matchesMaxMin(realBpm, bpm.min, bpm.max)
       && matchesMaxMin(map.d, diff.min, diff.max)
       && matchesMaxMin(map.l, length.min, length.max)
       && modAllowed(mods.dt, mapMods.dt)
