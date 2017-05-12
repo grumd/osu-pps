@@ -42,7 +42,7 @@ function filterData(rawData) {
     hr: $('#hr').val(),
     fl: $('#fl').val(),
   };
-  return rawData.filter((map) => {
+  const filteredData = rawData.filter((map) => {
     var mapMods = {
       dt: (map.m & 64) == 64,
       hd: (map.m & 8) == 8,
@@ -68,8 +68,24 @@ function filterData(rawData) {
       && modAllowed(mods.fl, mapMods.fl)
       && (mods.dt !== 'ht' || mapMods.ht);
   });
+
+  if (filteredData.length === 0) {
+    const searchFailed = !rawData.some(map => {
+      var mapLink = `http://osu.ppy.sh/b/${map.b}`;
+      var linkText = (`${map.art} - ${map.t} [${map.v}]`).toLowerCase();
+      var searchWords = searchText.toLowerCase().split(' ');
+      var searchMatches = searchWords.every(word =>
+        mapLink.includes(word) || linkText.includes(word)
+      );
+    });
+    if (searchFailed) {
+      $('.search-control').addClass('has-error');
+    }
+  }
+  return filteredData;
 }
 function updateTable() {
+  $('.search-control').removeClass('has-error');
   var tableBody = $('#table-body');
   tableBody.empty();
 

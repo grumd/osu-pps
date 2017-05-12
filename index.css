@@ -12,9 +12,15 @@ input[type="number"] {
 td {
   vertical-align: middle !important;
 }
+.img-td {
+  width: 96px;
+}
 .img-td > img {
   height: 60px;
   width: 80px;
+}
+.search-control {
+  margin: 0;
 }
 .btn.apply {
   width: 100%;
