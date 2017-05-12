@@ -4,14 +4,17 @@
   "description": "script for finding most pp-yielding maps",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "static -p 8000",
+    "prod": "static -p 80"
   },
   "keywords": [
     "osu",
     "pp"
   ],
   "dependencies": {
-    "axios": "0.15.3"
+    "axios": "0.15.3",
+    "node-static": "^0.7.9"
   },
   "author": "grumd",
   "license": "MIT"

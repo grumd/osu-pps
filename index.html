@@ -7,25 +7,60 @@
     <style>
       .container {
         padding-bottom: 40px;
+        width: 1280px;
+      }
+      input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type="number"] {
+        -moz-appearance: textfield;
+      }
+      td {
+        vertical-align: middle !important;
       }
       .btn.apply {
         width: 100%;
       }
       .pp-input {
         display: inline;
-        width: 45px;
+        max-width: 40px;
+        padding: 5px;
       }
-      .pp-head {
-        width: 111px;
+      .min-max-head {
+        width: 102px;
+      }
+      .length-head {
+        width: 110px;
       }
       .mod-head {
-        width: 80px;
+        width: 70px;
+      }
+      .mod-head > select {
+        padding: 5px;
       }
       .ow-head {
         width: 160px;
       }
-      #show-more-div {
+      #show-more-div, #loading {
         text-align: center;
+      }
+      .time-pick {
+        height: 30px;
+        width: 43px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        padding-left: 0;
+        padding-right: 0;
+      }
+      .time-pick > input {
+        width: 17px;
+        border: none;
+      }
+      .minute {
+        text-align: right;
       }
     </style>
   </head>
@@ -33,8 +68,17 @@
     <script type="text/javascript">
       var data = [];
       var showCount = 20;
+      function secondsToFormatted(length) {
+        return `${Math.floor(length / 60)}:${('0' + (length % 60)).slice(-2)}`;
+      }
+      function formattedToSeconds(minutes, seconds) {
+        return minutes * 60 + seconds;
+      }
       function modAllowed(selectValue, hasMod) {
         return selectValue === 'any' || (selectValue === 'yes' && hasMod) || (selectValue === 'no' && !hasMod);
+      }
+      function matchesMaxMin(value, min, max) {
+        return value >= min && value <= max;
       }
       function filterData(rawData) {
         var searchText = $('#search').val() || '';
@@ -42,11 +86,30 @@
           min: parseFloat($('#pp-min').val()) || 0,
           max: parseFloat($('#pp-max').val()) || 9999,
         };
+        var bpm = {
+          min: parseFloat($('#bpm-min').val()) || 0,
+          max: parseFloat($('#bpm-max').val()) || 9999,
+        };
+        var diff = {
+          min: parseFloat($('#diff-min').val().replace(',', '.')) || 0,
+          max: parseFloat($('#diff-max').val().replace(',', '.')) || 9999,
+        };
+        var length = {
+          min: formattedToSeconds(
+            parseFloat($('#len-min-min').val()) || 0,
+            parseFloat($('#len-sec-min').val()) || 0
+          ),
+          max: formattedToSeconds(
+            parseFloat($('#len-min-max').val()) || 99,
+            parseFloat($('#len-sec-max').val()) || 59
+          ),
+        };
         var mods = {
           dt: $('#dt').val(),
           hd: $('#hd').val(),
           hr: $('#hr').val(),
           fl: $('#fl').val(),
+          ht: $('#ht').val(),
         };
         return rawData.filter((map) => {
           var mapMods = {
@@ -54,16 +117,25 @@
             hd: (map.m & 8) == 8,
             hr: (map.m & 16) == 16,
             fl: (map.m & 1024) == 1024,
+            ht: (map.m & 256) == 256,
           };
-          // var mapLink = `http://osu.ppy.sh/b/${map.b}`;
-          // var linkText = map.art ? `${map.art} - ${map.t} [${map.v}]` : mapLink;
-          // (mapLink.includes(searchText) || linkText.includes(searchText))
+          var mapLink = `http://osu.ppy.sh/b/${map.b}`;
+          var linkText = (`${map.art} - ${map.t} [${map.v}]`).toLowerCase();
+          var searchWords = searchText.toLowerCase().split(' ');
+          var searchMatches = searchWords.every(word =>
+            mapLink.includes(word) || linkText.includes(word)
+          );
 
-          return map.pp >= pp.min && map.pp <= pp.max
+          return searchMatches
+            && matchesMaxMin(map.pp99, pp.min, pp.max)
+            && matchesMaxMin(map.bpm, bpm.min, bpm.max)
+            && matchesMaxMin(map.d, diff.min, diff.max)
+            && matchesMaxMin(map.l, length.min, length.max)
             && modAllowed(mods.dt, mapMods.dt)
             && modAllowed(mods.hd, mapMods.hd)
             && modAllowed(mods.hr, mapMods.hr)
-            && modAllowed(mods.fl, mapMods.fl);
+            && modAllowed(mods.fl, mapMods.fl)
+            && modAllowed(mods.ht, mapMods.ht);
         });
       }
       function updateTable() {
@@ -79,17 +151,23 @@
             hd: (value.m & 8) == 8,
             hr: (value.m & 16) == 16,
             fl: (value.m & 1024) == 1024,
+            ht: (value.m & 256) == 256,
           };
           var mapLink = `http://osu.ppy.sh/b/${value.b}`;
           var linkText = value.art ? `${value.art} - ${value.t} [${value.v}]` : mapLink;
 
           var row = $('<tr></tr>');
+          row.append($(`<td><img src="https://b.ppy.sh/thumb/${value.s}.jpg" /></td>`));
           row.append($('<td></td>').append($('<a></a>').attr('href', mapLink).text(linkText)));
-          row.append($('<td class="text-center"></td>').text((+value.pp).toFixed(0)));
+          row.append($('<td class="text-center"></td>').text((+value.pp99).toFixed(0)));
           row.append($('<td class="text-center"></td>').append(mods.dt ? $(okGlyph) : null));
           row.append($('<td class="text-center"></td>').append(mods.hd ? $(okGlyph) : null));
           row.append($('<td class="text-center"></td>').append(mods.hr ? $(okGlyph) : null));
           row.append($('<td class="text-center"></td>').append(mods.fl ? $(okGlyph) : null));
+          row.append($('<td class="text-center"></td>').append(mods.ht ? $(okGlyph) : null));
+          row.append($('<td class="text-center"></td>').text(secondsToFormatted(value.l)));
+          row.append($('<td class="text-center"></td>').text(value.bpm));
+          row.append($('<td class="text-center"></td>').text(value.d));
           row.append($('<td class="text-center"></td>').text((+value.x).toFixed(0)));
           tableBody.append(row);
         });
@@ -110,9 +188,42 @@
         updateTable();
       }
       $(document).ready(function(){
-        $.getJSON("result-array-with-info.json", function(rawData) {
-          data = rawData.sort((a, b) => b.x - a.x);
-          updateTable();
+        var loadingMessageUpdate = setTimeout(function() {
+          $('#loading').text('Loading... It can be slow for the first time, but after it loads the database will be saved in your browser\'s cache.');
+        }, 3000);
+        $.ajax({
+          url: "data-2017-05-12.json",
+          success: function(rawData) {
+            $('#loading').remove();
+            data = rawData.sort((a, b) => b.x - a.x);
+            updateTable();
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+            $('#loading').text('Error! ' + errorThrown);
+          },
+          complete: function() {
+            clearTimeout(loadingMessageUpdate);
+          },
+          timeout: 0,
+        });
+        $('input.minute').change(function(event) {
+          if (event.target.value > 99) {
+            event.target.value = 99;
+          }
+          if (event.target.value < 0 || !event.target.value) {
+            event.target.value = 0;
+          }
+        });
+        $('input.second').change(function(event) {
+          if (event.target.value > 59) {
+            event.target.value = 59;
+          }
+         if (event.target.value < 0 || !event.target.value) {
+            event.target.value = 0;
+          }
+          if (event.target.value < 10) {
+            event.target.value = '0' + event.target.value;
+          }
         });
       });
     </script>
@@ -121,10 +232,11 @@
       <table class="table">
         <thead>
           <tr>
+            <td></td>
             <td>
-              <!-- <input id="search" type="text" class="form-control input-sm" placeholder="search..." /> -->
+               <input id="search" type="text" class="form-control input-sm" placeholder="search..." />
             </td>
-            <td class="pp-head">
+            <td class="min-max-head">
               <input id="pp-min" type="text" class="form-control pp-input input-sm" placeholder="min" />
               <input id="pp-max" type="text" class="form-control pp-input input-sm" placeholder="max" />
             </td>
@@ -156,23 +268,58 @@
                 <option>no</option>
               </select>
             </td>
+            <td class="mod-head">
+              <select id="ht" class="form-control input-sm">
+                <option>any</option>
+                <option>yes</option>
+                <option>no</option>
+              </select>
+            </td>
+            <td class="length-head">
+              <div class="form-control time-pick">
+                <input class="minute" type="number" max="99" min="0" value="0" id="len-min-min" />
+                <div>:</div>
+                <input class="second" type="number" max="59" min="0" value="00" id="len-sec-min" />
+              </div>
+              <div class="form-control time-pick">
+                <input class="minute" type="number" max="99" min="0" value="99" id="len-min-max" />
+                <div>:</div>
+                <input class="second" type="number" max="59" min="0" value="59" id="len-sec-max" />
+              </div>
+            </td>
+            <td class="min-max-head">
+              <input id="bpm-min" type="text" class="form-control pp-input input-sm" placeholder="min" />
+              <input id="bpm-max" type="text" class="form-control pp-input input-sm" placeholder="max" />
+            </td>
+            <td class="min-max-head">
+              <input id="diff-min" type="text" class="form-control pp-input input-sm" placeholder="min" />
+              <input id="diff-max" type="text" class="form-control pp-input input-sm" placeholder="max" />
+            </td>
             <td class="ow-head">
               <button type="button" class="btn btn-sm btn-primary apply" onclick="applyFilters()">apply filters</button>
             </td>
           </tr>
           <tr>
+            <th></th>
             <th>map link</th>
             <th class="text-center">pp</th>
             <th class="text-center">dt</th>
             <th class="text-center">hd</th>
             <th class="text-center">hr</th>
             <th class="text-center">fl</th>
+            <th class="text-center">ht</th>
+            <th class="text-center">length</th>
+            <th class="text-center">bpm</th>
+            <th class="text-center">difficulty</th>
             <th class="text-center ow-head">overweightness</th>
           </tr>
         </thead>
         <tbody id="table-body">
         </tbody>
       </table>
+      <div id="loading">
+        Loading...
+      </div>
       <div id="show-more-div" />
     </div>
   </body>

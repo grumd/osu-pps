@@ -33,6 +33,28 @@ const calculatePp99 = (map) => {
   delete map.acc;
 };
 
+const simplifyMods = (mods) => {
+  let mod = parseInt(mods, 10);
+  const mapMods = {
+    nf: (mod & 1) == 1,
+    ez: (mod & 2) == 2,
+    hd: (mod & 8) == 8,
+    hr: (mod & 16) == 16,
+    sd: (mod & 32) == 32,
+    dt: (mod & 64) == 64,
+    ht: (mod & 256) == 256,
+    nc: (mod & 512) == 512,
+    fl: (mod & 1024) == 1024,
+    so: (mod & 4096) == 4096,
+    pf: (mod & 16384) == 16384,
+  };
+  mod -= mapMods.nc ? 512 : 0; // NC can be removed, DT is till there
+  mod -= mapMods.sd ? 32 : 0; // SD doesn't affect PP
+  mod -= mapMods.nf ? 1 : 0; // remove NF
+  mod -= mapMods.so ? 4096 : 0; // remove SO
+  return mod;
+};
+
 const recordData = (data) => {
   data.slice(0, 20).forEach((score, index) => {
     Object.keys(score).forEach(key => {
@@ -43,7 +65,7 @@ const recordData = (data) => {
     const acc = 100 * (score.count300 + score.count100 / 3 + score.count50 / 6) / (score.countmiss + score.count50 + score.count100 + score.count300);
     if (!maps[mapId]) {
       maps[mapId] = {
-        m: score.enabled_mods,
+        m: simplifyMods(score.enabled_mods),
         b: score.beatmap_id,
         pp: [score.pp],
         acc: [truncateFloat(acc)],
@@ -99,3 +121,8 @@ uniqueUsersList.reduce((promise, user, index) => {
     fs.writeFileSync('result-array.json', JSON.stringify(arrayMaps));
     console.log('Done!');
   });
+
+module.exports = {
+  simplifyMods,
+  getUniqueMapId,
+};
