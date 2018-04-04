@@ -145,17 +145,27 @@ function applyFilters() {
 }
 $(document).ready(function(){
   var loadingMessageUpdate = setTimeout(function() {
-    $('#loading').text('Loading... It can be slow for the first time, but after it loads the database will be saved in your browser\'s cache.');
-  }, 3000);
-  $.ajax({
-    url: "data-2017-05-12.json",
+    $('#loading').text('loading... it can take a minute if you\'re loading for the first time since latest update.');
+  }, 2000);
+  $.getJSON({
+    url: "https://raw.githubusercontent.com/grumd/osu-pps/release/metadata.json",
+    success: function(rawData) {
+      $('#last-update').text('last updated: ' + new Date(rawData.lastUpdated).toLocaleDateString());
+    },
+    error: function() {
+      $('#last-update').text('error!');
+    },
+    timeout: 0,
+  });
+  $.getJSON({
+    url: "https://raw.githubusercontent.com/grumd/osu-pps/release/data.json",
     success: function(rawData) {
       $('#loading').remove();
       data = rawData.sort((a, b) => b.x - a.x);
       updateTable();
     },
     error: function(jqXHR, textStatus, errorThrown) {
-      $('#loading').text('Error! ' + errorThrown);
+      $('#loading').text('error! ' + errorThrown);
     },
     complete: function() {
       clearTimeout(loadingMessageUpdate);

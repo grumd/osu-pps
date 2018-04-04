@@ -2,6 +2,15 @@
   padding-bottom: 40px;
   width: 1280px;
 }
+.container > header {
+  display: flex;
+  height: 70px;
+  align-items: center;
+}
+.container > header > h2 {
+  flex: 1;
+  margin: 0;
+}
 input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
