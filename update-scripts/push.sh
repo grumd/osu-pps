@@ -1,4 +1,5 @@
 #! /usr/bin/bash
+cd ..
 pwd
 git --version
 now=$(date +'%m/%d/%Y')
