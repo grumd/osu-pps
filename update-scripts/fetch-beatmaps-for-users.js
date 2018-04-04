@@ -2,21 +2,10 @@
 
 const axios = require('axios');
 const fs = require('fs');
+const { idsFileName, resultArrayJson } = require('./constants');
+const { uniq, truncateFloat, delay } = require('./utils');
 
-const truncateFloat = (x) => Math.floor(x * 100) / 100;
-
-const uniq = (a) => {
-  const seen = {};
-  return a.filter((item) => {
-    return seen.hasOwnProperty(item) ? false : (seen[item] = true);
-  });
-}
-
-const idsFileName = 'ids.json';
-const usersList = JSON.parse(fs.readFileSync(idsFileName));
-const uniqueUsersList = uniq(usersList);
-
-const apikey = JSON.parse(fs.readFileSync('config.json')).apikey;
+const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
 
 const url = (userId) => `https://osu.ppy.sh/api/get_user_best?k=${apikey}&u=${userId}&limit=100&type=id`;
 const getUniqueMapId = (score) => `${score.beatmap_id}_${score.enabled_mods}`;
@@ -73,7 +62,7 @@ const recordData = (data) => {
       };
     } else {
       const currentMap = maps[mapId];
-      currentMap.x += getMagnitudeByIndex(index);
+      currentMap.x = truncateFloat(currentMap.x + getMagnitudeByIndex(index));
       if (currentMap.pp99 === undefined) {
         currentMap.pp.push(score.pp);
         currentMap.acc.push(truncateFloat(acc));
@@ -85,7 +74,6 @@ const recordData = (data) => {
   });
 };
 
-const timeout = (ms) => new Promise(res => setTimeout(res, ms));
 const fetchUser = (userId) => {
   axios.get(url(userId))
     .then(({ data }) => {
@@ -93,36 +81,33 @@ const fetchUser = (userId) => {
     });
 }
 
-uniqueUsersList.reduce((promise, user, index) => {
-  return promise.then(() => {
-    console.log(`Recording data for user #${index}/${uniqueUsersList.length}`)
-    return Promise.all([
-      timeout(100),
-      fetchUser(user),
-    ]).then(() => {
-      if (index % 100 === 0) {
-        console.log(`${Object.keys(maps).length} unique maps found! Saved.`);
-        fs.writeFileSync('result.json', JSON.stringify(maps));
-        const arrayMaps = Object.keys(maps).map(mapId => maps[mapId]);
-        fs.writeFileSync('result-array.json', JSON.stringify(arrayMaps));
-      }
-    });
-  })
-}, Promise.resolve())
-  .then(() => {
-    console.log(`${Object.keys(maps).length} unique maps found! Saved.`);
-    Object.keys(maps).forEach((mapId) => {
-      if (maps[mapId].pp99 === undefined) {
-        calculatePp99(maps[mapId]);
-      }
+module.exports = () => {
+  const usersList = JSON.parse(fs.readFileSync(idsFileName));
+  const uniqueUsersList = uniq(usersList);
+  return uniqueUsersList.reduce((promise, user, index) => {
+    return promise.then(() => {
+      console.log(`Recording data for user #${index}/${uniqueUsersList.length}`)
+      return Promise.all([
+        delay(100),
+        fetchUser(user),
+      ]).then(() => {
+        if (index % 100 === 0) {
+          console.log(`${Object.keys(maps).length} unique maps found! Saving.`);
+          const arrayMaps = Object.keys(maps).map(mapId => maps[mapId]);
+          fs.writeFileSync(resultArrayJson, JSON.stringify(arrayMaps));
+        }
+      });
     })
-    fs.writeFileSync('result.json', JSON.stringify(maps));
-    const arrayMaps = Object.keys(maps).map(mapId => maps[mapId]);
-    fs.writeFileSync('result-array.json', JSON.stringify(arrayMaps));
-    console.log('Done!');
-  });
-
-module.exports = {
-  simplifyMods,
-  getUniqueMapId,
+  }, Promise.resolve())
+    .then(() => {
+      console.log(`${Object.keys(maps).length} unique maps found! Saving.`);
+      Object.keys(maps).forEach((mapId) => {
+        if (maps[mapId].pp99 === undefined) {
+          calculatePp99(maps[mapId]);
+        }
+      })
+      const arrayMaps = Object.keys(maps).map(mapId => maps[mapId]);
+      fs.writeFileSync(resultArrayJson, JSON.stringify(arrayMaps));
+      console.log('Done!');
+    });
 };
