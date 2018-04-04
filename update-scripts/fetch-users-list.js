@@ -41,7 +41,7 @@ const startFetchingPages = (page, country) => {
 const savePage = (data, page, country) => {
   saveIds(getIdList(data));
   console.log(`Saved page #${page} for ${country}`);
-  if (page >= 2) {
+  if (page >= 200) {
     return Promise.resolve();
   }
   return delay(500)
@@ -57,7 +57,7 @@ module.exports = () => {
       const countriesList = getCountriesList(data);
 
       return countriesList
-        .slice(0, 1)
+        // .slice(0, 1)
         .reduce((prevProm, country) => {
           return prevProm
             .then(() => {
