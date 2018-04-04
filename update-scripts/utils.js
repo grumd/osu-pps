@@ -13,7 +13,7 @@ const truncateFloat = (x) => Math.floor(x * 100) / 100;
 
 const runScript = (fileName, cb) => {
   return new Promise((res, rej) => {
-    exec(`sh ${fileName}`, (err, stdout, stderr) => {
+    exec(`bash ${fileName}`, (err, stdout, stderr) => {
         if (err) {
           rej(new Error(err));
         } else if (typeof stderr !== "string") {
