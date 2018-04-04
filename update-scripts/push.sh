@@ -1,5 +1,5 @@
 #! /usr/bin/bash
-cd ..
+[[ "$PWD" =~ "update-scripts" ]] && cd ..
 pwd
 git --version
 now=$(date +'%m/%d/%Y')
