@@ -1,5 +1,6 @@
 var data = [];
 var showCount = 20;
+var loadingMessageUpdate;
 function secondsToFormatted(length) {
   return `${Math.floor(length / 60)}:${('0' + (length % 60)).slice(-2)}`;
 }
@@ -143,12 +144,13 @@ function applyFilters() {
   showCount = 20;
   updateTable();
 }
-$(document).ready(function(){
-  var loadingMessageUpdate = setTimeout(function() {
+$(document).ready(function() {
+  loadingMessageUpdate = setTimeout(function() {
     $('#loading').text('loading... it can take a minute if you\'re loading for the first time since latest update.');
   }, 2000);
-  $.getJSON({
-    url: "https://raw.githubusercontent.com/grumd/osu-pps/release/metadata.json",
+  $.ajax({
+    dataType: 'json',
+    url: 'https://raw.githubusercontent.com/grumd/osu-pps/release/metadata.json',
     success: function(rawData) {
       $('#last-update').text('last updated: ' + new Date(rawData.lastUpdated).toLocaleDateString());
     },
@@ -157,8 +159,9 @@ $(document).ready(function(){
     },
     timeout: 0,
   });
-  $.getJSON({
-    url: "https://raw.githubusercontent.com/grumd/osu-pps/release/data.json",
+  $.ajax({
+    dataType: 'json',
+    url: 'https://raw.githubusercontent.com/grumd/osu-pps/release/data.json',
     success: function(rawData) {
       $('#loading').remove();
       data = rawData.sort((a, b) => b.x - a.x);
