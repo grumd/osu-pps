@@ -147,8 +147,9 @@ $(document).ready(function(){
   var loadingMessageUpdate = setTimeout(function() {
     $('#loading').text('loading... it can take a minute if you\'re loading for the first time since latest update.');
   }, 2000);
+  var today = new Date().toLocaleDateString()
   $.getJSON({
-    url: "https://raw.githubusercontent.com/grumd/osu-pps/release/metadata.json",
+    url: "https://raw.githubusercontent.com/grumd/osu-pps/release/metadata.json?" + today,
     success: function(rawData) {
       $('#last-update').text('last updated: ' + new Date(rawData.lastUpdated).toLocaleDateString());
     },
@@ -158,7 +159,7 @@ $(document).ready(function(){
     timeout: 0,
   });
   $.getJSON({
-    url: "https://raw.githubusercontent.com/grumd/osu-pps/release/data.json",
+    url: "https://raw.githubusercontent.com/grumd/osu-pps/release/data.json?" + today,
     success: function(rawData) {
       $('#loading').remove();
       data = rawData.sort((a, b) => b.x - a.x);
