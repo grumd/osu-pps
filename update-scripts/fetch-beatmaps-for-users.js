@@ -62,7 +62,7 @@ const recordData = (data) => {
       };
     } else {
       const currentMap = maps[mapId];
-      currentMap.x = truncateFloat(currentMap.x + getMagnitudeByIndex(index));
+      currentMap.x += getMagnitudeByIndex(index);
       if (currentMap.pp99 === undefined) {
         currentMap.pp.push(score.pp);
         currentMap.acc.push(truncateFloat(acc));

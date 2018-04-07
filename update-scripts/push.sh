@@ -8,5 +8,5 @@ echo
 git status
 git checkout release
 git add .
-git commit -m "Data update from $now"
-git push
+git commit --amend -m "Data update from $now"
+git push -f
