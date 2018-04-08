@@ -65,8 +65,8 @@ module.exports = () => {
             })
             .then(() => startFetchingPages(1, country))
             .then(() => {
-              console.log(`Finished fetching ${country}. Will resume in 5 secs`);
-              return delay(5000);
+              console.log(`Finished fetching ${country}`);
+              return delay(1000);
             })
         }, Promise.resolve());
     })

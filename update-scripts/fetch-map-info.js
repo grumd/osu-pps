@@ -62,9 +62,9 @@ module.exports = () => {
   const mapsArray = JSON.parse(fs.readFileSync(resultArrayJson));
   return mapsArray.reduce((promise, map, index) => {
     return promise.then(() => {
-      console.log(`Loading map #${index}/${mapsArray.length}`)
+      index % 100 || console.log(`Loading map #${index + 1}/${mapsArray.length}`)
       return addBeatmapInfo(map).then(() => {
-        if (index % 100 === 0) {
+        if (index % 500 === 0) {
           console.log(`${Object.keys(maps).length} maps saved.`);
           const arrayMaps = Object.keys(maps).map(mapId => maps[mapId]);
           fs.writeFileSync('result-array-with-info.json', JSON.stringify(arrayMaps));

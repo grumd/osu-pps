@@ -9,9 +9,9 @@ const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
 
 const url = (userId) => `https://osu.ppy.sh/api/get_user_best?k=${apikey}&u=${userId}&limit=100&type=id`;
 const getUniqueMapId = (score) => `${score.beatmap_id}_${score.enabled_mods}`;
-const getMagnitudeByIndex = (x) => truncateFloat(Math.pow((Math.pow(x - 100, 2) / 10000), 20)); // ((x-100)^2/10000)^20
+const getMagnitudeByIndex = (x) => Math.pow((Math.pow(x - 100, 2) / 10000), 20); // ((x-100)^2/10000)^20
 
-const maps = {};
+let maps = {};
 
 const calculatePp99 = (map) => {
   const ppPerAccSum = map.pp.reduce((sum, pp, index) => {
@@ -50,11 +50,12 @@ const recordData = (data) => {
       const parsed = parseFloat(score[key]);
       score[key] = isNaN(parsed) ? score[key] : parsed;
     });
+    score.enabled_mods = simplifyMods(score.enabled_mods);
     const mapId = getUniqueMapId(score);
     const acc = 100 * (score.count300 + score.count100 / 3 + score.count50 / 6) / (score.countmiss + score.count50 + score.count100 + score.count300);
     if (!maps[mapId]) {
       maps[mapId] = {
-        m: simplifyMods(score.enabled_mods),
+        m: score.enabled_mods,
         b: score.beatmap_id,
         pp: [score.pp],
         acc: [truncateFloat(acc)],
@@ -82,21 +83,16 @@ const fetchUser = (userId) => {
 }
 
 module.exports = () => {
+  maps = {};
   const usersList = JSON.parse(fs.readFileSync(idsFileName));
   const uniqueUsersList = uniq(usersList);
   return uniqueUsersList.reduce((promise, user, index) => {
     return promise.then(() => {
-      console.log(`Recording data for user #${index}/${uniqueUsersList.length}`)
+      index % 100 || console.log(`Recording data for user #${index}/${uniqueUsersList.length}`)
       return Promise.all([
         delay(100),
         fetchUser(user),
-      ]).then(() => {
-        if (index % 100 === 0) {
-          console.log(`${Object.keys(maps).length} unique maps found! Saving.`);
-          const arrayMaps = Object.keys(maps).map(mapId => maps[mapId]);
-          fs.writeFileSync(resultArrayJson, JSON.stringify(arrayMaps));
-        }
-      });
+      ]);
     })
   }, Promise.resolve())
     .then(() => {
@@ -105,7 +101,8 @@ module.exports = () => {
         if (maps[mapId].pp99 === undefined) {
           calculatePp99(maps[mapId]);
         }
-      })
+        maps[mapId].x = truncateFloat(maps[mapId].x);
+      });
       const arrayMaps = Object.keys(maps).map(mapId => maps[mapId]);
       fs.writeFileSync(resultArrayJson, JSON.stringify(arrayMaps));
       console.log('Done!');
