@@ -146,23 +146,22 @@ function applyFilters() {
 }
 $(document).ready(function() {
   loadingMessageUpdate = setTimeout(function() {
-    $('#loading').text('loading... it can take a minute if you\'re loading for the first time since latest update.');
-  }, 2000);
-  // $.ajax({
-  //   dataType: 'json',
-  //   url: 'https://raw.githubusercontent.com/grumd/osu-pps/release/metadata.json',
-  //   success: function(rawData) {
-  //     $('#last-update').text('last updated: ' + new Date(rawData.lastUpdated).toLocaleDateString());
-  //   },
-  //   error: function() {
-  //     $('#last-update').text('error!');
-  //   },
-  //   timeout: 0,
-  // });
+    $('#loading').text('loading... it can take a minute');
+  }, 3000);
   $.ajax({
     dataType: 'json',
-    url: 'https://raw.githubusercontent.com/grumd/osu-pps/e53f21548f2b3109ec3906b60de9d5b8e7915943/data-2017-05-12.json',
-    // url: 'https://raw.githubusercontent.com/grumd/osu-pps/release/data.json',
+    url: 'https://raw.githubusercontent.com/grumd/osu-pps/release/metadata.json',
+    success: function(rawData) {
+      $('#last-update').text('last updated: ' + new Date(rawData.lastUpdated).toLocaleDateString());
+    },
+    error: function() {
+      $('#last-update').text('error!');
+    },
+    timeout: 0,
+  });
+  $.ajax({
+    dataType: 'json',
+    url: 'https://raw.githubusercontent.com/grumd/osu-pps/release/data.json',
     success: function(rawData) {
       $('#loading').remove();
       data = rawData.sort((a, b) => b.x - a.x);
