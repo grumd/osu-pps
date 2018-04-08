@@ -1,6 +1,9 @@
 var data = [];
 var showCount = 20;
 var loadingMessageUpdate;
+function truncateFloat(number) {
+  return Math.round(number * 100) / 100;
+}
 function secondsToFormatted(length) {
   return `${Math.floor(length / 60)}:${('0' + (length % 60)).slice(-2)}`;
 }
@@ -109,10 +112,10 @@ function updateTable() {
     var linkText = value.art ? `${value.art} - ${value.t} [${value.v}]` : mapLink;
 
     var bpm = mods.dt
-      ? `<span class="bpm fast">${value.bpm * 1.5}</span>(${value.bpm})`
+      ? `<span class="bpm fast">${truncateFloat(value.bpm * 1.5)}</span>(${truncateFloat(value.bpm)})`
       : mods.ht
-      ? `<span class="bpm slow">${value.bpm * 0.75}</span>(${value.bpm})`
-      : value.bpm;
+      ? `<span class="bpm slow">${truncateFloat(value.bpm * 0.75)}</span>(${truncateFloat(value.bpm)})`
+      : truncateFloat(value.bpm);
 
     var row = $('<tr></tr>');
     row.append($(`<td class="img-td"><img src="https://b.ppy.sh/thumb/${value.s}.jpg" /></td>`));
