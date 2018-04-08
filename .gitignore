@@ -1,6 +1,10 @@
 # config
 config.json
 
+# temp files
+update-scripts/temp
+update-scripts/temp/*
+
 # Logs
 logs
 *.log
