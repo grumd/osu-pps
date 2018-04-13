@@ -56,10 +56,20 @@ const addBeatmapInfo = (map) => {
 
 module.exports = () => {
   maps = {};
-  mapsCache = fs.existsSync(mapInfoCacheFileName)
-    ? JSON.parse(fs.readFileSync(mapInfoCacheFileName))
-    : {};
-  const mapsArray = JSON.parse(fs.readFileSync(resultArrayJson));
+  mapsCache = {};
+  let mapsArray = [];
+  if (fs.existsSync(mapInfoCacheFileName)) {
+    try {
+      mapsCache = JSON.parse(fs.readFileSync(mapInfoCacheFileName));
+    } catch (e) {
+      console.log('Error parsing ' + mapInfoCacheFileName);
+    }
+  }
+  try {
+    mapsArray = JSON.parse(fs.readFileSync(resultArrayJson));
+  } catch (e) {
+    console.log('Error parsing ' + resultArrayJson);
+  }
   return mapsArray.reduce((promise, map, index) => {
     return promise.then(() => {
       index % 100 || console.log(`Loading map #${index + 1}/${mapsArray.length}`)

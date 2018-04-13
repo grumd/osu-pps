@@ -13,7 +13,12 @@ const pageHas1000pp = (text) => /ranking-page-table__column--focused">\s*\d+,\d+
 
 const saveIds = (list) => {
   if (fs.existsSync(idsFileName)) {
-    const oldList = JSON.parse(fs.readFileSync(idsFileName));
+    let oldList = [];
+    try {
+      oldList = JSON.parse(fs.readFileSync(idsFileName));
+    } catch (e) {
+      console.log('Error parsing ' + idsFileName);
+    }
     const newList = uniq(oldList.concat(list));
     fs.writeFileSync(idsFileName, JSON.stringify(newList));
   } else {
