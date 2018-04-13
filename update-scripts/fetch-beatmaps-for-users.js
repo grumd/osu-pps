@@ -84,7 +84,12 @@ const fetchUser = (userId) => {
 
 module.exports = () => {
   maps = {};
-  const usersList = JSON.parse(fs.readFileSync(idsFileName));
+  let usersList = [];
+  try {
+    usersList = JSON.parse(fs.readFileSync(idsFileName));
+  } catch(e) {
+    console.log('Error parsing ' + idsFileName);
+  }
   const uniqueUsersList = uniq(usersList);
   return uniqueUsersList.reduce((promise, user, index) => {
     return promise.then(() => {
