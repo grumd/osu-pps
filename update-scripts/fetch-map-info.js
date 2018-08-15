@@ -21,7 +21,7 @@ const addBeatmapInfo = (map) => {
           const diff = data[0];
           Object.keys(diff).forEach(key => {
             const parsed = parseFloat(diff[key]);
-            diff[key] = isNaN(parsed) ? diff[key] : truncateFloat(parsed);
+            diff[key] = (isNaN(parsed) || 'last_update' === key) ? diff[key] : truncateFloat(parsed);
           });
           mapsCache[map.b] = diff;
           return diff;
@@ -40,6 +40,8 @@ const addBeatmapInfo = (map) => {
         map.l = diff.hit_length;
         map.bpm = diff.bpm;
         map.d = diff.difficultyrating;
+        map.p = diff.passcount;
+        map.h = Math.ceil((Date.now() - new Date(diff.last_update).getTime()) / 1000 / 60 / 60); // hours since ranked
 
         const mapId = getUniqueMapId(map);
         maps[mapId] = map;
