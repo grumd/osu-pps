@@ -1,6 +1,16 @@
+var originalData = [];
 var data = [];
 var showCount = 20;
 var loadingMessageUpdate;
+var overweightnessMode = 'age';
+
+// on start
+var cookies = document.cookie.split(';');
+overweightnessMode = cookies.find(cookie => cookie.includes('osupps_overweightnessmode')).split('=')[1];
+$(document).ready(function() {
+	$('#overweightness').val(overweightnessMode).change();
+});
+
 function truncateFloat(number) {
   return Math.round(number * 100) / 100;
 }
@@ -15,6 +25,20 @@ function modAllowed(selectValue, hasMod) {
 }
 function matchesMaxMin(value, min, max) {
   return value >= min && value <= max;
+}
+function sortOriginalData() {
+	var overweightnessSorter = {
+		age: (a, b) => b.x / b.h - a.x / a.h,
+		total: (a, b) => b.x - a.x,
+		playcount: (a, b) => b.x / b.p - a.x / a.p,
+	}[overweightnessMode];
+	data = originalData.sort(overweightnessSorter);
+}
+function onChangeOverweightness(event) {
+	overweightnessMode = event.target.value;
+	document.cookie = "osupps_overweightnessmode=" + overweightnessMode + "; path=/";
+	sortOriginalData();
+	applyFilters();
 }
 function filterData(rawData) {
   var searchText = $('#search').val() || '';
@@ -128,7 +152,12 @@ function updateTable() {
     row.append($('<td class="text-center"></td>').text(secondsToFormatted(value.l)));
     row.append($('<td class="text-center"></td>').append(bpm));
     row.append($('<td class="text-center"></td>').text(value.d));
-    row.append($('<td class="text-center"></td>').text((+value.x).toFixed(0)));
+	var overweightnessValue = {
+		age: (+value.x/+value.h*20000).toFixed(0),
+		total: (+value.x).toFixed(0),
+		playcount: (+value.x/+value.p*300000).toFixed(0),
+	}[overweightnessMode];
+    row.append($('<td class="text-center"></td>').text(overweightnessValue));
     tableBody.append(row);
   });
   $('#show-more-div').empty();
@@ -164,10 +193,11 @@ $(document).ready(function() {
   });
   $.ajax({
     dataType: 'json',
-    url: 'https://raw.githubusercontent.com/grumd/osu-pps/release/data.json',
+    url: './data.json',
     success: function(rawData) {
       $('#loading').remove();
-      data = rawData.sort((a, b) => b.x - a.x);
+		  originalData = rawData;
+			sortOriginalData();
       updateTable();
     },
     error: function(jqXHR, textStatus, errorThrown) {
