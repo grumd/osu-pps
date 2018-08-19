@@ -6,10 +6,13 @@ var overweightnessMode = 'age';
 
 // on start
 var cookies = document.cookie.split(';');
-overweightnessMode = cookies.find(cookie => cookie.includes('osupps_overweightnessmode')).split('=')[1];
-$(document).ready(function() {
-	$('#overweightness').val(overweightnessMode).change();
-});
+var cookie = cookies.find(cookie => cookie.includes('osupps_overweightnessmode'));
+if (cookie) {
+	overweightnessMode = cookie.split('=')[1];
+	$(document).ready(function() {
+		$('#overweightness').val(overweightnessMode).change();
+	});
+}
 
 function truncateFloat(number) {
   return Math.round(number * 100) / 100;
