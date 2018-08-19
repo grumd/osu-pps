@@ -167,9 +167,9 @@ function updateTable() {
   if (filteredData.length > 0 && showCount < filteredData.length) {
     $('#show-more-div').append($('<button onclick="showMore()" class="btn btn-success show-more-btn">show more</button>'));
   }
-  if (filteredData.length === 0) {
-    $('#show-more-div').text('nothing to show, sorry');
-  }
+  // if (filteredData.length === 0) {
+  //   $('#show-more-div').text('nothing to show, sorry');
+  // }
 }
 function showMore() {
   showCount += 20;
