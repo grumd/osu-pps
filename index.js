@@ -9,10 +9,10 @@ var cookies = document.cookie.split(';');
 var cookie = cookies.find(cookie => cookie.includes('osupps_overweightnessmode'));
 if (cookie) {
 	overweightnessMode = cookie.split('=')[1];
-	$(document).ready(function() {
-		$('#overweightness').val(overweightnessMode).change();
-	});
 }
+$(document).ready(function() {
+	$('#overweightness').val(overweightnessMode).change();
+});
 
 function truncateFloat(number) {
   return Math.round(number * 100) / 100;
@@ -196,7 +196,7 @@ $(document).ready(function() {
   });
   $.ajax({
     dataType: 'json',
-    url: './data.json',
+    url: 'https://raw.githubusercontent.com/grumd/osu-pps/release/data.json',
     success: function(rawData) {
       $('#loading').remove();
 		  originalData = rawData;
