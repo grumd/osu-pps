@@ -1,3 +1,33 @@
+body {
+  background: #2d2d2d;
+  color: #ddd;
+}
+
+.table tr > td {
+  border-top: 1px solid #444 !important;
+}
+.table tr > th {
+  border-top: 1px solid #444 !important;
+}
+.table>thead>tr>th {
+  border-bottom: 2px solid #555;
+}
+.form-control {
+  border: 1px solid #000;
+  background-color: #555;
+  color: #fff;
+}
+input {
+  background-color: #555;
+  color: #fff;
+}
+a, a:hover {
+  color: #e0b074;
+}
+a:visited {
+  color: #d0a064;
+}
+
 .container {
   padding-bottom: 40px;
   width: 1280px;
@@ -78,8 +108,8 @@ td, th {
   margin-right: 5px;
 }
 .slow {
-  color: darkblue;
+  color: dodgerblue;
 }
 .fast {
-  color: darkred;
+  color: orangered;
 }
