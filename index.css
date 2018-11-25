@@ -24,8 +24,8 @@ input {
 a, a:hover {
   color: #e0b074;
 }
-a:visited {
-  color: #d0a064;
+a:visited, a:active {
+  color: #806044;
 }
 
 .container {
