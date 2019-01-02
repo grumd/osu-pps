@@ -90,14 +90,8 @@ module.exports = () => {
             })
             .then(() => startFetchingPages(1, country))
             .then(() => {
-              console.log(`Finished fetching ${country}`);
-              let list = [];
-              try {
-                list = JSON.parse(fs.readFileSync(idsFileName));
-                console.log(`Found ${list.length} unique users`);
-              } catch (e) {
-                console.log('Error parsing ' + idsFileName);
-              }
+              console.log(`\nFinished fetching ${country}`);
+              console.log(`Found ${idsList.length} unique users`);
               return delay(5000);
             })
         }, Promise.resolve());
