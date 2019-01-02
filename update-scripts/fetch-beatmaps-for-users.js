@@ -1,6 +1,6 @@
 'use strict';
 
-const axios = require('axios');
+const axios = require('./axios');
 const fs = require('fs');
 const { idsFileName, resultArrayJson } = require('./constants');
 const { uniq, truncateFloat, delay } = require('./utils');
@@ -111,5 +111,6 @@ module.exports = () => {
       const arrayMaps = Object.keys(maps).map(mapId => maps[mapId]);
       fs.writeFileSync(resultArrayJson, JSON.stringify(arrayMaps));
       console.log('Done!');
+      maps = {};
     });
 };
