@@ -42,6 +42,8 @@ const addBeatmapInfo = (map) => {
         map.d = diff.difficultyrating;
         map.p = diff.passcount;
         map.h = Math.ceil((Date.now() - new Date(diff.last_update).getTime()) / 1000 / 60 / 60); // hours since ranked
+        map.g = diff.genre_id;
+        map.ln = diff.language_id;
 
         const mapId = getUniqueMapId(map);
         maps[mapId] = map;
