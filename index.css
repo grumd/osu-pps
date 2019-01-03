@@ -50,6 +50,7 @@ input[type="number"] {
 }
 td, th {
   vertical-align: middle !important;
+  padding: 8px 2px !important;
 }
 .img-td {
   width: 96px;
@@ -68,6 +69,9 @@ td, th {
   display: inline;
   max-width: 40px;
   padding: 5px;
+}
+.genre-language-head {
+  width: 130px;
 }
 .min-max-head {
   width: 102px;

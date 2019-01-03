@@ -14,6 +14,12 @@ $(document).ready(function() {
 	$('#overweightness').val(overweightnessMode).change();
 });
 
+function toGenre(value) {
+  return $('#genre option[value="' + value + '"]').text(); // sorry
+}
+function toLanguage(value) {
+  return $('#language option[value="' + value + '"]').text();
+}
 function truncateFloat(number) {
   return Math.round(number * 100) / 100;
 }
@@ -25,6 +31,9 @@ function formattedToSeconds(minutes, seconds) {
 }
 function modAllowed(selectValue, hasMod) {
   return !['yes', 'no'].includes(selectValue) || (selectValue === 'yes' && hasMod) || (selectValue === 'no' && !hasMod);
+}
+function matchesEnum(selectValue, enumValue) {
+  return enumValue == 0 || selectValue == enumValue; // type coercion because god is dead
 }
 function matchesMaxMin(value, min, max) {
   return value >= min && value <= max;
@@ -73,6 +82,8 @@ function filterData(rawData) {
     hr: $('#hr').val(),
     fl: $('#fl').val(),
   };
+  var genre = $('#genre').val();
+  var language = $('#language').val();
   const filteredData = rawData.filter((map) => {
     var mapMods = {
       dt: (map.m & 64) == 64,
@@ -92,6 +103,8 @@ function filterData(rawData) {
     );
 
     return searchMatches
+      && matchesEnum(map.g, genre)
+      && matchesEnum(map.ln, language)
       && matchesMaxMin(map.pp99, pp.min, pp.max)
       && matchesMaxMin(realBpm, bpm.min, bpm.max)
       && matchesMaxMin(map.d, diff.min, diff.max)
@@ -147,6 +160,8 @@ function updateTable() {
     var row = $('<tr></tr>');
     row.append($(`<td class="img-td"><img src="https://b.ppy.sh/thumb/${value.s}.jpg" /></td>`));
     row.append($('<td></td>').append($('<a></a>').attr('href', mapLink).text(linkText)));
+    row.append($('<td class="text-center"></td>').text(toGenre(value.g)));
+    row.append($('<td class="text-center"></td>').text(toLanguage(value.ln)));
     row.append($('<td class="text-center"></td>').text((+value.pp99).toFixed(0)));
     row.append($('<td class="text-center"></td>').append(mods.ht ? $(htGlyph) : mods.dt ? $(okGlyph) : null));
     row.append($('<td class="text-center"></td>').append(mods.hd ? $(okGlyph) : null));

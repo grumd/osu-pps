@@ -25,6 +25,36 @@
                 <input id="search" type="text" class="form-control input-sm" placeholder="search..." />
               </div>
             </td>
+            <td class="genre-language-head">
+              <select id="genre" class="form-control input-sm">
+                <option value="0">any</option>
+                <option value="1">unspecified</option>
+                <option value="2">video game</option>
+                <option value="3">anime</option>
+                <option value="4">rock</option>
+                <option value="5">pop</option>
+                <option value="7">novelty</option>
+                <option value="9">hip hop</option>
+                <option value="10">electronic</option>
+                <option value="6">other</option>
+              </select>
+            </td>
+            <td class="genre-language-head">
+              <select id="language" class="form-control input-sm">
+                <option value="0">any</option>
+                <option value="2">english</option>
+                <option value="3">japanese</option>
+                <option value="4">chinese</option>
+                <option value="6">korean</option>
+                <option value="7">french</option>
+                <option value="8">german</option>
+                <option value="9">swedish</option>
+                <option value="10">spanish</option>
+                <option value="11">italian</option>
+                <option value="5">instrumental</option>
+                <option value="1">other</option>
+              </select>
+            </td>
             <td class="min-max-head">
               <input id="pp-min" type="text" class="form-control pp-input input-sm" placeholder="min" />
               <input id="pp-max" type="text" class="form-control pp-input input-sm" placeholder="max" />
@@ -85,6 +115,8 @@
           <tr>
             <th></th>
             <th>map link</th>
+            <th class="text-center">genre</th>
+            <th class="text-center">language</th>
             <th class="text-center">pp</th>
             <th class="text-center">dt</th>
             <th class="text-center">hd</th>
