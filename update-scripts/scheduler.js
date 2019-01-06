@@ -16,31 +16,29 @@ const job = () => {
   }
 
   jobIsRunning = true;
-  return (
-    Promise.resolve()
-      // return fetchUsersList()
-      //   .then(fetchMapsForUsers)
-      //   .then(fetchMapInfo)
-      .then(calculateTopMappers)
-      .then(() => {
-        console.log('Saved all info, updating origin');
-        // fs.renameSync('./../data.json', './../data-backup.json');
-        // fs.renameSync('./result-array-with-info.json', './../data.json');
-        fs.renameSync('./temp/data-mappers.json', './../data-mappers.json');
-        fs.writeFileSync(
-          './../metadata.json',
-          JSON.stringify({
-            lastUpdated: new Date(),
-          })
-        );
-        return runScript('push.sh');
-      })
-      .then(text => console.log(text))
-      .catch(err => console.error(err))
-      .then(() => {
-        jobIsRunning = false;
-      })
-  );
+  return Promise.resolve()
+    .then(fetchUsersList)
+    .then(fetchMapsForUsers)
+    .then(fetchMapInfo)
+    .then(calculateTopMappers)
+    .then(() => {
+      console.log('Saved all info, updating origin');
+      fs.renameSync('./../data.json', './../data-backup.json');
+      fs.renameSync('./result-array-with-info.json', './../data.json');
+      fs.renameSync('./temp/data-mappers.json', './../data-mappers.json');
+      fs.writeFileSync(
+        './../metadata.json',
+        JSON.stringify({
+          lastUpdated: new Date(),
+        })
+      );
+      return runScript('push.sh');
+    })
+    .then(text => console.log(text))
+    .catch(err => console.error(err))
+    .then(() => {
+      jobIsRunning = false;
+    });
 };
 
 console.log('Starting scheduler');
