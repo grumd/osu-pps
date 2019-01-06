@@ -32,7 +32,7 @@ class TopMapper extends Component {
   render() {
     const { isLoading, data, error, match } = this.props;
 
-    const dataUsed = match.params.sort === 'total' ? data.top20 : data.top20age;
+    const dataUsed = !data ? [] : match.params.sort === 'total' ? data.top20 : data.top20age;
 
     let maxOw = 0;
     dataUsed.forEach(mapper => {
