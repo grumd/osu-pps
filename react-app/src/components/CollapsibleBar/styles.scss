@@ -1,0 +1,43 @@
+.collapsible-bar {
+  transition: 0.25s all ease-in-out;
+  .header {
+    cursor: pointer;
+    align-items: center;
+    display: flex;
+    flex-flow: row nowrap;
+    &:hover {
+      background: #444;
+    }
+  }
+  .collapse-button {
+    margin-right: 5px;
+    font-size: 10px;
+    transition: 0.25s all linear;
+    &.open {
+      margin-top: 2px;
+      transform: rotate(90deg);
+    }
+  }
+  .collapsible-children {
+    overflow: auto;
+    height: 0;
+    max-height: 0;
+    opacity: 0;
+    transition: 0.25s all ease-in-out;
+  }
+
+  &.open {
+    background: #444;
+    .collapsible-children {
+      box-shadow: inset 0px 0px 30px -5px rgba(0, 0, 0, 0.75);
+      opacity: 1;
+      height: 400px;
+      max-height: 400px;
+      visibility: visible;
+    }
+    .collapse-button {
+      margin-top: 2px;
+      transform: rotate(90deg);
+    }
+  }
+}

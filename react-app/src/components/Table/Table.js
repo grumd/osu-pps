@@ -1,53 +1,44 @@
-import React, { Component, PureComponent } from "react";
-import toBe from "prop-types";
+import React, { PureComponent } from 'react';
+import toBe from 'prop-types';
+import { connect } from 'react-redux';
 
-import "./table.scss";
-// import data from "../data.json";
+import { updateSearchKey, showMore, recalculateVisibleData } from 'reducers/mapsData';
+
+import { FIELDS } from 'constants/mapsData';
+import { COOKIE_SEARCH_KEY } from 'constants/common';
+
+import './table.scss';
 
 function truncateFloat(number) {
   return Math.round(number * 100) / 100;
 }
 function secondsToFormatted(length) {
-  return `${Math.floor(length / 60)}:${("0" + (length % 60)).slice(-2)}`;
-}
-function formattedToSeconds(minutes, seconds) {
-  return minutes * 60 + seconds;
-}
-function modAllowed(selectValue, hasMod) {
-  return (
-    !["yes", "no"].includes(selectValue) ||
-    (selectValue === "yes" && hasMod) ||
-    (selectValue === "no" && !hasMod)
-  );
-}
-function matchesMaxMin(value, min, max) {
-  return (min === null || value >= min) && (max === null || value <= max);
+  return `${Math.floor(length / 60)}:${('0' + (length % 60)).slice(-2)}`;
 }
 
 const okGlyph = <span className="glyphicon glyphicon-ok" />;
 const htGlyph = <span className="glyphicon glyphicon-time" />;
 
-const FIELDS = {
-  TEXT: "text",
-  PP_MIN: "ppmin",
-  PP_MAX: "ppmax",
-  LEN_MIN: "lenmin",
-  LEN_MAX: "lenmax",
-  BPM_MIN: "bpmmin",
-  BPM_MAX: "bpmmax",
-  DIFF_MIN: "diffmin",
-  DIFF_MAX: "diffmax",
-  DT: "dt",
-  HD: "hd",
-  HR: "hr",
-  HT: "ht",
-  MODE: "mode"
+const mapStateToProps = state => {
+  return {
+    visibleData: state.mapsData.visibleData,
+    fullDataLength: state.mapsData.data.length,
+    visibleItemsCount: state.mapsData.visibleItemsCount,
+    searchKey: state.mapsData.searchKey,
+    isLoading: state.mapsData.isLoading,
+  };
+};
+
+const mapDispatchToProps = {
+  updateSearchKey,
+  showMore,
+  recalculateVisibleData,
 };
 
 class TableBody extends PureComponent {
   static propTypes = {
     data: toBe.array.isRequired,
-    overweightnessMode: toBe.string.isRequired
+    overweightnessMode: toBe.string.isRequired,
   };
 
   render() {
@@ -60,12 +51,10 @@ class TableBody extends PureComponent {
             hd: (item.m & 8) === 8,
             hr: (item.m & 16) === 16,
             fl: (item.m & 1024) === 1024,
-            ht: (item.m & 256) === 256
+            ht: (item.m & 256) === 256,
           };
           var mapLink = `http://osu.ppy.sh/b/${item.b}`;
-          var linkText = item.art
-            ? `${item.art} - ${item.t} [${item.v}]`
-            : mapLink;
+          var linkText = item.art ? `${item.art} - ${item.t} [${item.v}]` : mapLink;
 
           var bpm = mods.dt ? (
             <span>
@@ -84,24 +73,19 @@ class TableBody extends PureComponent {
           const overweightnessValue = {
             age: ((+item.x / +item.h) * 20000).toFixed(0),
             total: (+item.x).toFixed(0),
-            playcount: ((+item.x / +item.p) * 300000).toFixed(0)
+            playcount: ((+item.x / +item.p) * 300000).toFixed(0),
           }[overweightnessMode];
 
           return (
             <tr key={`${item.b}_${item.m}`}>
               <td className="img-td">
-                <img
-                  src={`https://b.ppy.sh/thumb/${item.s}.jpg`}
-                  alt="background"
-                />
+                <img src={`https://b.ppy.sh/thumb/${item.s}.jpg`} alt="background" />
               </td>
               <td>
                 <a href={mapLink}>{linkText}</a>
               </td>
               <td className="text-center">{(+item.pp99).toFixed(0)}</td>
-              <td className="text-center">
-                {mods.ht ? htGlyph : mods.dt ? okGlyph : null}
-              </td>
+              <td className="text-center">{mods.ht ? htGlyph : mods.dt ? okGlyph : null}</td>
               <td className="text-center">{mods.hd ? okGlyph : null}</td>
               <td className="text-center">{mods.hr ? okGlyph : null}</td>
               <td className="text-center">{mods.fl ? okGlyph : null}</td>
@@ -117,170 +101,34 @@ class TableBody extends PureComponent {
   }
 }
 
-export default class Table extends Component {
-  constructor() {
-    super();
-
-    this.minLenRefs = {
-      minute: React.createRef(),
-      second: React.createRef()
-    };
-    this.maxLenRefs = {
-      minute: React.createRef(),
-      second: React.createRef()
-    };
-
-    this.state = {
-      data: [],
-      visibleData: [],
-      isLoading: true,
-      searchKey: {
-        [FIELDS.TEXT]: "",
-        [FIELDS.PP_MIN]: null,
-        [FIELDS.PP_MAX]: null,
-        [FIELDS.LEN_MIN]: null,
-        [FIELDS.LEN_MAX]: null,
-        [FIELDS.BPM_MIN]: null,
-        [FIELDS.BPM_MAX]: null,
-        [FIELDS.DIFF_MIN]: null,
-        [FIELDS.DIFF_MAX]: null,
-        [FIELDS.DT]: "any",
-        [FIELDS.HD]: "any",
-        [FIELDS.HR]: "any",
-        [FIELDS.HT]: "any",
-        [FIELDS.MODE]: "age"
-      },
-      visibleItemsCount: 20
-    };
-    this.onShowMore = this.onShowMore.bind(this);
-  }
-
-  async componentDidMount() {
-    const response = await fetch(
-      "https://raw.githubusercontent.com/grumd/osu-pps/release/data.json"
-    );
-    const data = await response.json();
-    this.setState(
-      {
-        data,
-        isLoading: false
-      },
-      () => this.recalculateVisibleData()
-    );
-  }
+class Table extends PureComponent {
+  static propTypes = {
+    fullDataLength: toBe.number.isRequired,
+    visibleData: toBe.array.isRequired,
+    visibleItemsCount: toBe.number.isRequired,
+    searchKey: toBe.object.isRequired,
+    isLoading: toBe.bool.isRequired,
+    updateSearchKey: toBe.func.isRequired,
+    showMore: toBe.func.isRequired,
+    recalculateVisibleData: toBe.func.isRequired,
+  };
 
   onChange(key, e) {
     const value = e.target.value;
-    this.setState(
-      {
-        searchKey: {
-          ...this.state.searchKey,
-          [key]: value
-        }
-      },
-      () => {
-        if (key === FIELDS.MODE) {
-          this.recalculateVisibleData();
-        }
-      }
-    );
+    document.cookie = `${COOKIE_SEARCH_KEY}${key}=${value}; path=/`;
+
+    this.props.updateSearchKey(key, value);
   }
 
   onChangeNumber(key, e) {
-    const value = e.target.value === "" ? null : parseFloat(e.target.value);
-    this.setState({
-      searchKey: {
-        ...this.state.searchKey,
-        [key]: value
-      }
-    });
-  }
+    const value = e.target.value === '' ? null : parseFloat(e.target.value);
+    document.cookie = `${COOKIE_SEARCH_KEY}${key}=${e.target.value}; path=/`;
 
-  onShowMore() {
-    this.setState(
-      state => ({
-        visibleItemsCount: state.visibleItemsCount + 20
-      }),
-      () => this.recalculateVisibleData()
-    );
-  }
-
-  recalculateVisibleData() {
-    const { data, visibleItemsCount, searchKey } = this.state;
-
-    const overweightnessGetter = {
-      age: item => +item.x / +item.h,
-      total: item => +item.x,
-      playcount: item => +item.x / +item.p
-    }[searchKey[FIELDS.MODE]];
-
-    const length = {
-      min: formattedToSeconds(
-        parseFloat(this.minLenRefs.minute.current.value),
-        parseFloat(this.minLenRefs.second.current.value)
-      ),
-      max: formattedToSeconds(
-        parseFloat(this.maxLenRefs.minute.current.value),
-        parseFloat(this.maxLenRefs.second.current.value)
-      )
-    };
-
-    const newData = data
-      .sort((a, b) => overweightnessGetter(b) - overweightnessGetter(a))
-      .filter((map, index) => {
-        const mapMods = {
-          dt: (map.m & 64) === 64,
-          hd: (map.m & 8) === 8,
-          hr: (map.m & 16) === 16,
-          fl: (map.m & 1024) === 1024,
-          ht: (map.m & 256) === 256
-        };
-
-        const realBpm = mapMods.dt
-          ? map.bpm * 1.5
-          : mapMods.ht
-          ? map.bpm * 0.75
-          : map.bpm;
-
-        const mapLink = `http://osu.ppy.sh/b/${map.b}`;
-        const linkText = `${map.art} - ${map.t} [${map.v}]`.toLowerCase();
-        const searchWords = searchKey[FIELDS.TEXT].toLowerCase().split(" ");
-        const searchMatches = searchWords.every(
-          word => mapLink.includes(word) || linkText.includes(word)
-        );
-
-        return (
-          searchMatches &&
-          matchesMaxMin(
-            map.pp99,
-            searchKey[FIELDS.PP_MIN],
-            searchKey[FIELDS.PP_MAX]
-          ) &&
-          matchesMaxMin(
-            realBpm,
-            searchKey[FIELDS.BPM_MIN],
-            searchKey[FIELDS.BPM_MAX]
-          ) &&
-          matchesMaxMin(
-            map.d,
-            searchKey[FIELDS.DIFF_MIN],
-            searchKey[FIELDS.DIFF_MAX]
-          ) &&
-          matchesMaxMin(map.l, length.min, length.max) &&
-          modAllowed(searchKey[FIELDS.DT], mapMods.dt) &&
-          modAllowed(searchKey[FIELDS.HD], mapMods.hd) &&
-          modAllowed(searchKey[FIELDS.HR], mapMods.hr) &&
-          modAllowed(searchKey[FIELDS.FL], mapMods.fl) &&
-          (searchKey[FIELDS.DT] !== "ht" || mapMods.ht)
-        );
-      })
-      .slice(0, visibleItemsCount);
-
-    this.setState({ visibleData: newData });
+    this.props.updateSearchKey(key, value);
   }
 
   renderHead() {
-    const { isLoading } = this.state;
+    const { isLoading, searchKey } = this.props;
     return (
       <thead>
         <tr>
@@ -289,6 +137,7 @@ export default class Table extends Component {
             <div className="form-group search-control">
               <input
                 onChange={e => this.onChange(FIELDS.TEXT, e)}
+                value={searchKey[FIELDS.TEXT]}
                 type="text"
                 className="form-control input-sm"
                 placeholder="search..."
@@ -298,12 +147,14 @@ export default class Table extends Component {
           <td className="min-max-head">
             <input
               onChange={e => this.onChangeNumber(FIELDS.PP_MIN, e)}
+              value={searchKey[FIELDS.PP_MIN]}
               type="number"
               className="form-control pp-input input-sm"
               placeholder="min"
             />
             <input
               onChange={e => this.onChangeNumber(FIELDS.PP_MAX, e)}
+              value={searchKey[FIELDS.PP_MAX]}
               type="number"
               className="form-control pp-input input-sm"
               placeholder="max"
@@ -313,6 +164,7 @@ export default class Table extends Component {
             <select
               className="form-control input-sm"
               onChange={e => this.onChange(FIELDS.DT, e)}
+              value={searchKey[FIELDS.DT]}
             >
               <option>any</option>
               <option>yes</option>
@@ -325,6 +177,7 @@ export default class Table extends Component {
               id="hd"
               className="form-control input-sm"
               onChange={e => this.onChange(FIELDS.HD, e)}
+              value={searchKey[FIELDS.HD]}
             >
               <option>any</option>
               <option>yes</option>
@@ -336,6 +189,7 @@ export default class Table extends Component {
               id="hr"
               className="form-control input-sm"
               onChange={e => this.onChange(FIELDS.HR, e)}
+              value={searchKey[FIELDS.HR]}
             >
               <option>any</option>
               <option>yes</option>
@@ -347,6 +201,7 @@ export default class Table extends Component {
               id="fl"
               className="form-control input-sm"
               onChange={e => this.onChange(FIELDS.FL, e)}
+              value={searchKey[FIELDS.FL]}
             >
               <option>any</option>
               <option>yes</option>
@@ -356,52 +211,54 @@ export default class Table extends Component {
           <td className="length-head">
             <div className="form-control time-pick">
               <input
-                ref={this.minLenRefs.minute}
+                onChange={e => this.onChangeNumber(FIELDS.MIN_M_LEN, e)}
+                value={searchKey[FIELDS.MIN_M_LEN]}
                 className="minute"
                 type="number"
                 max="99"
                 min="0"
-                defaultValue="0"
               />
               <div>:</div>
               <input
-                ref={this.minLenRefs.second}
+                onChange={e => this.onChangeNumber(FIELDS.MIN_S_LEN, e)}
+                value={searchKey[FIELDS.MIN_S_LEN]}
                 className="second"
                 type="number"
                 max="59"
                 min="0"
-                defaultValue="00"
               />
             </div>
             <div className="form-control time-pick">
               <input
-                ref={this.maxLenRefs.minute}
+                onChange={e => this.onChangeNumber(FIELDS.MAX_M_LEN, e)}
+                value={searchKey[FIELDS.MAX_M_LEN]}
                 className="minute"
                 type="number"
                 max="99"
                 min="0"
-                defaultValue="99"
               />
               <div>:</div>
               <input
-                ref={this.maxLenRefs.second}
+                onChange={e => this.onChangeNumber(FIELDS.MAX_S_LEN, e)}
+                value={searchKey[FIELDS.MAX_S_LEN]}
                 className="second"
                 type="number"
                 max="59"
                 min="0"
-                defaultValue="59"
               />
             </div>
           </td>
           <td className="min-max-head">
             <input
               onChange={e => this.onChangeNumber(FIELDS.BPM_MIN, e)}
+              value={searchKey[FIELDS.BPM_MIN]}
               type="number"
               className="form-control pp-input input-sm"
               placeholder="min"
             />
             <input
               onChange={e => this.onChangeNumber(FIELDS.BPM_MAX, e)}
+              value={searchKey[FIELDS.BPM_MAX]}
               type="number"
               className="form-control pp-input input-sm"
               placeholder="max"
@@ -410,12 +267,14 @@ export default class Table extends Component {
           <td className="min-max-head">
             <input
               onChange={e => this.onChangeNumber(FIELDS.DIFF_MIN, e)}
+              value={searchKey[FIELDS.DIFF_MIN]}
               type="number"
               className="form-control pp-input input-sm"
               placeholder="min"
             />
             <input
               onChange={e => this.onChangeNumber(FIELDS.DIFF_MAX, e)}
+              value={searchKey[FIELDS.DIFF_MAX]}
               type="number"
               className="form-control pp-input input-sm"
               placeholder="max"
@@ -426,7 +285,7 @@ export default class Table extends Component {
               type="button"
               className="btn btn-sm btn-primary apply"
               disabled={isLoading}
-              onClick={() => this.recalculateVisibleData()}
+              onClick={this.props.recalculateVisibleData}
             >
               > apply filters
             </button>
@@ -447,12 +306,11 @@ export default class Table extends Component {
             <div>overweightness</div>
             <select
               onChange={e => this.onChange(FIELDS.MODE, e)}
+              value={searchKey[FIELDS.MODE]}
               className="form-control input-sm"
             >
               <option value="total">total</option>
-              <option value="age" selected>
-                / map's age
-              </option>
+              <option value="age">/ map's age</option>
               <option value="playcount">/ map's playcount</option>
             </select>
           </th>
@@ -462,15 +320,9 @@ export default class Table extends Component {
   }
 
   renderBody() {
-    const { visibleData, data, searchKey } = this.state;
-    console.log(visibleData, data);
+    const { visibleData, searchKey } = this.props;
 
-    return (
-      <TableBody
-        data={visibleData}
-        overweightnessMode={searchKey[FIELDS.MODE]}
-      />
-    );
+    return <TableBody data={visibleData} overweightnessMode={searchKey[FIELDS.MODE]} />;
   }
 
   renderTable() {
@@ -483,15 +335,15 @@ export default class Table extends Component {
   }
 
   renderFooter() {
-    const { data, isLoading, visibleItemsCount } = this.state;
+    const { fullDataLength, isLoading, visibleItemsCount } = this.props;
 
     if (isLoading) {
       return <div className="loading">loading...</div>;
     }
 
     return (
-      visibleItemsCount < data.length && (
-        <div className="show-more-div" onClick={this.onShowMore}>
+      visibleItemsCount < fullDataLength && (
+        <div className="show-more-div" onClick={this.props.showMore}>
           <button className="btn btn-success show-more-btn">show more</button>
         </div>
       )
@@ -507,3 +359,8 @@ export default class Table extends Component {
     );
   }
 }
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Table);

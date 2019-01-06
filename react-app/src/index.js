@@ -1,13 +1,25 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import { BrowserRouter } from "react-router-dom";
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { BrowserRouter } from 'react-router-dom';
+import { Provider } from 'react-redux';
 
-import "./index.css";
-import App from "./App/App";
+import { fetchMappersData } from 'reducers/mappers';
+import { fetchMapsData } from 'reducers/mapsData';
+import { fetchMetadata } from 'reducers/metadata';
+
+import './index.css';
+import App from 'components/App';
+import { store } from 'reducers';
+
+store.dispatch(fetchMappersData());
+store.dispatch(fetchMapsData());
+store.dispatch(fetchMetadata());
 
 ReactDOM.render(
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>,
-  document.getElementById("root")
+  <Provider store={store}>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </Provider>,
+  document.getElementById('root')
 );

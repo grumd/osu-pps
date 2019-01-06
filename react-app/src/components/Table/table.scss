@@ -6,13 +6,11 @@
 .table {
   td,
   th {
+    border-top: none !important;
     vertical-align: middle !important;
   }
-  tr > td {
-    border-top: 1px solid #444 !important;
-  }
-  tr > th {
-    border-top: 1px solid #444 !important;
+  tr {
+    border-bottom: 1px solid #444;
   }
   > thead > tr > th {
     border-bottom: 2px solid #555;

@@ -1,18 +1,26 @@
 .top-bar {
-  display: flex;
   align-items: center;
+  border-bottom: 1px solid #444;
+  display: flex;
   height: 70px;
   ul {
     display: flex;
     align-items: center;
     list-style-type: none;
     padding-left: 0;
+    .pp-word {
+      color: #fff;
+      font-size: 28px;
+      cursor: default;
+    }
     > li > a {
       color: #555;
       font-size: 28px;
       margin: 7px;
       &.active {
         color: #fff;
+        pointer-events: none;
+        cursor: default;
       }
       &:hover {
         color: #fff;
@@ -22,7 +30,7 @@
     > li + li::before {
       font-size: 28px;
       color: #555;
-      content: "•";
+      content: '•';
     }
   }
 }
