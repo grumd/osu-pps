@@ -1,13 +1,13 @@
 {
   "main.css": "/osu-pps/static/css/main.1c12d7e5.chunk.css",
-  "main.js": "/osu-pps/static/js/main.b5eaf9ea.chunk.js",
-  "main.js.map": "/osu-pps/static/js/main.b5eaf9ea.chunk.js.map",
-  "static/js/1.9dce8d5b.chunk.js": "/osu-pps/static/js/1.9dce8d5b.chunk.js",
-  "static/js/1.9dce8d5b.chunk.js.map": "/osu-pps/static/js/1.9dce8d5b.chunk.js.map",
+  "main.js": "/osu-pps/static/js/main.c0fc15ef.chunk.js",
+  "main.js.map": "/osu-pps/static/js/main.c0fc15ef.chunk.js.map",
+  "static/js/1.91451820.chunk.js": "/osu-pps/static/js/1.91451820.chunk.js",
+  "static/js/1.91451820.chunk.js.map": "/osu-pps/static/js/1.91451820.chunk.js.map",
   "runtime~main.js": "/osu-pps/static/js/runtime~main.b38095a1.js",
   "runtime~main.js.map": "/osu-pps/static/js/runtime~main.b38095a1.js.map",
   "static/css/main.1c12d7e5.chunk.css.map": "/osu-pps/static/css/main.1c12d7e5.chunk.css.map",
   "index.html": "/osu-pps/index.html",
-  "precache-manifest.9eb817f8fc026bee16e131f7f3268f09.js": "/osu-pps/precache-manifest.9eb817f8fc026bee16e131f7f3268f09.js",
+  "precache-manifest.7fd74c9f23eabecfedc308eba6049955.js": "/osu-pps/precache-manifest.7fd74c9f23eabecfedc308eba6049955.js",
   "service-worker.js": "/osu-pps/service-worker.js"
 }
