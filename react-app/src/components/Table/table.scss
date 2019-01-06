@@ -1,0 +1,74 @@
+.show-more-div,
+.loading {
+  text-align: center;
+}
+
+.table {
+  td,
+  th {
+    border-top: none !important;
+    vertical-align: middle !important;
+  }
+  tr {
+    border-bottom: 1px solid #444;
+  }
+  > thead > tr > th {
+    border-bottom: 2px solid #555;
+  }
+  .img-td {
+    width: 96px;
+    > img {
+      height: 60px;
+      width: 80px;
+    }
+  }
+  .btn.apply {
+    width: 100%;
+  }
+  .pp-input {
+    display: inline;
+    max-width: 40px;
+    padding: 5px;
+  }
+  .min-max-head {
+    width: 102px;
+  }
+  .length-head {
+    width: 110px;
+  }
+  .mod-head {
+    width: 70px;
+  }
+  .mod-head > select {
+    padding: 5px;
+  }
+  .ow-head {
+    width: 165px;
+  }
+  .time-pick {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+    width: 43px;
+    padding-left: 0;
+    padding-right: 0;
+    font-size: 12px;
+  }
+  .time-pick > input {
+    border: none;
+    width: 17px;
+  }
+  .minute {
+    text-align: right;
+  }
+  .bpm {
+    margin-right: 5px;
+  }
+  .slow {
+    color: dodgerblue;
+  }
+  .fast {
+    color: orangered;
+  }
+}
