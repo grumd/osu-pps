@@ -192,16 +192,13 @@ export default function mapsDataReducer(state = initialState, action) {
 export const fetchMapsData = () => {
   return async dispatch => {
     dispatch({ type: LOADING });
-    console.log('loading');
     try {
       const data = await fetchJson({
         url: 'https://raw.githubusercontent.com/grumd/osu-pps/master/data.json',
       });
-      console.log(data);
       dispatch({ type: SUCCESS, data });
       return data;
     } catch (error) {
-      console.log(1, error);
       dispatch({ type: ERROR, error });
     }
   };
