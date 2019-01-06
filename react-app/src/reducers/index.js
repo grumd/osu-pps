@@ -13,17 +13,18 @@ const rootReducer = combineReducers({
 
 export const store = createStore(
   rootReducer,
-  compose(
-    applyMiddleware(thunk),
-    window.__REDUX_DEVTOOLS_EXTENSION__ &&
-      window.__REDUX_DEVTOOLS_EXTENSION__({
-        stateSanitizer: state =>
-          state.mapsData.data.length
-            ? {
-                ...state,
-                mapsData: { ...state.mapsData, data: '<<LONG_BLOB>>' },
-              }
-            : state,
-      })
-  )
+  window.__REDUX_DEVTOOLS_EXTENSION__
+    ? compose(
+        applyMiddleware(thunk),
+        window.__REDUX_DEVTOOLS_EXTENSION__({
+          stateSanitizer: state =>
+            state.mapsData.data.length
+              ? {
+                  ...state,
+                  mapsData: { ...state.mapsData, data: '<<LONG_BLOB>>' },
+                }
+              : state,
+        })
+      )
+    : applyMiddleware(thunk)
 );

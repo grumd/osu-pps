@@ -20,6 +20,7 @@ const okGlyph = <span className="glyphicon glyphicon-ok" />;
 const htGlyph = <span className="glyphicon glyphicon-time" />;
 
 const mapStateToProps = state => {
+  console.log(state.mapsData);
   return {
     visibleData: state.mapsData.visibleData,
     fullDataLength: state.mapsData.data.length,
@@ -351,6 +352,7 @@ class Table extends PureComponent {
   }
 
   render() {
+    console.log(this.props);
     return (
       <>
         {this.renderTable()}

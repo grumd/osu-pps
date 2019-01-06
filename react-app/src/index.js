@@ -1,3 +1,6 @@
+import 'promise-polyfill/src/polyfill';
+import 'whatwg-fetch';
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { HashRouter } from 'react-router-dom';

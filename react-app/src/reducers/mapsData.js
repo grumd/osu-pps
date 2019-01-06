@@ -16,7 +16,7 @@ function formattedToSeconds(minutes, seconds) {
 
 function modAllowed(selectValue, hasMod) {
   return (
-    !['yes', 'no'].includes(selectValue) ||
+    (selectValue !== 'yes' && selectValue !== 'no') ||
     (selectValue === 'yes' && hasMod) ||
     (selectValue === 'no' && !hasMod)
   );
@@ -63,7 +63,7 @@ const getVisibleItems = state => {
       const mapLink = `http://osu.ppy.sh/b/${map.b}`;
       const linkText = `${map.art} - ${map.t} [${map.v}]`.toLowerCase();
       const searchMatches = searchWords.every(
-        word => mapLink.includes(word) || linkText.includes(word)
+        word => mapLink.indexOf(word) > -1 || linkText.indexOf(word) > -1
       );
 
       return (
@@ -107,7 +107,7 @@ const defaultSearchKey = {};
 
 const cookies = document.cookie && document.cookie.split(';');
 Object.keys(emptySearchKey).forEach(key => {
-  const cookie = cookies && cookies.find(cookie => cookie.includes(COOKIE_SEARCH_KEY + key));
+  const cookie = cookies && cookies.find(cookie => cookie.indexOf(COOKIE_SEARCH_KEY + key) > -1);
 
   if (cookie) {
     const value = cookie.split('=')[1];
@@ -192,13 +192,16 @@ export default function mapsDataReducer(state = initialState, action) {
 export const fetchMapsData = () => {
   return async dispatch => {
     dispatch({ type: LOADING });
+    console.log('loading');
     try {
       const data = await fetchJson({
         url: 'https://raw.githubusercontent.com/grumd/osu-pps/master/data.json',
       });
+      console.log(data);
       dispatch({ type: SUCCESS, data });
       return data;
     } catch (error) {
+      console.log(1, error);
       dispatch({ type: ERROR, error });
     }
   };
