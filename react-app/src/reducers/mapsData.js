@@ -105,9 +105,9 @@ const emptySearchKey = {
 };
 const defaultSearchKey = {};
 
-const cookies = document.cookie.split(';');
+const cookies = document.cookie && document.cookie.split(';');
 Object.keys(emptySearchKey).forEach(key => {
-  const cookie = cookies.find(cookie => cookie.includes(COOKIE_SEARCH_KEY + key));
+  const cookie = cookies && cookies.find(cookie => cookie.includes(COOKIE_SEARCH_KEY + key));
 
   if (cookie) {
     const value = cookie.split('=')[1];
