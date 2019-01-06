@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/osu-pps/precache-manifest.044f49b82cd5b0cd8d953bd24d70b826.js"
+  "/osu-pps/precache-manifest.9eb817f8fc026bee16e131f7f3268f09.js"
 );
 
 workbox.clientsClaim();
