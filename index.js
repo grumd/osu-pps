@@ -185,7 +185,7 @@ $(document).ready(function() {
   }, 3000);
   $.ajax({
     dataType: 'json',
-    url: 'https://raw.githubusercontent.com/grumd/osu-pps/release/metadata.json',
+    url: 'https://raw.githubusercontent.com/grumd/osu-pps/master/metadata.json',
     success: function(rawData) {
       $('#last-update').text('last updated: ' + new Date(rawData.lastUpdated).toLocaleDateString());
     },
@@ -196,7 +196,7 @@ $(document).ready(function() {
   });
   $.ajax({
     dataType: 'json',
-    url: 'https://raw.githubusercontent.com/grumd/osu-pps/release/data.json',
+    url: 'https://raw.githubusercontent.com/grumd/osu-pps/master/data.json',
     success: function(rawData) {
       $('#loading').remove();
 		  originalData = rawData;
