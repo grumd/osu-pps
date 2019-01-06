@@ -1,0 +1,28 @@
+.top-bar {
+  display: flex;
+  align-items: center;
+  height: 70px;
+  ul {
+    display: flex;
+    align-items: center;
+    list-style-type: none;
+    padding-left: 0;
+    > li > a {
+      color: #555;
+      font-size: 28px;
+      margin: 7px;
+      &.active {
+        color: #fff;
+      }
+      &:hover {
+        color: #fff;
+        cursor: pointer;
+      }
+    }
+    > li + li::before {
+      font-size: 28px;
+      color: #555;
+      content: "•";
+    }
+  }
+}

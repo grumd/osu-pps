@@ -1,10 +1,12 @@
 const fs = require("fs");
+const oneLineLog = require("single-line-log").stdout;
+
 const {
   mapInfoCacheFileName,
   resultArrayJson,
   topMappersResultJson
 } = require("./constants");
-const { levenshtein } = require("./utils");
+const { levenshtein, getDiffHours } = require("./utils");
 
 module.exports = () => {
   const mapCache = JSON.parse(fs.readFileSync(mapInfoCacheFileName));
@@ -15,37 +17,41 @@ module.exports = () => {
   const mapperNames = [];
   Object.keys(mapCache).forEach(mapId => {
     const map = mapCache[mapId];
+    if (typeof map.tags === "string" && typeof map.version === "string") {
+      map.tagsLC = map.tags.toLowerCase();
+      map.versionLC = map.version.toLowerCase();
+    }
     const mapperName = mapperNames.find(name => name.name === map.creator);
     if (!mapperName) {
-      mapperNames.push({ name: map.creator, id: map.creator_id });
+      mapperNames.push({
+        name: map.creator,
+        nameLC:
+          typeof map.creator === "string" ? map.creator.toLowerCase() : null,
+        id: map.creator_id
+      });
     }
   });
 
   const mappers = [];
-  sortedResults.forEach(res => {
-    const index = sortedResults.indexOf(res);
-    !(index % 500) && console.log(`${index}/${sortedResults.length}`);
+  sortedResults.forEach((res, index) => {
+    !(index % 500) && oneLineLog(`${index}/${sortedResults.length}`);
     const map = mapCache[res.b];
     if (!map) {
-      console.log("Map cache not found");
+      console.log("\nMap cache not found");
       return;
     }
     const guestMapper = mapperNames.find(mapper => {
-      if (
-        typeof map.version !== "string" ||
-        typeof map.tags !== "string" ||
-        typeof mapper.name !== "string"
-      ) {
+      if (!map.versionLC || !map.tagsLC || !mapper.nameLC) {
         return false;
       }
-      const mapperName = mapper.name.toLowerCase();
-      const mapTags = map.tags.toLowerCase();
+      const mapperName = mapper.nameLC;
+      const mapTags = map.tagsLC;
       const isInTags =
         mapTags.includes(" " + mapperName + " ") ||
         mapTags.endsWith(" " + mapperName) ||
         mapTags.startsWith(mapperName + " ");
       if (!isInTags) return false;
-      const mapVersion = map.version.toLowerCase();
+      const mapVersion = map.versionLC;
       const hasFullMapperName = mapVersion.includes(mapperName);
       if (hasFullMapperName) return true;
       const indexOfS = mapVersion.indexOf("'s ");
@@ -64,6 +70,7 @@ module.exports = () => {
     }
 
     const mapper = mappers.find(mapper => mapper.id === map.creator_id);
+    map.h = getDiffHours(map);
     if (!mapper) {
       mappers.push({
         name: map.creator,
@@ -71,18 +78,16 @@ module.exports = () => {
         mapsRecorded: [map.beatmap_id],
         points: res.x,
         pointsAge: (+res.x / +map.h) * 20000,
-        pointsPC: (+res.x / +map.p) * 300000
-        // age: (+value.x/+value.h*20000).toFixed(0),
-        // total: (+value.x).toFixed(0),
-        // playcount: (+value.x/+value.p*300000).toFixed(0),
+        pointsPC: (+res.x / +map.playcount) * 300000
       });
     } else if (!mapper.mapsRecorded.includes(map.beatmap_id)) {
       mapper.mapsRecorded.push(map.beatmap_id);
       mapper.points += res.x;
       mapper.pointsAge += (+res.x / +map.h) * 20000;
-      mapper.pointsPC += (+res.x / +map.p) * 300000;
+      mapper.pointsPC += (+res.x / +map.playcount) * 300000;
     }
   });
+  oneLineLog.clear();
 
   const topMappers = mappers.sort((a, b) => b.points - a.points).slice(0, 10);
   const topMappersAge = mappers
@@ -96,9 +101,9 @@ module.exports = () => {
     .sort((a, b) => b.pointsPerMap - a.pointsPerMap)
     .slice(0, 10);
 
-  console.log(topMappers);
-  console.log(topMappersAge);
-  console.log(topMappersPC);
+  console.log(topMappers.map(a => `${a.name} - ${a.points}`));
+  console.log(topMappersAge.map(a => `${a.name} - ${a.pointsAge}`));
+  console.log(topMappersPC.map(a => `${a.name} - ${a.pointsPC}`));
   // console.log(topMappersPerMap);
 
   // topMapper.mapsRecorded.forEach(mapId => {

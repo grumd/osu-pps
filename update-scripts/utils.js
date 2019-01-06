@@ -7,6 +7,11 @@ const uniq = a => {
   });
 };
 
+const getDiffHours = diff =>
+  Math.ceil(
+    (Date.now() - new Date(diff.last_update).getTime()) / 1000 / 60 / 60
+  );
+
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
 const truncateFloat = x => Math.floor(x * 100) / 100;
@@ -84,5 +89,6 @@ module.exports = {
   uniq,
   truncateFloat,
   runScript,
+  getDiffHours,
   levenshtein
 };
