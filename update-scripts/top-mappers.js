@@ -38,7 +38,7 @@ module.exports = () => {
       if (!map.versionLC || !map.tagsLC || !mapper.nameLC) {
         return false;
       }
-      const mapperName = mapper.nameLC.replace(/ /g, '_');
+      const mapperName = mapper.nameLC;
       const mapperNameWithUnderscores = mapperName.replace(/ /g, '_');
       const mapTags = map.tagsLC;
       const isInTags =
