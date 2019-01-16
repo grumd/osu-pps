@@ -1,0 +1,9 @@
+{
+	"apikey": "insert your osu API key here",
+
+	"mode_comment": "You can specify the gamemode (0=osu, 1=taiko, 2=ctb, 3=mania) to generate for here",
+	"mode": 0,
+
+	"generateOnly_comment": "If you set this to true, the scheduler.js won't try to run the update script",
+	"generateOnly": false
+}

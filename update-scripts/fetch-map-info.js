@@ -3,12 +3,14 @@
 const axios = require("./axios");
 const fs = require("fs");
 const { truncateFloat, delay, getDiffHours } = require("./utils");
-const { mapInfoCacheFileName, resultArrayJson } = require("./constants");
+const { mapInfoCacheFileName, resultArrayJson, modeNames } = require("./constants");
 
-const apikey = JSON.parse(fs.readFileSync("config.json")).apikey;
+const config = JSON.parse(fs.readFileSync("config.json"));
+const apikey = config.apikey;
+const mode = config.mode || 0;
 
 const urlBeatmapInfo = diffId =>
-  `https://osu.ppy.sh/api/get_beatmaps?k=${apikey}&b=${diffId}&limit=1`;
+  `https://osu.ppy.sh/api/get_beatmaps?k=${apikey}&b=${diffId}&limit=1&m=${mode}`;
 const getUniqueMapId = map => `${map.b}_${map.m}`;
 
 let maps = {};
@@ -48,6 +50,8 @@ const addBeatmapInfo = map => {
         map.h = getDiffHours(diff);
         map.g = diff.genre_id;
         map.ln = diff.language_id;
+        if (mode == 3) // mania key count
+          map.k = diff.diff_size;
 
         const mapId = getUniqueMapId(map);
         maps[mapId] = map;

@@ -6,6 +6,11 @@ const fetchUsersList = require('./fetch-users-list');
 const fetchMapsForUsers = require('./fetch-beatmaps-for-users');
 const fetchMapInfo = require('./fetch-map-info');
 const calculateTopMappers = require('./top-mappers');
+const { modeNames } = require('./constants');
+
+const config = JSON.parse(fs.readFileSync("config.json"));
+const mode = config.mode || 0;
+const generateOnly = config.generateOnly || false;
 
 let jobIsRunning = false;
 
@@ -23,16 +28,23 @@ const job = () => {
     .then(calculateTopMappers)
     .then(() => {
       console.log('Saved all info, updating origin');
-      fs.renameSync('./../data.json', './../data-backup.json');
-      fs.renameSync('./result-array-with-info.json', './../data.json');
-      fs.renameSync('./temp/data-mappers.json', './../data-mappers.json');
+
+      const suffix = mode ? '-' + modeNames[mode] : '';
+
+      if (fs.existsSync(`./../data${suffix}.json`))
+        fs.renameSync(`./../data${suffix}.json`, `./../data-backup${suffix}.json`);
+
+      fs.renameSync('./result-array-with-info.json', `./../data${suffix}.json`);
+      fs.renameSync('./temp/data-mappers.json', `./../data-mappers${suffix}.json`);
       fs.writeFileSync(
-        './../metadata.json',
+        `./../metadata${suffix}.json`,
         JSON.stringify({
           lastUpdated: new Date(),
         })
       );
-      return runScript('push.sh');
+
+      if (!generateOnly)
+        return runScript('push.sh');
     })
     .then(text => console.log(text))
     .catch(err => console.error(err))
@@ -42,5 +54,7 @@ const job = () => {
 };
 
 console.log('Starting scheduler');
-cron.scheduleJob('0 3 * * *', job);
+if (!generateOnly)
+  cron.scheduleJob('0 3 * * *', job);
+
 job();

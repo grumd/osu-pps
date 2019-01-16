@@ -3,11 +3,15 @@
 const axios = require('./axios');
 const oneLineLog = require('single-line-log').stdout;
 const fs = require('fs');
-const { idsFileName, idsDateFileName } = require('./constants');
+const { idsFileName, idsDateFileName, modeNames } = require('./constants');
 const { uniq, delay } = require('./utils');
 
-const countriesListUrl = 'https://osu.ppy.sh/rankings/osu/country';
-const getUsersUrl = (page, country) => `https://osu.ppy.sh/rankings/osu/performance?page=${page}` + (country ? `&country=${country}` : '');
+const config = JSON.parse(fs.readFileSync("config.json"));
+const mode = config.mode || 0;
+
+const modeName = modeNames[mode];
+const countriesListUrl = `https://osu.ppy.sh/rankings/${modeName}/country`;
+const getUsersUrl = (page, country) => `https://osu.ppy.sh/rankings/${modeName}/performance?page=${page}` + (country ? `&country=${country}` : '');
 const getIdList = (text) => text.match(/\/users\/[0-9]+/g).map(uLink => uLink.slice(7));
 const getCountriesList = (text) => text.match(/\?country=[A-Z]{2}/g).map(cLink => cLink.slice(9));
 const pageHas1000pp = (text) => /ranking-page-table__column--focused">\s*\d+,\d+\s*</g.test(text);

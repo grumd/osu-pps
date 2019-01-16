@@ -5,9 +5,11 @@ const fs = require('fs');
 const { idsFileName, resultArrayJson } = require('./constants');
 const { uniq, truncateFloat, delay } = require('./utils');
 
-const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
+const config = JSON.parse(fs.readFileSync('./config.json'));
+const apikey = config.apikey;
+const mode = config.mode || 0;
 
-const url = (userId) => `https://osu.ppy.sh/api/get_user_best?k=${apikey}&u=${userId}&limit=20&type=id`;
+const url = (userId) => `https://osu.ppy.sh/api/get_user_best?k=${apikey}&u=${userId}&limit=20&type=id&m=${mode}`;
 const getUniqueMapId = (score) => `${score.beatmap_id}_${score.enabled_mods}`;
 const getMagnitudeByIndex = (x) => Math.pow((Math.pow(x - 100, 2) / 10000), 20); // ((x-100)^2/10000)^20
 
