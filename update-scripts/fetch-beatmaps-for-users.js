@@ -2,27 +2,35 @@
 
 const axios = require('./axios');
 const fs = require('fs');
-const { idsFileName, resultArrayJson } = require('./constants');
+const {
+  idsFileName,
+  resultArrayJson,
+  ppBlocksJson,
+  ppBlockSize,
+  ppBlockMapCount,
+} = require('./constants');
 const { uniq, truncateFloat, delay } = require('./utils');
 
 const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
 
-const url = (userId) => `https://osu.ppy.sh/api/get_user_best?k=${apikey}&u=${userId}&limit=20&type=id`;
-const getUniqueMapId = (score) => `${score.beatmap_id}_${score.enabled_mods}`;
-const getMagnitudeByIndex = (x) => Math.pow((Math.pow(x - 100, 2) / 10000), 20); // ((x-100)^2/10000)^20
+const url = userId =>
+  `https://osu.ppy.sh/api/get_user_best?k=${apikey}&u=${userId}&limit=20&type=id`;
+const getUniqueMapId = score => `${score.beatmap_id}_${score.enabled_mods}`;
+const getMagnitudeByIndex = x => Math.pow(Math.pow(x - 100, 2) / 10000, 20); // ((x-100)^2/10000)^20
 
 let maps = {};
+let peoplePerPpBlocks = [];
 
-const calculatePp99 = (map) => {
+const calculatePp99 = map => {
   const ppPerAccSum = map.pp.reduce((sum, pp, index) => {
-    return sum + pp / map.acc[index];
+    return sum + pp * map.acc[index];
   }, 0);
-  map.pp99 = truncateFloat(ppPerAccSum / map.pp.length * 99);
+  map.pp99 = truncateFloat(ppPerAccSum / map.pp.length / 99);
   delete map.pp;
   delete map.acc;
 };
 
-const simplifyMods = (mods) => {
+const simplifyMods = mods => {
   let mod = parseInt(mods, 10);
   const mapMods = {
     nf: (mod & 1) == 1,
@@ -44,7 +52,13 @@ const simplifyMods = (mods) => {
   return mod;
 };
 
-const recordData = (data) => {
+const recordData = (data, userId) => {
+  const topMapsPpSum = data.slice(0, ppBlockMapCount).reduce((sum, map) => {
+    return sum + parseFloat(map.pp);
+  }, 0);
+  const ppBlockValue = Math.floor(Math.round(topMapsPpSum / ppBlockMapCount) / ppBlockSize);
+  peoplePerPpBlocks[ppBlockValue] = (peoplePerPpBlocks[ppBlockValue] || 0) + 1;
+
   data.forEach((score, index) => {
     Object.keys(score).forEach(key => {
       const parsed = parseFloat(score[key]);
@@ -52,7 +66,9 @@ const recordData = (data) => {
     });
     score.enabled_mods = simplifyMods(score.enabled_mods);
     const mapId = getUniqueMapId(score);
-    const acc = 100 * (score.count300 + score.count100 / 3 + score.count50 / 6) / (score.countmiss + score.count50 + score.count100 + score.count300);
+    const acc =
+      (100 * (score.count300 + score.count100 / 3 + score.count50 / 6)) /
+      (score.countmiss + score.count50 + score.count100 + score.count300);
     if (!maps[mapId]) {
       maps[mapId] = {
         m: score.enabled_mods,
@@ -75,41 +91,42 @@ const recordData = (data) => {
   });
 };
 
-const fetchUser = (userId) => {
-  axios.get(url(userId))
-    .then(({ data }) => {
-      recordData(data);
-    });
-}
+const fetchUser = userId => {
+  axios.get(url(userId)).then(({ data }) => {
+    recordData(data, userId);
+  });
+};
 
 module.exports = () => {
   maps = {};
   let usersList = [];
   try {
     usersList = JSON.parse(fs.readFileSync(idsFileName));
-  } catch(e) {
+  } catch (e) {
     console.log('Error parsing ' + idsFileName);
   }
   const uniqueUsersList = uniq(usersList);
-  return uniqueUsersList.reduce((promise, user, index) => {
-    return promise.then(() => {
-      index % 100 || console.log(`Recording data for user #${index}/${uniqueUsersList.length}`)
-      return Promise.all([
-        delay(100),
-        fetchUser(user),
-      ]);
-    })
-  }, Promise.resolve())
+  return uniqueUsersList
+    .reduce((promise, user, index) => {
+      return promise.then(() => {
+        index % 100 || console.log(`Recording data for user #${index}/${uniqueUsersList.length}`);
+        return Promise.all([delay(100), fetchUser(user)]);
+      });
+    }, Promise.resolve())
     .then(() => {
       console.log(`${Object.keys(maps).length} unique maps found! Saving.`);
-      Object.keys(maps).forEach((mapId) => {
+      Object.keys(maps).forEach(mapId => {
         if (maps[mapId].pp99 === undefined) {
           calculatePp99(maps[mapId]);
         }
         maps[mapId].x = truncateFloat(maps[mapId].x);
+        const ppBlockValue = Math.floor(Math.round(maps[mapId].pp99) / ppBlockSize);
+        maps[mapId].adj = peoplePerPpBlocks[ppBlockValue] || 1;
       });
       const arrayMaps = Object.keys(maps).map(mapId => maps[mapId]);
       fs.writeFileSync(resultArrayJson, JSON.stringify(arrayMaps));
+      console.log('Saving info about PP blocks too');
+      fs.writeFileSync(ppBlocksJson, JSON.stringify(peoplePerPpBlocks));
       console.log('Done!');
       maps = {};
     });

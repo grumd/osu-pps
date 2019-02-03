@@ -20,7 +20,7 @@ class App extends Component {
         <Route
           exact
           path={routes.mappers.path}
-          component={() => <Redirect to={routes.mappers.path + '/total'} />}
+          component={() => <Redirect to={routes.mappers.path + '/by-age'} />}
         />
         <Route path={routes.farmers.path} component={() => <div>under construction...</div>} />
       </div>
