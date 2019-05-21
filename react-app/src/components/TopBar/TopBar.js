@@ -105,10 +105,10 @@ class TopBar extends Component {
               target="_blank"
               rel="noreferrer noopener"
             >
-              <img src="/reddit.svg" alt="reddit" className="icon" />
+              <img src={process.env.PUBLIC_URL + '/reddit.svg'} alt="reddit" className="icon" />
             </a>
             <a href="https://twitter.com/grumd_osu" target="_blank" rel="noreferrer noopener">
-              <img src="/twitter.svg" alt="twitter" className="icon" />
+              <img src={process.env.PUBLIC_URL + '/twitter.svg'} alt="twitter" className="icon" />
             </a>
             <a href="https://osu.ppy.sh/users/530913" target="_blank" rel="noreferrer noopener">
               <img
