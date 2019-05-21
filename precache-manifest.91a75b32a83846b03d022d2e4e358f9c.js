@@ -4,19 +4,19 @@ self.__precacheManifest = [
     "url": "/osu-pps/static/js/runtime~main.b38095a1.js"
   },
   {
-    "revision": "ef0e64843dfc5f26c755",
-    "url": "/osu-pps/static/js/main.ef0e6484.chunk.js"
+    "revision": "ad8ae3bc41a79a96955c",
+    "url": "/osu-pps/static/js/main.ad8ae3bc.chunk.js"
   },
   {
     "revision": "c60b01a60888fd86f751",
     "url": "/osu-pps/static/js/1.c60b01a6.chunk.js"
   },
   {
-    "revision": "ef0e64843dfc5f26c755",
+    "revision": "ad8ae3bc41a79a96955c",
     "url": "/osu-pps/static/css/main.5bf5e79d.chunk.css"
   },
   {
-    "revision": "2f13789342b76cab3df760d3c0b790c5",
+    "revision": "ba25b0ed2ac84f8d1c82bd6ffcacab6b",
     "url": "/osu-pps/index.html"
   }
 ];
