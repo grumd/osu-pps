@@ -1,4 +1,14 @@
-const exec = require("child_process").exec;
+const exec = require('child_process').exec;
+
+const files = {
+  userIdsList: mode => `./temp/${mode.text}/user-ids.json`,
+  userIdsDate: mode => `./temp/${mode.text}/user-ids-date.json`,
+  mapInfoCache: mode => `./temp/${mode.text}/map-cache.json`,
+  mapsList: mode => `./temp/${mode.text}/maps.json`,
+  mapsDetailedList: mode => `./temp/${mode.text}/maps-detailed.json`,
+  mappersList: mode => `./temp/${mode.text}/mappers.json`,
+  ppBlocks: mode => `./temp/${mode.text}/pp-blocks.json`,
+};
 
 const uniq = a => {
   const seen = {};
@@ -8,20 +18,18 @@ const uniq = a => {
 };
 
 const getDiffHours = diff =>
-  Math.ceil(
-    (Date.now() - new Date(diff.last_update).getTime()) / 1000 / 60 / 60
-  );
+  Math.ceil((Date.now() - new Date(diff.last_update).getTime()) / 1000 / 60 / 60);
 
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
 const truncateFloat = x => Math.floor(x * 100) / 100;
 
-const runScript = (fileName, cb) => {
+const runScript = fileName => {
   return new Promise((res, rej) => {
     exec(`bash ${fileName}`, (err, stdout, stderr) => {
       if (err) {
         rej(new Error(err));
-      } else if (typeof stderr !== "string") {
+      } else if (typeof stderr !== 'string') {
         rej(new Error(stderr));
       } else {
         res(stdout);
@@ -90,5 +98,6 @@ module.exports = {
   truncateFloat,
   runScript,
   getDiffHours,
-  levenshtein
+  levenshtein,
+  files,
 };

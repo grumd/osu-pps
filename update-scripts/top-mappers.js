@@ -1,13 +1,11 @@
 const fs = require('fs');
-const oneLineLog = require('single-line-log').stdout;
 
-const { mapInfoCacheFileName, resultArrayJson, topMappersResultJson } = require('./constants');
-const { levenshtein, getDiffHours, truncateFloat } = require('./utils');
+const { levenshtein, getDiffHours, truncateFloat, files } = require('./utils');
 
-module.exports = () => {
-  console.log('Calculating TOP 20 pp mappers');
-  const mapCache = JSON.parse(fs.readFileSync(mapInfoCacheFileName));
-  const sortedResults = JSON.parse(fs.readFileSync(resultArrayJson)).sort((a, b) => b.x - a.x);
+module.exports = mode => {
+  console.log(`Calculating TOP 20 pp mappers for ${mode.text}`);
+  const mapCache = JSON.parse(fs.readFileSync(files.mapInfoCache(mode)));
+  const sortedResults = JSON.parse(fs.readFileSync(files.mapsList(mode))).sort((a, b) => b.x - a.x);
 
   const mapperNames = [];
   Object.keys(mapCache).forEach(mapId => {
@@ -27,11 +25,10 @@ module.exports = () => {
   });
 
   const mappers = [];
-  sortedResults.forEach((res, index) => {
-    !(index % 500) && oneLineLog(`${index}/${sortedResults.length}`);
+  sortedResults.forEach(res => {
     const map = mapCache[res.b];
     if (!map) {
-      console.log('\nMap cache not found');
+      // console.log('\nMap cache not found');
       return;
     }
     const guestMapper = mapperNames.find(mapper => {
@@ -101,15 +98,6 @@ module.exports = () => {
       }
     }
   });
-  console.log();
-
-  // const topMappers = mappers.sort((a, b) => b.points - a.points).slice(0, 20);
-  // const topMappersAge = mappers.sort((a, b) => b.pointsAge - a.pointsAge).slice(0, 10);
-  // const topMappersPC = mappers.sort((a, b) => b.pointsPC - a.pointsPC).slice(0, 10);
-  // const topMappersPerMap = mappers
-  //   .map(m => ({ ...m, pointsPerMap: m.points / m.mapsRecorded.length }))
-  //   .sort((a, b) => b.pointsPerMap - a.pointsPerMap)
-  //   .slice(0, 10);
 
   const transformMapList = (usingAge = false) => mapper => {
     return {
@@ -140,13 +128,9 @@ module.exports = () => {
       .sort((a, b) => b.pointsAge - a.pointsAge)
       .slice(0, 20)
       .map(transformMapList(true)),
-    // top20pc: mappers
-    //   .sort((a, b) => b.pointsPC - a.pointsPC)
-    //   .slice(0, 20)
-    //   .map(transformMapList),
   };
 
-  fs.writeFileSync(topMappersResultJson, JSON.stringify(resultingObject));
+  fs.writeFileSync(files.mappersList(mode), JSON.stringify(resultingObject));
   console.log('Finished calculating TOP 20 mappers!');
 };
 

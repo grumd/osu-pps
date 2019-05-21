@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import toBe from 'prop-types';
-import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 import classNames from 'classnames';
 
@@ -9,28 +8,49 @@ import prizeSilver from './prize_silver.png';
 import prizeBronze from './prize_bronze.png';
 import './top-mappers.scss';
 
-import { routes } from 'constants/routes';
-
 import CollapsibleBar from 'components/CollapsibleBar';
+import ParamLink from 'components/ParamLink/ParamLink';
 
-const mapStateToProps = state => {
+import { fetchMappersData } from 'reducers/mappers';
+
+const mapStateToProps = (state, props) => {
+  const mode = props.match.params.mode;
   return {
-    data: state.mappers.data,
-    error: state.mappers.error,
-    isLoading: state.metadata.isLoading,
+    data: state.mappers[mode].data,
+    error: state.mappers[mode].error,
+    isLoading: state.mappers[mode].isLoading,
   };
+};
+
+const mapDispatchToProps = {
+  fetchMappersData,
 };
 
 class TopMapper extends Component {
   static propTypes = {
     match: toBe.object,
+    location: toBe.object,
     data: toBe.object,
     error: toBe.object,
     isLoading: toBe.bool.isRequired,
   };
 
+  componentDidMount() {
+    const { isLoading, data, match } = this.props;
+    if (!isLoading && !data) {
+      this.props.fetchMappersData(match.params.mode);
+    }
+  }
+
+  componentDidUpdate() {
+    const { match, isLoading, data } = this.props;
+    if (!data && !isLoading) {
+      this.props.fetchMappersData(match.params.mode);
+    }
+  }
+
   render() {
-    const { isLoading, data, error, match } = this.props;
+    const { isLoading, data, error, match, location } = this.props;
 
     const dataUsed = !data ? [] : match.params.sort === 'total' ? data.top20 : data.top20age;
 
@@ -58,11 +78,13 @@ class TopMapper extends Component {
               </p>
               <p>
                 you can either look at top 20 sorted by{' '}
-                <NavLink to={routes.mappers.path + '/total'}>total overweightness points</NavLink>
+                <ParamLink match={match} location={location} params={{ sort: 'total' }}>
+                  total overweightness points
+                </ParamLink>
                 <br /> or adjusted for{' '}
-                <NavLink to={routes.mappers.path + '/by-age'}>
+                <ParamLink match={match} location={location} params={{ sort: 'by-age' }}>
                   date when the maps were ranked
-                </NavLink>
+                </ParamLink>
               </p>
             </>
           )}
@@ -130,4 +152,7 @@ class TopMapper extends Component {
   }
 }
 
-export default connect(mapStateToProps)(TopMapper);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(TopMapper);

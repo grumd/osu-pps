@@ -2,7 +2,41 @@
   align-items: center;
   border-bottom: 1px solid #444;
   display: flex;
-  height: 70px;
+  min-height: 80px;
+  .vertical-menus {
+    align-items: flex-start;
+    display: flex;
+    flex-flow: column nowrap;
+    padding: 3px 0;
+    margin-bottom: 6px;
+    nav {
+      height: 40px;
+      ul > li:first-child > a {
+        margin-left: 0;
+      }
+    }
+  }
+  .loader-text {
+    margin-right: 10px;
+    opacity: 0;
+    transition: opacity 2s;
+    &.loading {
+      opacity: 1;
+    }
+  }
+  .author {
+    align-items: center;
+    display: flex;
+    flex-flow: row nowrap;
+    span {
+      margin-right: 7px;
+    }
+    .icon {
+      width: 26px;
+      height: 26px;
+      margin-right: 7px;
+    }
+  }
   ul {
     display: flex;
     align-items: center;

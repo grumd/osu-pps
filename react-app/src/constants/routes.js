@@ -1,11 +1,11 @@
 export const routes = {
   maps: {
-    path: '/maps',
+    path: ({ mode }) => `/${mode}/maps`,
   },
   mappers: {
-    path: '/mappers',
+    path: ({ mode }) => `/${mode}/mappers`,
   },
   farmers: {
-    path: '/farmers',
+    path: ({ mode }) => `/${mode}/farmers`,
   },
 };

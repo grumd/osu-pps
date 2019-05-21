@@ -1,10 +1,23 @@
 module.exports = {
-  idsFileName: './temp/ids.json',
-  idsDateFileName: './temp/ids-date.json',
-  mapInfoCacheFileName: './temp/map-cache.json',
-  resultArrayJson: './temp/result-array.json',
-  topMappersResultJson: './temp/data-mappers.json',
-  ppBlocksJson: './temp/pp-blocks.json',
+  DEBUG: false,
   ppBlockSize: 5,
   ppBlockMapCount: 10,
+  modes: {
+    osu: {
+      text: 'osu',
+      id: 0,
+    },
+    taiko: {
+      text: 'taiko',
+      id: 1,
+    },
+    fruits: {
+      text: 'fruits',
+      id: 2,
+    },
+    mania: {
+      text: 'mania',
+      id: 3,
+    },
+  },
 };

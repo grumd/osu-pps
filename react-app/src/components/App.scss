@@ -5,7 +5,8 @@
   .spacer {
     flex: 1 1 auto;
   }
-  .form-control {
+  .form-control,
+  .select__control {
     border: 1px solid #000;
     background-color: #555;
     color: #fff;

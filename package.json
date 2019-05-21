@@ -14,11 +14,15 @@
   ],
   "dependencies": {
     "axios": "0.15.3",
-    "classnames": "^2.2.6",
+    "classnames": "2.2.6",
     "node-schedule": "1.3.0",
-    "node-static": "^0.7.9",
-    "single-line-log": "^1.1.2"
+    "node-static": "0.7.9",
+    "single-line-log": "1.1.2"
   },
   "author": "grumd",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "5.16.0",
+    "eslint-plugin-import": "2.17.2"
+  }
 }

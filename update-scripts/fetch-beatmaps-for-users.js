@@ -1,20 +1,15 @@
 'use strict';
 
 const axios = require('./axios');
+const oneLineLog = require('single-line-log').stdout;
 const fs = require('fs');
-const {
-  idsFileName,
-  resultArrayJson,
-  ppBlocksJson,
-  ppBlockSize,
-  ppBlockMapCount,
-} = require('./constants');
-const { uniq, truncateFloat, delay } = require('./utils');
+const { ppBlockSize, ppBlockMapCount, DEBUG } = require('./constants');
+const { uniq, truncateFloat, delay, files } = require('./utils');
 
 const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
 
-const url = userId =>
-  `https://osu.ppy.sh/api/get_user_best?k=${apikey}&u=${userId}&limit=20&type=id`;
+const getUrl = (userId, modeId) =>
+  `https://osu.ppy.sh/api/get_user_best?k=${apikey}&u=${userId}&limit=20&type=id&m=${modeId}`;
 const getUniqueMapId = score => `${score.beatmap_id}_${score.enabled_mods}`;
 const getMagnitudeByIndex = x => Math.pow(Math.pow(x - 100, 2) / 10000, 20); // ((x-100)^2/10000)^20
 
@@ -52,7 +47,7 @@ const simplifyMods = mods => {
   return mod;
 };
 
-const recordData = (data, userId) => {
+const recordData = data => {
   const topMapsPpSum = data.slice(0, ppBlockMapCount).reduce((sum, map) => {
     return sum + parseFloat(map.pp);
   }, 0);
@@ -61,7 +56,7 @@ const recordData = (data, userId) => {
 
   data.forEach((score, index) => {
     Object.keys(score).forEach(key => {
-      const parsed = parseFloat(score[key]);
+      const parsed = Number(score[key]);
       score[key] = isNaN(parsed) ? score[key] : parsed;
     });
     score.enabled_mods = simplifyMods(score.enabled_mods);
@@ -91,29 +86,44 @@ const recordData = (data, userId) => {
   });
 };
 
-const fetchUser = userId => {
-  axios.get(url(userId)).then(({ data }) => {
-    recordData(data, userId);
-  });
+const fetchUser = (userId, modeId) => {
+  return axios
+    .get(getUrl(userId, modeId))
+    .then(({ data }) => {
+      recordData(data, userId);
+    })
+    .catch(error => {
+      console.log('\x1b[33m%s\x1b[0m', error.message);
+    });
 };
 
-module.exports = () => {
+module.exports = mode => {
+  console.log(`1. FETCHING MAPS LIST - ${mode.text}`);
   maps = {};
+  peoplePerPpBlocks = [];
   let usersList = [];
   try {
-    usersList = JSON.parse(fs.readFileSync(idsFileName));
+    usersList = JSON.parse(fs.readFileSync(files.userIdsList(mode)));
   } catch (e) {
-    console.log('Error parsing ' + idsFileName);
+    console.log('Error parsing ' + files.userIdsList(mode));
   }
   const uniqueUsersList = uniq(usersList);
+  const fetchPromises = [];
   return uniqueUsersList
+    .slice(...(DEBUG ? [0, 20] : []))
     .reduce((promise, user, index) => {
       return promise.then(() => {
-        index % 100 || console.log(`Recording data for user #${index}/${uniqueUsersList.length}`);
-        return Promise.all([delay(100), fetchUser(user)]);
+        if (DEBUG && index > 5) {
+          return Promise.resolve();
+        }
+        oneLineLog(`Recording data for user #${index}/${uniqueUsersList.length} (${mode.text})`);
+        fetchPromises.push(fetchUser(user, mode.id));
+        return delay(100);
       });
     }, Promise.resolve())
+    .then(() => Promise.all(fetchPromises))
     .then(() => {
+      console.log();
       console.log(`${Object.keys(maps).length} unique maps found! Saving.`);
       Object.keys(maps).forEach(mapId => {
         if (maps[mapId].pp99 === undefined) {
@@ -124,10 +134,10 @@ module.exports = () => {
         maps[mapId].adj = peoplePerPpBlocks[ppBlockValue] || 1;
       });
       const arrayMaps = Object.keys(maps).map(mapId => maps[mapId]);
-      fs.writeFileSync(resultArrayJson, JSON.stringify(arrayMaps));
+      fs.writeFileSync(files.mapsList(mode), JSON.stringify(arrayMaps));
       console.log('Saving info about PP blocks too');
-      fs.writeFileSync(ppBlocksJson, JSON.stringify(peoplePerPpBlocks));
-      console.log('Done!');
+      fs.writeFileSync(files.ppBlocks(mode), JSON.stringify(peoplePerPpBlocks));
+      console.log(`Done fetching list of beatmaps! (${mode.text})`);
       maps = {};
     });
 };

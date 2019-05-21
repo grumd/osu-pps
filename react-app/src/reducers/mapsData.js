@@ -1,7 +1,9 @@
-import { fetchJson } from 'utils/fetch';
+import { fetchJsonPartial } from 'utils/fetch';
 
-import { FIELDS } from 'constants/mapsData';
-import { COOKIE_SEARCH_KEY } from 'constants/common';
+import { FIELDS, languageOptions, genreOptions } from 'constants/mapsData';
+import { COOKIE_SEARCH_KEY, DEBUG_FETCH } from 'constants/common';
+
+import { overweightnessCalcFromMode } from 'utils/overweightness';
 
 const LOADING = 'MAPS_DATA/LOADING';
 const SUCCESS = 'MAPS_DATA/SUCCESS';
@@ -9,6 +11,7 @@ const ERROR = 'MAPS_DATA/ERROR';
 const SEARCH_KEY_CHANGE = 'MAPS_DATA/SEARCH_KEY';
 const SHOW_MORE = 'MAPS_DATA/SHOW_MORE';
 const RECALC = 'MAPS_DATA/RECALC';
+const PROGRESS = 'MAPS_DATA/PROGRESS';
 
 function formattedToSeconds(minutes, seconds) {
   return minutes * 60 + seconds;
@@ -26,29 +29,34 @@ function matchesMaxMin(value, min, max) {
   return (!min || value >= min) && (!max || value <= max);
 }
 
-const getVisibleItems = state => {
-  const { data, visibleItemsCount, searchKey } = state;
+const filterLowPasscount = data => data.filter(map => map.p > 600);
 
-  const overweightnessGetter = {
-    age: item => +item.x / +item.h,
-    total: item => +item.x,
-    playcount: item => +item.x / +item.p,
-  }[searchKey[FIELDS.MODE]];
+const getVisibleItems = (state, mode) => {
+  const { dataByMode, visibleItemsCount, searchKey } = state;
+  const data = dataByMode[mode] || [];
+
+  const overweightnessCalc = overweightnessCalcFromMode[searchKey[FIELDS.MODE]];
 
   const length = {
     min: formattedToSeconds(
-      parseFloat(searchKey[FIELDS.MIN_M_LEN]),
-      parseFloat(searchKey[FIELDS.MIN_S_LEN])
+      parseInt(searchKey[FIELDS.MIN_M_LEN], 10),
+      parseInt(searchKey[FIELDS.MIN_S_LEN], 10)
     ),
     max: formattedToSeconds(
-      parseFloat(searchKey[FIELDS.MAX_M_LEN]),
-      parseFloat(searchKey[FIELDS.MAX_S_LEN])
+      parseInt(searchKey[FIELDS.MAX_M_LEN], 10),
+      parseInt(searchKey[FIELDS.MAX_S_LEN], 10)
     ),
   };
   const searchWords = searchKey[FIELDS.TEXT].toLowerCase().split(' ');
+  const genreList = searchKey[FIELDS.GENRE].length
+    ? searchKey[FIELDS.GENRE].map(option => option.value)
+    : null;
+  const langList = searchKey[FIELDS.LANG].length
+    ? searchKey[FIELDS.LANG].map(option => option.value)
+    : null;
 
-  const newData = data
-    .sort((a, b) => overweightnessGetter(b) - overweightnessGetter(a))
+  const filteredData = data
+    .sort((a, b) => overweightnessCalc(b) - overweightnessCalc(a))
     .filter((map, index) => {
       const mapMods = {
         dt: (map.m & 64) === 64,
@@ -65,6 +73,8 @@ const getVisibleItems = state => {
       const searchMatches = searchWords.every(
         word => mapLink.indexOf(word) > -1 || linkText.indexOf(word) > -1
       );
+      const genreMatches = !genreList || genreList.includes(map.g);
+      const languageMatches = !langList || langList.includes(map.ln);
 
       return (
         searchMatches &&
@@ -72,23 +82,25 @@ const getVisibleItems = state => {
         matchesMaxMin(realBpm, searchKey[FIELDS.BPM_MIN], searchKey[FIELDS.BPM_MAX]) &&
         matchesMaxMin(map.d, searchKey[FIELDS.DIFF_MIN], searchKey[FIELDS.DIFF_MAX]) &&
         matchesMaxMin(map.l, length.min, length.max) &&
+        genreMatches &&
+        languageMatches &&
         modAllowed(searchKey[FIELDS.DT], mapMods.dt) &&
         modAllowed(searchKey[FIELDS.HD], mapMods.hd) &&
         modAllowed(searchKey[FIELDS.HR], mapMods.hr) &&
         modAllowed(searchKey[FIELDS.FL], mapMods.fl) &&
         (searchKey[FIELDS.DT] !== 'ht' || mapMods.ht)
       );
-    })
-    .slice(0, visibleItemsCount);
-  return newData;
+    });
+  const visibleData = filteredData.slice(0, visibleItemsCount);
+  return { filteredData, visibleData };
 };
 
-const emptySearchKey = {
+export const emptySearchKey = {
+  [FIELDS.LANG]: [],
+  [FIELDS.GENRE]: [],
   [FIELDS.TEXT]: '',
   [FIELDS.PP_MIN]: '',
   [FIELDS.PP_MAX]: '',
-  [FIELDS.LEN_MIN]: '',
-  [FIELDS.LEN_MAX]: '',
   [FIELDS.BPM_MIN]: '',
   [FIELDS.BPM_MAX]: '',
   [FIELDS.DIFF_MIN]: '',
@@ -100,10 +112,21 @@ const emptySearchKey = {
   [FIELDS.DT]: 'any',
   [FIELDS.HD]: 'any',
   [FIELDS.HR]: 'any',
-  [FIELDS.HT]: 'any',
-  [FIELDS.MODE]: 'age',
+  [FIELDS.FL]: 'any',
+  [FIELDS.MODE]: 'adjusted',
 };
 const defaultSearchKey = {};
+const ARRAY_FIELDS = [FIELDS.LANG, FIELDS.GENRE];
+const TEXT_FIELDS = [
+  FIELDS.TEXT,
+  FIELDS.MAX_S_LEN,
+  FIELDS.MIN_S_LEN,
+  FIELDS.MODE,
+  FIELDS.DT,
+  FIELDS.HD,
+  FIELDS.HR,
+  FIELDS.FL,
+];
 
 const cookies = document.cookie && document.cookie.split(';');
 Object.keys(emptySearchKey).forEach(key => {
@@ -111,19 +134,31 @@ Object.keys(emptySearchKey).forEach(key => {
 
   if (cookie) {
     const value = cookie.split('=')[1];
-    const parsedNumber = parseFloat(value);
-    defaultSearchKey[key] = isNaN(parsedNumber) ? value : parsedNumber;
+    if (ARRAY_FIELDS.includes(key)) {
+      const options = key === FIELDS.LANG ? languageOptions : genreOptions;
+      defaultSearchKey[key] = value
+        .split(',')
+        .map(value => options.find(opt => opt.value === Number(value)))
+        .filter(value => value);
+    } else if (TEXT_FIELDS.includes(key)) {
+      defaultSearchKey[key] = value;
+    } else {
+      const parsedNumber = parseFloat(value);
+      defaultSearchKey[key] = isNaN(parsedNumber) ? value : parsedNumber;
+    }
   } else {
     defaultSearchKey[key] = emptySearchKey[key];
   }
 });
 
 const initialState = {
-  isLoading: false,
-  data: [],
+  isLoading: { osu: false, mania: false, taiko: false, fruits: false },
+  dataByMode: { osu: [], mania: [], taiko: [], fruits: [] },
   visibleData: [],
+  filteredData: [],
   searchKey: defaultSearchKey,
   visibleItemsCount: 20,
+  lastMode: 'osu',
 };
 
 export default function mapsDataReducer(state = initialState, action) {
@@ -131,24 +166,25 @@ export default function mapsDataReducer(state = initialState, action) {
     case LOADING:
       return {
         ...state,
-        isLoading: true,
+        isLoading: { ...state.isLoading, [action.mode]: true },
       };
     case ERROR:
       return {
         ...state,
-        isLoading: false,
+        isLoading: { ...state.isLoading, [action.mode]: false },
         error: action.error,
       };
     case SUCCESS: {
       const newState = {
         ...state,
-        isLoading: false,
-        data: action.data,
+        isLoading: { ...state.isLoading, [action.mode]: false },
+        dataByMode: { ...state.dataByMode, [action.mode]: filterLowPasscount(action.data) },
         visibleItemsCount: 20,
       };
       return {
         ...newState,
-        visibleData: getVisibleItems(newState),
+        lastMode: action.mode,
+        ...getVisibleItems(newState, action.mode),
       };
     }
     case SEARCH_KEY_CHANGE: {
@@ -159,13 +195,13 @@ export default function mapsDataReducer(state = initialState, action) {
           [action.key]: action.value === null ? emptySearchKey[action.key] : action.value,
         },
       };
-      let visibleData = state.visibleData;
+      let additionalState = {};
       if (action.key === FIELDS.MODE) {
-        visibleData = getVisibleItems(newState);
+        additionalState = getVisibleItems(newState, state.lastMode);
       }
       return {
         ...newState,
-        visibleData,
+        ...additionalState,
       };
     }
     case SHOW_MORE: {
@@ -175,13 +211,29 @@ export default function mapsDataReducer(state = initialState, action) {
       };
       return {
         ...newState,
-        visibleData: getVisibleItems(newState),
+        ...getVisibleItems(newState, state.lastMode),
       };
     }
     case RECALC: {
       return {
         ...state,
-        visibleData: getVisibleItems(state),
+        lastMode: action.mode,
+        ...getVisibleItems(state, action.mode),
+      };
+    }
+    case PROGRESS: {
+      const newState = {
+        ...state,
+        dataByMode: { ...state.dataByMode, [action.mode]: filterLowPasscount(action.data) },
+      };
+      let additionalState = {};
+      if (state.visibleItemsCount > state.filteredData.length) {
+        additionalState = getVisibleItems(newState, action.mode);
+      }
+      return {
+        ...newState,
+        lastMode: action.mode,
+        ...additionalState,
       };
     }
     default:
@@ -189,17 +241,20 @@ export default function mapsDataReducer(state = initialState, action) {
   }
 }
 
-export const fetchMapsData = () => {
+export const fetchMapsData = mode => {
   return async dispatch => {
-    dispatch({ type: LOADING });
+    dispatch({ type: LOADING, mode });
     try {
-      const data = await fetchJson({
-        url: 'https://raw.githubusercontent.com/grumd/osu-pps/master/data.json',
+      const data = await fetchJsonPartial({
+        url: DEBUG_FETCH
+          ? `/data-${mode}.json`
+          : `https://raw.githubusercontent.com/grumd/osu-pps/master/data-${mode}.json`,
+        onIntermediateDataReceived: data => dispatch({ type: PROGRESS, data, mode }),
       });
-      dispatch({ type: SUCCESS, data });
+      dispatch({ type: SUCCESS, data, mode });
       return data;
     } catch (error) {
-      dispatch({ type: ERROR, error });
+      dispatch({ type: ERROR, error, mode });
     }
   };
 };
@@ -212,4 +267,4 @@ export const updateSearchKey = (key, value) => ({
 
 export const showMore = () => ({ type: SHOW_MORE });
 
-export const recalculateVisibleData = () => ({ type: RECALC });
+export const recalculateVisibleData = mode => ({ type: RECALC, mode });

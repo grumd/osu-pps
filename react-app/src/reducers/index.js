@@ -17,13 +17,16 @@ export const store = createStore(
     ? compose(
         applyMiddleware(thunk),
         window.__REDUX_DEVTOOLS_EXTENSION__({
-          stateSanitizer: state =>
-            state.mapsData.data.length
-              ? {
-                  ...state,
-                  mapsData: { ...state.mapsData, data: '<<LONG_BLOB>>' },
-                }
-              : state,
+          stateSanitizer: state => ({
+            ...state,
+            mapsData: {
+              ...state.mapsData,
+              dataByMode: Object.keys(state.mapsData.dataByMode).reduce((acc, key) => ({
+                ...acc,
+                [key]: state.mapsData.dataByMode[key].length,
+              })),
+            },
+          }),
         })
       )
     : applyMiddleware(thunk)

@@ -3,34 +3,36 @@
 const axios = require('./axios');
 const oneLineLog = require('single-line-log').stdout;
 const fs = require('fs');
-const { idsFileName, idsDateFileName } = require('./constants');
-const { uniq, delay } = require('./utils');
+const { DEBUG } = require('./constants');
+const { uniq, delay, files } = require('./utils');
 
-const countriesListUrl = 'https://osu.ppy.sh/rankings/osu/country';
-const getUsersUrl = (page, country) => `https://osu.ppy.sh/rankings/osu/performance?page=${page}` + (country ? `&country=${country}` : '');
-const getIdList = (text) => text.match(/\/users\/[0-9]+/g).map(uLink => uLink.slice(7));
-const getCountriesList = (text) => text.match(/\?country=[A-Z]{2}/g).map(cLink => cLink.slice(9));
-const pageHas1000pp = (text) => /ranking-page-table__column--focused">\s*\d+,\d+\s*</g.test(text);
+const getCountriesListUrl = modeText => `https://osu.ppy.sh/rankings/${modeText}/country`;
+const getUsersUrl = (modeText, page, country) =>
+  `https://osu.ppy.sh/rankings/${modeText}/performance?page=${page}` +
+  (country ? `&country=${country}` : '');
+const getIdList = text => text.match(/\/users\/[0-9]+/g).map(uLink => uLink.slice(7));
+const getCountriesList = text => text.match(/\?country=[A-Z]{2}/g).map(cLink => cLink.slice(9));
+const pageHas1000pp = text => /ranking-page-table__column--focused">\s*\d+,\d+\s*</g.test(text);
 
 let idsList = [];
 
-const saveIdsToFile = () => {
-  fs.writeFileSync(idsFileName, JSON.stringify(idsList));
-  fs.writeFileSync(idsDateFileName, JSON.stringify(new Date()));
-}
+const saveIdsToFile = mode => {
+  fs.writeFileSync(files.userIdsList(mode), JSON.stringify(idsList));
+  fs.writeFileSync(files.userIdsDate(mode), JSON.stringify(new Date()));
+};
 
-const addIdsToList = (list) => {
+const addIdsToList = list => {
   idsList = uniq(idsList.concat(list));
-}
+};
 
-const startFetchingPages = (page, country) => {
-  oneLineLog(`Fetching page #${page}`);
-  return axios.get(getUsersUrl(page, country))
-    .catch((err) => {
+const startFetchingPages = (modeText, page, country) => {
+  oneLineLog(`Fetching page #${page} (${modeText})`);
+  return axios
+    .get(getUsersUrl(modeText, page, country))
+    .catch(err => {
       console.log('Error:', err.message);
       console.log(err);
-      return delay(10000)
-        .then(() => startFetchingPages(page, country));
+      return delay(10000).then(() => startFetchingPages(modeText, page, country));
     })
     .then(({ data }) => {
       oneLineLog(`Page #${page} fetched successfully!`);
@@ -39,65 +41,68 @@ const startFetchingPages = (page, country) => {
         oneLineLog.clear();
         return Promise.resolve();
       }
-      return savePage(data, page, country);
+      return savePage(modeText, data, page, country);
     });
 };
 
-const savePage = (data, page, country) => {
+const savePage = (modeText, data, page, country) => {
   addIdsToList(getIdList(data));
   // console.log(`Saved page #${page} for ${country}`);
-  if (page >= 200) {
-    oneLineLog('200 pages parsed');
+  if (page >= 200 || DEBUG) {
+    oneLineLog(DEBUG ? 'Parsed one page for debug' : '200 pages parsed');
     oneLineLog.clear();
     return Promise.resolve();
   }
   return delay(2000)
-    .then(() => startFetchingPages(page + 1, country))
-    .catch((err) => {
+    .then(() => startFetchingPages(modeText, page + 1, country))
+    .catch(err => {
       console.log('Error saving list:', err.message);
     });
-}
+};
 
-module.exports = () => {
+module.exports = mode => {
   idsList = [];
-  if (fs.existsSync(idsDateFileName)) {
+  if (fs.existsSync(files.userIdsDate(mode))) {
     try {
-      const lastUpdatedDate = JSON.parse(fs.readFileSync(idsDateFileName));
+      const lastUpdatedDate = JSON.parse(fs.readFileSync(files.userIdsDate(mode)));
       if (new Date() - new Date(lastUpdatedDate) < 14 * 24 * 60 * 60 * 1000) {
-        idsList = JSON.parse(fs.readFileSync(idsFileName));
-        console.log(`Last update was at ${lastUpdatedDate}, using cached list with ${idsList.length} user ids`);
+        idsList = JSON.parse(fs.readFileSync(files.userIdsList(mode)));
+        console.log(
+          `Last update for ${mode.text} was at ${lastUpdatedDate}, using cached list with ${
+            idsList.length
+          } user ids`
+        );
         return Promise.resolve();
       }
       console.log(`Last update was at ${lastUpdatedDate}`);
-    } catch(e) {
+    } catch (e) {
       console.log('Error checking ids date', e);
     }
   } else {
     console.log(`Ids backup not found`);
   }
   console.log(`Clearing old user IDs list`);
-  fs.writeFileSync(idsFileName, '[]');
-  return axios.get(countriesListUrl)
+  fs.writeFileSync(files.userIdsList(mode), '[]');
+  return axios
+    .get(getCountriesListUrl(mode.text))
     .then(({ data }) => {
       const countriesList = getCountriesList(data);
 
-      return countriesList
-        // .slice(0, 1)
-        .reduce((prevProm, country) => {
-          return prevProm
-            .then(() => {
-              console.log(`Starting to fetch ${country}`);
-            })
-            .then(() => startFetchingPages(1, country))
-            .then(() => {
-              console.log(`\nFinished fetching ${country}`);
-              console.log(`Found ${idsList.length} unique users`);
-              return delay(5000);
-            })
-        }, Promise.resolve());
+      return countriesList.slice(...(DEBUG ? [0, 1] : [])).reduce((prevProm, country) => {
+        return prevProm
+          .then(() => {
+            console.log(`Starting to fetch ${country} (${mode.text})`);
+          })
+          .then(() => startFetchingPages(mode.text, 1, country))
+          .then(() => {
+            console.log(`\nFinished fetching ${country}`);
+            console.log(`Found ${idsList.length} unique users`);
+            return delay(5000);
+          });
+      }, Promise.resolve());
     })
     .then(() => {
-      saveIdsToFile();
-      console.log('Finished all countries!');
+      saveIdsToFile(mode);
+      console.log(`Done fetching list of users! (${mode.text})`);
     });
-}
+};

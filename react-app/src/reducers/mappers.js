@@ -1,44 +1,60 @@
+import { combineReducers } from 'redux';
 import { fetchJson } from 'utils/fetch';
+import { DEBUG_FETCH } from 'constants/common';
 
-const LOADING = 'MAPPERS/LOADING';
-const SUCCESS = 'MAPPERS/SUCCESS';
-const ERROR = 'MAPPERS/ERROR';
+const getTypes = mode => ({
+  LOADING: `${mode}/MAPPERS/LOADING`,
+  SUCCESS: `${mode}/MAPPERS/SUCCESS`,
+  ERROR: `${mode}/MAPPERS/ERROR`,
+});
 
 const initialState = {
   isLoading: false,
   data: null,
 };
 
-export default function mappersDataReducer(state = initialState, action) {
-  switch (action.type) {
-    case LOADING:
-      return {
-        ...state,
-        isLoading: true,
-      };
-    case SUCCESS:
-      return {
-        ...state,
-        isLoading: false,
-        data: action.data,
-      };
-    case ERROR:
-      return {
-        ...state,
-        isLoading: false,
-        error: action.error,
-      };
-    default:
-      return state;
-  }
-}
+const getReducer = mode => {
+  const { LOADING, SUCCESS, ERROR } = getTypes(mode);
+  return function mappersDataReducer(state = initialState, action) {
+    switch (action.type) {
+      case LOADING:
+        return {
+          ...state,
+          isLoading: true,
+        };
+      case SUCCESS:
+        return {
+          ...state,
+          isLoading: false,
+          data: action.data,
+        };
+      case ERROR:
+        return {
+          ...state,
+          isLoading: false,
+          error: action.error,
+        };
+      default:
+        return state;
+    }
+  };
+};
+export default combineReducers({
+  osu: getReducer('osu'),
+  taiko: getReducer('taiko'),
+  mania: getReducer('mania'),
+  fruits: getReducer('fruits'),
+});
 
-export const fetchMappersData = () => {
+export const fetchMappersData = mode => {
+  const { LOADING, SUCCESS, ERROR } = getTypes(mode);
   return async dispatch => {
     dispatch({ type: LOADING });
     try {
       const data = await fetchJson({
-        url: 'https://raw.githubusercontent.com/grumd/osu-pps/master/data-mappers.json',
+        url: DEBUG_FETCH
+          ? `/data-${mode}-mappers.json`
+          : `https://raw.githubusercontent.com/grumd/osu-pps/master/data-${mode}-mappers.json`,
       });
       dispatch({ type: SUCCESS, data });
       return data;

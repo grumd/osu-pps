@@ -7,22 +7,30 @@ import TopBar from 'components/TopBar/TopBar';
 import Table from 'components/Table/Table';
 import TopMappers from 'components/TopMappers/TopMappers';
 
-import { routes } from 'constants/routes';
-
 class App extends Component {
   render() {
     return (
       <div className="container">
-        <TopBar />
-        <Route exact path="/" render={() => <Redirect to={routes.maps.path} />} />
-        <Route path={routes.maps.path} component={Table} />
-        <Route path={routes.mappers.path + '/:sort(total|by-age)'} component={TopMappers} />
+        <Route exact path="/" render={() => <Redirect to="/osu/maps" />} />
         <Route
-          exact
-          path={routes.mappers.path}
-          component={() => <Redirect to={routes.mappers.path + '/by-age'} />}
+          path="/:mode(osu|taiko|mania|fruits)"
+          render={({ match, location }) => (
+            <React.Fragment>
+              <TopBar match={match} location={location} />
+              <Route path={`${match.path}/maps`} component={Table} />
+              <Route path={`${match.path}/mappers/:sort(total|by-age)`} component={TopMappers} />
+              <Route
+                path={`${match.path}/farmers`}
+                component={() => <div>under construction...</div>}
+              />
+              <Route
+                exact
+                path={`${match.path}/mappers`}
+                render={() => <Redirect to={`${match.url}/mappers/by-age`} />}
+              />
+            </React.Fragment>
+          )}
         />
-        <Route path={routes.farmers.path} component={() => <div>under construction...</div>} />
       </div>
     );
   }

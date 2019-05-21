@@ -4,6 +4,10 @@
 }
 
 .table {
+  .active {
+    border: 1px solid #00ffaa;
+  }
+
   td,
   th {
     border-top: none !important;
@@ -16,10 +20,18 @@
     border-bottom: 2px solid #555;
   }
   .img-td {
+    text-align: right;
     width: 96px;
     > img {
       height: 60px;
       width: 80px;
+    }
+  }
+  .genre-language {
+    font-size: 14px;
+    color: #bbb;
+    .grey-title {
+      color: #777;
     }
   }
   .btn.apply {
@@ -70,5 +82,46 @@
   }
   .fast {
     color: orangered;
+  }
+  .select.genre {
+    margin-right: 15px;
+  }
+  .select {
+    width: 272px;
+    font-size: 12px;
+    .select__control {
+      min-height: 30px;
+    }
+    .select__menu {
+      margin-top: 1px;
+      background-color: #555;
+      color: #fff;
+      .select__menu-list {
+        max-height: 320px;
+      }
+      .select__option--is-focused {
+        background-color: #999;
+      }
+    }
+    .select__indicators {
+      .select__indicator-separator {
+        background-color: #999;
+      }
+      .select__clear-indicator,
+      .select__dropdown-indicator {
+        width: 22px;
+        padding: 3px;
+      }
+    }
+    .select__multi-value__label {
+      font-size: 100%;
+      padding: 2px 2px 2px 6px;
+    }
+    .select__multi-value__remove {
+      color: #777;
+      &:hover {
+        color: #de350b;
+      }
+    }
   }
 }
