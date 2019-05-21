@@ -169,7 +169,6 @@ class Table extends PureComponent {
 
   constructor(props) {
     super();
-    console.log(props.searchKey);
     this.state = {
       expandedView: !!props.searchKey[FIELDS.GENRE].length || !!props.searchKey[FIELDS.LANG].length,
     };
