@@ -47,8 +47,8 @@ const job = () => {
 
   jobIsRunning = true;
   return Promise.resolve()
-    .then(() => updateModeData(modes.mania))
     .then(() => updateModeData(modes.osu))
+    .then(() => updateModeData(modes.mania))
     .then(() => updateModeData(modes.taiko))
     .then(() => updateModeData(modes.fruits))
     .then(() => {
