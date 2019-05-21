@@ -1,7 +1,7 @@
 import { fetchJsonPartial } from 'utils/fetch';
 
 import { FIELDS, languageOptions, genreOptions } from 'constants/mapsData';
-import { COOKIE_SEARCH_KEY, DEBUG_FETCH } from 'constants/common';
+import { COOKIE_SEARCH_KEY, DEBUG_FETCH, modes } from 'constants/common';
 
 import { overweightnessCalcFromMode } from 'utils/overweightness';
 
@@ -76,6 +76,10 @@ const getVisibleItems = (state, mode) => {
       const genreMatches = !genreList || genreList.includes(map.g);
       const languageMatches = !langList || langList.includes(map.ln);
 
+      const k = searchKey[FIELDS.MANIA_K];
+      const maniaKeyMatches =
+        mode !== modes.mania.text || k === -1 || (k === 0 && !map.k) || k === map.k;
+
       return (
         searchMatches &&
         matchesMaxMin(map.pp99, searchKey[FIELDS.PP_MIN], searchKey[FIELDS.PP_MAX]) &&
@@ -84,6 +88,7 @@ const getVisibleItems = (state, mode) => {
         matchesMaxMin(map.l, length.min, length.max) &&
         genreMatches &&
         languageMatches &&
+        maniaKeyMatches &&
         modAllowed(searchKey[FIELDS.DT], mapMods.dt) &&
         modAllowed(searchKey[FIELDS.HD], mapMods.hd) &&
         modAllowed(searchKey[FIELDS.HR], mapMods.hr) &&
@@ -113,6 +118,7 @@ export const emptySearchKey = {
   [FIELDS.HD]: 'any',
   [FIELDS.HR]: 'any',
   [FIELDS.FL]: 'any',
+  [FIELDS.MANIA_K]: -1,
   [FIELDS.MODE]: 'adjusted',
 };
 const defaultSearchKey = {};

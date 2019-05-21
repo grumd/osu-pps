@@ -1,4 +1,4 @@
-export const COOKIE_SEARCH_KEY = 'osupps_1.1_key_';
+export const COOKIE_SEARCH_KEY = 'osupps_1.2_key_';
 export const modes = {
   osu: {
     text: 'osu',
@@ -17,4 +17,4 @@ export const modes = {
     id: 3,
   },
 };
-export const DEBUG_FETCH = true;
+export const DEBUG_FETCH = false;

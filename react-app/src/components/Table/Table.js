@@ -69,10 +69,22 @@ class TableBody extends PureComponent {
     overweightnessMode: toBe.string.isRequired,
     overweightnessCoefficient: toBe.number.isRequired,
     expandedView: toBe.bool,
+    isMania: toBe.bool,
+  };
+
+  static defaultProps = {
+    isMania: false,
+    expandedView: false,
   };
 
   render() {
-    const { data, overweightnessMode, overweightnessCoefficient: coef, expandedView } = this.props;
+    const {
+      data,
+      overweightnessMode,
+      overweightnessCoefficient: coef,
+      expandedView,
+      isMania,
+    } = this.props;
 
     return (
       <tbody>
@@ -123,6 +135,7 @@ class TableBody extends PureComponent {
                 )}
               </td>
               <td className="text-center">{(+item.pp99).toFixed(0)}</td>
+              {isMania && <td className="text-center">{item.k ? item.k + 'K' : '?'}</td>}
               <td className="text-center">{mods.ht ? htGlyph : mods.dt ? okGlyph : null}</td>
               <td className="text-center">{mods.hd ? okGlyph : null}</td>
               <td className="text-center">{mods.hr ? okGlyph : null}</td>
@@ -258,6 +271,24 @@ class Table extends PureComponent {
               placeholder="max"
             />
           </td>
+          {isMania && (
+            <td className="mod-head">
+              <select
+                className={classNames('form-control input-sm', {
+                  active: searchKey[FIELDS.MANIA_K] !== emptySearchKey[FIELDS.MANIA_K],
+                })}
+                onChange={e => this.onChangeNumber(FIELDS.MANIA_K, e)}
+                value={searchKey[FIELDS.MANIA_K]}
+              >
+                <option value="-1">any</option>
+                <option value="4">4k</option>
+                <option value="5">5k</option>
+                <option value="6">6k</option>
+                <option value="7">7k</option>
+                <option value="0">convert</option>
+              </select>
+            </td>
+          )}
           <td className="mod-head">
             <select
               className={classNames('form-control input-sm', {
@@ -475,6 +506,7 @@ class Table extends PureComponent {
           <th />
           <th>map link</th>
           <th className="text-center">pp</th>
+          {isMania && <th className="text-center">keys</th>}
           <th className="text-center">dt</th>
           <th className="text-center">hd</th>
           <th className="text-center">hr</th>
@@ -499,10 +531,11 @@ class Table extends PureComponent {
   }
 
   renderBody() {
-    const { visibleData, searchKey, overweightnessCoefficient } = this.props;
+    const { visibleData, searchKey, overweightnessCoefficient, match } = this.props;
 
     return (
       <TableBody
+        isMania={match.params.mode === modes.mania.text}
         expandedView={this.state.expandedView}
         data={visibleData}
         overweightnessMode={searchKey[FIELDS.MODE]}

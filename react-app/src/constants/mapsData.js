@@ -17,6 +17,7 @@ export const FIELDS = {
   HR: 'hr',
   HT: 'ht',
   FL: 'fl',
+  MANIA_K: 'mania_k',
   MODE: 'mode', // total or adjusted
 };
 
