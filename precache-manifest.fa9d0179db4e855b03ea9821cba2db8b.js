@@ -16,7 +16,7 @@ self.__precacheManifest = [
     "url": "/osu-pps/static/css/main.5bf5e79d.chunk.css"
   },
   {
-    "revision": "ba25b0ed2ac84f8d1c82bd6ffcacab6b",
+    "revision": "e5850cfea3a1a70928df2af325c99545",
     "url": "/osu-pps/index.html"
   }
 ];
