@@ -1,3 +1,12 @@
+import encoding from 'text-encoding';
+
+let decoder = null;
+if (typeof TextDecoder === 'undefined') {
+  decoder = new encoding.TextDecoder('utf-8');
+} else {
+  decoder = new TextDecoder('utf-8');
+}
+
 export const fetchJson = async ({ url }) => {
   try {
     const response = await fetch(url);
@@ -43,7 +52,7 @@ export const fetchJsonPartial = async ({ url, onIntermediateDataReceived }) => {
           chunksAll.set(chunk, position);
           position += chunk.length;
         }
-        const result = new TextDecoder('utf-8').decode(chunksAll);
+        const result = decoder.decode(chunksAll);
         const truncatedResult = result.slice(0, result.lastIndexOf('},')) + '}]';
         try {
           onIntermediateDataReceived(JSON.parse(truncatedResult));
@@ -64,7 +73,7 @@ export const fetchJsonPartial = async ({ url, onIntermediateDataReceived }) => {
     }
 
     // Step 5: decode into a string
-    const result = new TextDecoder('utf-8').decode(chunksAll);
+    const result = decoder.decode(chunksAll);
 
     // We're done!
     const data = JSON.parse(result);
