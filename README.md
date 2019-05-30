@@ -1,6 +1,6 @@
 # osu-pps - osu! farm maps
 
-A website made by grumd with a list of most farmy maps in osu.  
+A [website made by grumd](http://grumd.github.io/osu-pps) with a list of most farmy maps in osu.  
 Supports osu!standard, taiko, mania, fruits.
 
 # Setup
