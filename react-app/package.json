@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "localforage": "1.7.3",
     "node-sass": "4.11.0",
     "path-to-regexp": "3.0.0",
     "promise-polyfill": "8.1.0",
@@ -31,7 +32,8 @@
   },
   "browserslist": [
     ">0.2%",
-    "not dead"
+    "not dead",
+    "ie 10"
   ],
   "homepage": "https://grumd.github.io/osu-pps/",
   "devDependencies": {

@@ -1,7 +1,12 @@
+import storage from 'localforage';
+
 import { fetchJsonPartial } from 'utils/fetch';
 
 import { FIELDS, languageOptions, genreOptions } from 'constants/mapsData';
 import { COOKIE_SEARCH_KEY, DEBUG_FETCH, modes } from 'constants/common';
+import { getDataStorageKey, getDataDateStorageKey } from 'constants/storage';
+
+import { fetchMetadata } from 'reducers/metadata';
 
 import { overweightnessCalcFromMode } from 'utils/overweightness';
 
@@ -250,6 +255,19 @@ export default function mapsDataReducer(state = initialState, action) {
 export const fetchMapsData = mode => {
   return async dispatch => {
     dispatch({ type: LOADING, mode });
+    // Fetch metadata here so we can compare storage dates
+    const metadata = await dispatch(fetchMetadata(mode));
+    const lastUpdatedFromMetadata = new Date(metadata.lastUpdated).getTime();
+    const lastUpdatedFromStorage = await storage.getItem(getDataDateStorageKey(mode));
+    if (lastUpdatedFromStorage > lastUpdatedFromMetadata) {
+      // Storage data is newer than database data
+      const data = await storage.getItem(getDataStorageKey(mode));
+      if (data && data.length) {
+        dispatch({ type: SUCCESS, data, mode });
+        return data;
+      }
+    }
+    // If storage didn't work, fetch from server
     try {
       const data = await fetchJsonPartial({
         url: DEBUG_FETCH
@@ -258,6 +276,8 @@ export const fetchMapsData = mode => {
         onIntermediateDataReceived: data => dispatch({ type: PROGRESS, data, mode }),
       });
       dispatch({ type: SUCCESS, data, mode });
+      storage.setItem(getDataDateStorageKey(mode), Date.now());
+      storage.setItem(getDataStorageKey(mode), data);
       return data;
     } catch (error) {
       dispatch({ type: ERROR, error, mode });

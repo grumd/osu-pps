@@ -26,6 +26,14 @@ export const fetchJsonPartial = async ({ url, onIntermediateDataReceived }) => {
   try {
     // Step 1: start the fetch and obtain a reader
     const response = await fetch(url);
+    if (response.status < 200 || response.status >= 300) {
+      throw Error('HTTP Status ' + response.status);
+    }
+    if (!response.body || !response.body.getReader) {
+      // Weird IE case, doesn't support body and/or getReader
+      const data = await response.json();
+      return data;
+    }
     const reader = response.body.getReader();
 
     // Step 3: read the data
