@@ -1,3 +1,12 @@
+import encoding from 'text-encoding';
+
+let decoder = null;
+if (typeof TextDecoder === 'undefined') {
+  decoder = new encoding.TextDecoder('utf-8');
+} else {
+  decoder = new TextDecoder('utf-8');
+}
+
 export const fetchJson = async ({ url }) => {
   try {
     const response = await fetch(url);
@@ -17,6 +26,14 @@ export const fetchJsonPartial = async ({ url, onIntermediateDataReceived }) => {
   try {
     // Step 1: start the fetch and obtain a reader
     const response = await fetch(url);
+    if (response.status < 200 || response.status >= 300) {
+      throw Error('HTTP Status ' + response.status);
+    }
+    if (!response.body || !response.body.getReader) {
+      // Weird IE case, doesn't support body and/or getReader
+      const data = await response.json();
+      return data;
+    }
     const reader = response.body.getReader();
 
     // Step 3: read the data
@@ -43,7 +60,7 @@ export const fetchJsonPartial = async ({ url, onIntermediateDataReceived }) => {
           chunksAll.set(chunk, position);
           position += chunk.length;
         }
-        const result = new TextDecoder('utf-8').decode(chunksAll);
+        const result = decoder.decode(chunksAll);
         const truncatedResult = result.slice(0, result.lastIndexOf('},')) + '}]';
         try {
           onIntermediateDataReceived(JSON.parse(truncatedResult));
@@ -64,7 +81,7 @@ export const fetchJsonPartial = async ({ url, onIntermediateDataReceived }) => {
     }
 
     // Step 5: decode into a string
-    const result = new TextDecoder('utf-8').decode(chunksAll);
+    const result = decoder.decode(chunksAll);
 
     // We're done!
     const data = JSON.parse(result);

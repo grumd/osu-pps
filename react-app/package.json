@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "localforage": "1.7.3",
     "node-sass": "4.11.0",
     "path-to-regexp": "3.0.0",
     "promise-polyfill": "8.1.0",
@@ -15,6 +16,7 @@
     "redux": "4.0.1",
     "redux-thunk": "2.3.0",
     "reselect": "4.0.0",
+    "text-encoding": "0.7.0",
     "whatwg-fetch": "3.0.0"
   },
   "scripts": {

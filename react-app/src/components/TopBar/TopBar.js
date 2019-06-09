@@ -10,49 +10,38 @@ import { routes } from 'constants/routes';
 
 import ParamLink from 'components/ParamLink/ParamLink';
 
-import { fetchMetadata } from 'reducers/metadata';
-
 const mapStateToProps = (state, props) => {
   const mode = props.match.params.mode;
   return {
     lastUpdated: state.metadata[mode].lastUpdated,
+    lastUpdatedTime: state.metadata[mode].lastUpdatedTime,
     isLoading: state.metadata[mode].isLoading,
     isLoadingData: state.mapsData.isLoading[mode],
     itemsCount: state.mapsData.dataByMode[mode].length,
   };
 };
 
-const mapDispatchToProps = {
-  fetchMetadata,
-};
-
 class TopBar extends Component {
   static propTypes = {
     lastUpdated: toBe.string,
+    lastUpdatedTime: toBe.string,
     isLoading: toBe.bool.isRequired,
     isLoadingData: toBe.bool.isRequired,
     itemsCount: toBe.number.isRequired,
     match: toBe.object,
     location: toBe.object,
-    fetchMetadata: toBe.func.isRequired,
   };
 
-  componentDidMount() {
-    const { isLoading, lastUpdated, match } = this.props;
-    if (!isLoading && !lastUpdated) {
-      this.props.fetchMetadata(match.params.mode);
-    }
-  }
-
-  componentDidUpdate() {
-    const { match, isLoading, lastUpdated } = this.props;
-    if (!lastUpdated && !isLoading) {
-      this.props.fetchMetadata(match.params.mode);
-    }
-  }
-
   render() {
-    const { isLoading, isLoadingData, lastUpdated, itemsCount, match, location } = this.props;
+    const {
+      isLoading,
+      isLoadingData,
+      lastUpdated,
+      lastUpdatedTime,
+      itemsCount,
+      match,
+      location,
+    } = this.props;
     return (
       <header className="top-bar">
         <div className="vertical-menus">
@@ -94,10 +83,12 @@ class TopBar extends Component {
         </div>
         <div className="spacer" />
         <div className={classNames('loader-text', { loading: isLoadingData })}>
-          loaded {itemsCount} maps
+          {itemsCount > 0 ? `loaded ${itemsCount} maps` : 'loading...'}
         </div>
         <div>
-          <div id="last-update">{isLoading ? 'loading...' : `last updated: ${lastUpdated}`}</div>
+          <div id="last-update" title={lastUpdatedTime || ''}>
+            {isLoading ? 'loading...' : `last updated: ${lastUpdated}`}
+          </div>
           <div className="author">
             <span>contact:</span>
             <a
@@ -105,10 +96,10 @@ class TopBar extends Component {
               target="_blank"
               rel="noreferrer noopener"
             >
-              <img src="/reddit.svg" alt="reddit" className="icon" />
+              <img src={process.env.PUBLIC_URL + '/reddit.svg'} alt="reddit" className="icon" />
             </a>
             <a href="https://twitter.com/grumd_osu" target="_blank" rel="noreferrer noopener">
-              <img src="/twitter.svg" alt="twitter" className="icon" />
+              <img src={process.env.PUBLIC_URL + '/twitter.svg'} alt="twitter" className="icon" />
             </a>
             <a href="https://osu.ppy.sh/users/530913" target="_blank" rel="noreferrer noopener">
               <img
@@ -124,7 +115,4 @@ class TopBar extends Component {
   }
 }
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(withRouter(TopBar));
+export default connect(mapStateToProps)(withRouter(TopBar));

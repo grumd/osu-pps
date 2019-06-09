@@ -7,6 +7,7 @@ const fetchUsersList = require('./fetch-users-list');
 const fetchMapsForUsers = require('./fetch-beatmaps-for-users');
 const fetchMapInfo = require('./fetch-map-info');
 const calculateTopMappers = require('./top-mappers');
+const calculateRankings = require('./rankings');
 
 let jobIsRunning = false;
 
@@ -15,15 +16,16 @@ const updateModeData = (mode = modes.osu) => {
     .then(() => fetchUsersList(mode))
     .then(() => fetchMapsForUsers(mode))
     .then(() => fetchMapInfo(mode))
+    .then(() => calculateRankings(mode))
     .then(() => calculateTopMappers(mode))
     .then(() => {
-      if (fs.existsSync(`./../data-${mode.text}.json`)) {
-        fs.renameSync(`./../data-${mode.text}.json`, `./../data-${mode.text}-backup.json`);
+      if (fs.existsSync(files.data(mode))) {
+        fs.renameSync(files.data(mode), files.dataBackup(mode));
       }
-      fs.renameSync(files.mapsDetailedList(mode), `./../data-${mode.text}.json`);
-      fs.renameSync(files.mappersList(mode), `./../data-${mode.text}-mappers.json`);
+      fs.renameSync(files.mapsDetailedList(mode), files.data(mode));
+      fs.renameSync(files.mappersList(mode), files.dataMappers(mode));
       fs.writeFileSync(
-        `./../metadata-${mode.text}.json`,
+        files.metadata(mode),
         JSON.stringify({
           lastUpdated: new Date(),
         })
