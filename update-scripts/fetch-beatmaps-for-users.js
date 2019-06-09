@@ -4,16 +4,17 @@ const axios = require('./axios');
 const oneLineLog = require('single-line-log').stdout;
 const fs = require('fs');
 const { ppBlockSize, ppBlockMapCount, DEBUG } = require('./constants');
-const { uniq, truncateFloat, delay, files } = require('./utils');
+const { uniq, truncateFloat, delay, files, simplifyMods } = require('./utils');
 
 const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
 
-const getUrl = (userId, modeId) =>
-  `https://osu.ppy.sh/api/get_user_best?k=${apikey}&u=${userId}&limit=20&type=id&m=${modeId}`;
+const getUrl = (userId, modeId, limit) =>
+  `https://osu.ppy.sh/api/get_user_best?k=${apikey}&u=${userId}&limit=${limit}&type=id&m=${modeId}`;
 const getUniqueMapId = score => `${score.beatmap_id}_${score.enabled_mods}`;
 const getMagnitudeByIndex = x => Math.pow(Math.pow(x - 100, 2) / 10000, 20); // ((x-100)^2/10000)^20
 
 let maps = {};
+let usersMaps = {};
 let peoplePerPpBlocks = [];
 
 const calculatePp99 = map => {
@@ -23,28 +24,6 @@ const calculatePp99 = map => {
   map.pp99 = truncateFloat(ppPerAccSum / map.pp.length / 99);
   delete map.pp;
   delete map.acc;
-};
-
-const simplifyMods = mods => {
-  let mod = parseInt(mods, 10);
-  const mapMods = {
-    nf: (mod & 1) == 1,
-    ez: (mod & 2) == 2,
-    hd: (mod & 8) == 8,
-    hr: (mod & 16) == 16,
-    sd: (mod & 32) == 32,
-    dt: (mod & 64) == 64,
-    ht: (mod & 256) == 256,
-    nc: (mod & 512) == 512,
-    fl: (mod & 1024) == 1024,
-    so: (mod & 4096) == 4096,
-    pf: (mod & 16384) == 16384,
-  };
-  mod -= mapMods.nc ? 512 : 0; // NC can be removed, DT is till there
-  mod -= mapMods.sd ? 32 : 0; // SD doesn't affect PP
-  mod -= mapMods.nf ? 1 : 0; // remove NF
-  mod -= mapMods.so ? 4096 : 0; // remove SO
-  return mod;
 };
 
 const recordData = data => {
@@ -86,11 +65,14 @@ const recordData = data => {
   });
 };
 
-const fetchUser = (userId, modeId) => {
+const fetchUser = ({ userId, modeId, shouldRecordScores }) => {
   return axios
-    .get(getUrl(userId, modeId))
+    .get(getUrl(userId, modeId, shouldRecordScores ? 50 : 20))
     .then(({ data }) => {
-      recordData(data, userId);
+      if (shouldRecordScores) {
+        usersMaps[userId] = data;
+      }
+      recordData(data.slice(0, 20), userId);
     })
     .catch(error => {
       console.log('\x1b[33m%s\x1b[0m', error.message);
@@ -100,44 +82,58 @@ const fetchUser = (userId, modeId) => {
 module.exports = mode => {
   console.log(`1. FETCHING MAPS LIST - ${mode.text}`);
   maps = {};
+  usersMaps = {};
   peoplePerPpBlocks = [];
-  let usersList = [];
+  let fullUsersList = [];
   try {
-    usersList = JSON.parse(fs.readFileSync(files.userIdsList(mode)));
+    fullUsersList = JSON.parse(fs.readFileSync(files.userIdsList(mode))).sort(
+      (a, b) => b.pp - a.pp
+    );
   } catch (e) {
     console.log('Error parsing ' + files.userIdsList(mode));
   }
-  const uniqueUsersList = uniq(usersList);
-  const fetchPromises = [];
-  return uniqueUsersList
-    .slice(...(DEBUG ? [0, 20] : []))
-    .reduce((promise, user, index) => {
-      return promise.then(() => {
-        if (DEBUG && index > 5) {
-          return Promise.resolve();
-        }
-        oneLineLog(`Recording data for user #${index}/${uniqueUsersList.length} (${mode.text})`);
-        fetchPromises.push(fetchUser(user, mode.id));
-        return delay(100);
-      });
-    }, Promise.resolve())
-    .then(() => Promise.all(fetchPromises))
-    .then(() => {
-      console.log();
-      console.log(`${Object.keys(maps).length} unique maps found! Saving.`);
-      Object.keys(maps).forEach(mapId => {
-        if (maps[mapId].pp99 === undefined) {
-          calculatePp99(maps[mapId]);
-        }
-        maps[mapId].x = truncateFloat(maps[mapId].x);
-        const ppBlockValue = Math.floor(Math.round(maps[mapId].pp99) / ppBlockSize);
-        maps[mapId].adj = peoplePerPpBlocks[ppBlockValue] || 1;
-      });
-      const arrayMaps = Object.keys(maps).map(mapId => maps[mapId]);
-      fs.writeFileSync(files.mapsList(mode), JSON.stringify(arrayMaps));
-      console.log('Saving info about PP blocks too');
-      fs.writeFileSync(files.ppBlocks(mode), JSON.stringify(peoplePerPpBlocks));
-      console.log(`Done fetching list of beatmaps! (${mode.text})`);
-      maps = {};
-    });
+  const uniqueUsersList = uniq(fullUsersList, user => user.id);
+  // const fetchPromises = [];
+  return (
+    uniqueUsersList
+      .slice(...(DEBUG ? [0, 100] : []))
+      .reduce((promise, user, index) => {
+        return promise.then(() => {
+          oneLineLog(
+            `Recording data for user #${index}/${uniqueUsersList.length} (${user.name}) (${
+              mode.text
+            })`
+          );
+          const shouldRecordScores = index < 11000;
+          const currentPromise = fetchUser({
+            userId: user.id,
+            modeId: mode.id,
+            shouldRecordScores,
+          });
+          // fetchPromises.push();
+          return Promise.all([delay(100), currentPromise]);
+        });
+      }, Promise.resolve())
+      // .then(() => Promise.all(fetchPromises))
+      .then(() => {
+        console.log();
+        console.log(`${Object.keys(maps).length} unique maps found! Saving.`);
+        Object.keys(maps).forEach(mapId => {
+          if (maps[mapId].pp99 === undefined) {
+            calculatePp99(maps[mapId]);
+          }
+          maps[mapId].x = truncateFloat(maps[mapId].x);
+          const ppBlockValue = Math.floor(Math.round(maps[mapId].pp99) / ppBlockSize);
+          maps[mapId].adj = peoplePerPpBlocks[ppBlockValue] || 1;
+        });
+        const arrayMaps = Object.keys(maps).map(mapId => maps[mapId]);
+        fs.writeFileSync(files.mapsList(mode), JSON.stringify(arrayMaps));
+        console.log('Saving info about PP blocks too');
+        fs.writeFileSync(files.ppBlocks(mode), JSON.stringify(peoplePerPpBlocks));
+        console.log('Saving users maps list');
+        fs.writeFileSync(files.userMapsList(mode), JSON.stringify(usersMaps));
+        console.log(`Done fetching list of beatmaps! (${mode.text})`);
+        maps = {};
+      })
+  );
 };
