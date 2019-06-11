@@ -26,7 +26,7 @@ const saveIdsToFile = mode => {
 const startFetchingPages = (modeText, page, country) => {
   oneLineLog(`Fetching page #${page} (${modeText})`);
   return axios
-    .get(getUsersUrl(modeText, page)) // , country
+    .get(getUsersUrl(modeText, page, country))
     .catch(err => {
       console.log('Error:', err.message);
       console.log(err);

@@ -35,9 +35,9 @@ module.exports = mode => {
       // no scores - no player in rankings
       let newScores = [];
       playerScores.forEach(score => {
-        const allMaps = mapsDataWithAdjValue.filter(map => map.b === score.beatmap_id);
+        const allMaps = mapsDataWithAdjValue.filter(map => map.b === score.b);
         if (allMaps.length) {
-          const thisMap = allMaps.find(map => map.m === simplifyMods(score.enabled_mods));
+          const thisMap = allMaps.find(map => map.m === simplifyMods(score.m));
           const thisMapX = thisMap ? thisMap.x : 0;
           const maxLocal = allMaps.reduce((acc, map) => (acc > map.x ? acc : map.x), 0);
           const adjustedX = (maxLocal + thisMapX) / 2;

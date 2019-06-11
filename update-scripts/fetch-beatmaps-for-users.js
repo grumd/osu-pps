@@ -70,7 +70,11 @@ const fetchUser = ({ userId, modeId, shouldRecordScores }) => {
     .get(getUrl(userId, modeId, shouldRecordScores ? 50 : 20))
     .then(({ data }) => {
       if (shouldRecordScores) {
-        usersMaps[userId] = data;
+        usersMaps[userId] = {
+          b: data.beatmap_id,
+          m: data.enabled_mods,
+          pp: data.pp,
+        };
       }
       recordData(data.slice(0, 20), userId);
     })
