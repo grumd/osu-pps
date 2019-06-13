@@ -52,10 +52,9 @@ export const fetchRankings = mode => {
     dispatch({ type: LOADING });
     try {
       const data = await fetchJson({
-        url:
-          DEBUG_FETCH || true
-            ? `/data-${mode}-rankings.json`
-            : `https://raw.githubusercontent.com/grumd/osu-pps/master/data-${mode}-rankings.json`,
+        url: DEBUG_FETCH
+          ? `/data-${mode}-rankings.json`
+          : `https://raw.githubusercontent.com/grumd/osu-pps/master/data-${mode}-rankings.json`,
       });
       dispatch({ type: SUCCESS, data });
       return data;
