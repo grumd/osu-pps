@@ -25,7 +25,7 @@ a:active {
   color: #806044;
 }
 input {
-  background-color: #555;
+  background-color: #555 !important;
   color: #fff;
 }
 input[type='number']::-webkit-outer-spin-button,

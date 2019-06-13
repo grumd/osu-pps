@@ -69,6 +69,55 @@ const simplifyMods = (mods, { show } = {}) => {
   return mod;
 };
 
+const trimModsForRankings = (mods, { show } = {}) => {
+  let mod = parseInt(mods, 10);
+  const mapMods = {
+    nf: (mod & 1) == 1,
+    ez: (mod & 2) == 2,
+    hd: (mod & 8) == 8,
+    hr: (mod & 16) == 16,
+    sd: (mod & 32) == 32,
+    dt: (mod & 64) == 64,
+    ht: (mod & 256) == 256,
+    nc: (mod & 512) == 512,
+    fl: (mod & 1024) == 1024,
+    so: (mod & 4096) == 4096,
+    pf: (mod & 16384) == 16384,
+  };
+  if (show) {
+    console.log(mapMods);
+  }
+  mod -= mapMods.nc ? 512 : 0; // NC can be removed, DT is till there
+  mod -= mapMods.sd ? 32 : 0; // SD doesn't affect PP
+  mod -= mapMods.nf ? 1 : 0; // remove NF
+  mod -= mapMods.so ? 4096 : 0; // remove SO
+  mod -= mapMods.hd ? 8 : 0;
+  mod -= mapMods.hr ? 16 : 0;
+  mod -= mapMods.pf ? 16384 : 0;
+  // ONLY LEAVING EZ / DT / FL / HT mods
+  return mod;
+};
+
+const modsToString = mods => {
+  const mod = parseInt(mods, 10);
+  const mapMods = {
+    EZ: (mod & 2) == 2,
+    NF: (mod & 1) == 1,
+    HD: (mod & 8) == 8,
+    DT: (mod & 64) == 64 && (mod & 512) != 512, // Remove DT if NC is on (keep NC)
+    NC: (mod & 512) == 512,
+    HT: (mod & 256) == 256,
+    HR: (mod & 16) == 16,
+    FL: (mod & 1024) == 1024,
+    SD: (mod & 32) == 32,
+    SO: (mod & 4096) == 4096,
+    PF: (mod & 16384) == 16384,
+  };
+  return Object.keys(mapMods)
+    .filter(key => mapMods[key])
+    .join('');
+};
+
 var prevRow = [],
   str2Char = [];
 const levenshtein = (str1, str2) => {
@@ -132,4 +181,6 @@ module.exports = {
   levenshtein,
   files,
   simplifyMods,
+  trimModsForRankings,
+  modsToString,
 };

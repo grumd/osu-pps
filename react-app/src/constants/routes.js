@@ -8,4 +8,7 @@ export const routes = {
   farmers: {
     path: ({ mode }) => `/${mode}/farmers`,
   },
+  rankings: {
+    path: ({ mode }) => `/${mode}/rankings`,
+  },
 };

@@ -78,7 +78,7 @@ const fetchUser = ({ userId, modeId, shouldRecordScores }) => {
             pp: d.pp,
           }));
       }
-      recordData(data.slice(0, 20), userId);
+      recordData(data, userId);
     })
     .catch(error => {
       console.log('\x1b[33m%s\x1b[0m', error.message);

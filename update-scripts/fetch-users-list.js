@@ -11,7 +11,7 @@ const { uniq, delay, files } = require('./utils');
 const getCountriesListUrl = modeText => `https://osu.ppy.sh/rankings/${modeText}/country`;
 const getUsersUrl = (modeText, page, country) =>
   `https://osu.ppy.sh/rankings/${modeText}/performance?page=${page}` +
-  (country ? `&country=${country}` : '');
+  (country && !DEBUG ? `&country=${country}` : '');
 // const getIdList = text => text.match(/\/users\/[0-9]+/g).map(uLink => uLink.slice(7));
 const getCountriesList = text => text.match(/\?country=[A-Z]{2}/g).map(cLink => cLink.slice(9));
 const pageHas1000pp = text => /ranking-page-table__column--focused">\s*\d+,\d+\s*</g.test(text);

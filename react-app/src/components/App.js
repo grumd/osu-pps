@@ -6,6 +6,7 @@ import './App.scss';
 import TopBar from 'components/TopBar/TopBar';
 import Table from 'components/Table/Table';
 import TopMappers from 'components/TopMappers/TopMappers';
+import Rankings from 'components/Rankings/Rankings';
 
 class App extends Component {
   render() {
@@ -28,6 +29,7 @@ class App extends Component {
                     path={`${match.path}/farmers`}
                     component={() => <div>under construction...</div>}
                   />
+                  <Route path={`${match.path}/rankings`} component={Rankings} />
                   <Route
                     exact
                     path={`${match.path}/mappers`}
