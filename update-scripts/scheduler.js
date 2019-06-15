@@ -8,6 +8,7 @@ const fetchMapsForUsers = require('./fetch-beatmaps-for-users');
 const fetchMapInfo = require('./fetch-map-info');
 const calculateTopMappers = require('./top-mappers');
 const calculateRankings = require('./rankings');
+const compressRankings = require('./rankings-compress');
 
 let jobIsRunning = false;
 
@@ -17,6 +18,7 @@ const updateModeData = (mode = modes.osu) => {
     .then(() => fetchMapsForUsers(mode))
     .then(() => fetchMapInfo(mode))
     .then(() => calculateRankings(mode))
+    .then(() => compressRankings(mode))
     .then(() => calculateTopMappers(mode))
     .then(() => {
       if (fs.existsSync(files.data(mode))) {

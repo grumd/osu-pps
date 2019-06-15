@@ -1,7 +1,7 @@
 const fs = require('fs');
 const oneLineLog = require('single-line-log').stdout;
 
-const { simplifyMods, trimModsForRankings, files, modsToString } = require('./utils');
+const { simplifyMods, trimModsForRankings, files } = require('./utils');
 // const { modes } = require('./constants');
 
 module.exports = mode => {
@@ -56,12 +56,13 @@ module.exports = mode => {
               : Math.sqrt(adjustedX / averageOW) - 1;
 
           let pp = score.pp;
-          pp *= 1 - adjust * (adjustedX > averageOW ? 0.27 : 0.17);
-          // Maximum bonus for underweighted maps - 17%
-          // Maximum nerf for overweighted maps - 27%
+          pp *= 1 - adjust * (adjustedX > averageOW ? 0.25 : 0.15);
+          // Maximum bonus for underweighted maps - 15%
+          // Maximum nerf for overweighted maps - 25%
           newScores.push({
             n: `${allMaps[0].art} - ${allMaps[0].t} [${allMaps[0].v}]`, // map name
-            m: modsToString(score.m), // mods string (HDHR)
+            // m: modsToString(score.m), // mods string (HDHR)
+            m: score.m, // mods number
             b: allMaps[0].b, // beatmap id
             p1: Math.round(score.pp), // previous PP
             p2: Math.round(pp), // new PP

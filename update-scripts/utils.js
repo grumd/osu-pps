@@ -14,6 +14,8 @@ const files = {
   dataBackup: mode => `./../data-${mode.text}-backup.json`,
   dataMappers: mode => `./../data-${mode.text}-mappers.json`,
   dataRankings: mode => `./../data-${mode.text}-rankings.json`,
+  dataRankingsCompressed: mode => `./../data-${mode.text}-rankings-compressed.json`,
+  dataRankingsInfo: mode => `./../data-${mode.text}-rankings-diff-info.json`,
 };
 
 const uniq = (array, getKey = item => item) => {
