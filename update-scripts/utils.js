@@ -1,6 +1,7 @@
 const exec = require('child_process').exec;
 
 const files = {
+  countriesList: mode => `./countries-${mode.text}.json`,
   userIdsDate: mode => `./temp/${mode.text}/user-ids-date.json`,
   userIdsList: mode => `./temp/${mode.text}/user-ids.json`,
   userMapsList: mode => `./temp/${mode.text}/user-scores.json`,

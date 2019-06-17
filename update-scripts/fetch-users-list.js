@@ -8,15 +8,12 @@ const axios = require('./axios');
 const { DEBUG } = require('./constants');
 const { uniq, delay, files } = require('./utils');
 
-const getCountriesListUrl = modeText => `https://osu.ppy.sh/rankings/${modeText}/country`;
 const getUsersUrl = (modeText, page, country) =>
   `https://osu.ppy.sh/rankings/${modeText}/performance?page=${page}` +
   (country && !DEBUG ? `&country=${country}` : '');
-// const getIdList = text => text.match(/\/users\/[0-9]+/g).map(uLink => uLink.slice(7));
-const getCountriesList = text => text.match(/\?country=[A-Z]{2}/g).map(cLink => cLink.slice(9));
-const pageHas1000pp = text => /ranking-page-table__column--focused">\s*\d+,\d+\s*</g.test(text);
 
 let idsList = [];
+let countriesList = [];
 
 const saveIdsToFile = mode => {
   fs.writeFileSync(files.userIdsList(mode), JSON.stringify(idsList));
@@ -34,11 +31,6 @@ const startFetchingPages = (modeText, page, country) => {
     })
     .then(({ data }) => {
       oneLineLog(`Page #${page} fetched successfully!`);
-      if (!pageHas1000pp(data)) {
-        oneLineLog('Users with more than 999pp were not found on page ' + page);
-        oneLineLog.clear();
-        return Promise.resolve();
-      }
       return savePage(modeText, data, page, country);
     });
 };
@@ -63,6 +55,17 @@ const savePage = (modeText, data, page, country) => {
       };
     })
     .get();
+
+  if (users.some(user => user.pp < 6000) && countriesList.indexOf(country) > 50) {
+    oneLineLog('Users with pp less than 6000 found');
+    console.log();
+    return Promise.resolve();
+  }
+  if (users.some(user => user.pp < 2000)) {
+    oneLineLog('Users with pp less than 2000 found');
+    console.log();
+    return Promise.resolve();
+  }
 
   idsList = uniq(idsList.concat(users), user => user.id);
   // idsList = uniq(idsList.concat(getIdList(data)));
@@ -104,24 +107,21 @@ module.exports = mode => {
     console.log(`Clearing old user IDs list`);
     fs.writeFileSync(files.userIdsList(mode), '[]');
   }
-  return axios
-    .get(getCountriesListUrl(mode.text))
-    .then(({ data }) => {
-      const countriesList = getCountriesList(data);
-
-      return countriesList.slice(...(DEBUG ? [0, 1] : [])).reduce((prevProm, country) => {
-        return prevProm
-          .then(() => {
-            console.log(`Starting to fetch ${country} (${mode.text})`);
-          })
-          .then(() => startFetchingPages(mode.text, 1, country))
-          .then(() => {
-            console.log(`\nFinished fetching ${country}`);
-            console.log(`Found ${idsList.length} unique users`);
-            return delay(5000);
-          });
-      }, Promise.resolve());
-    })
+  countriesList = JSON.parse(fs.readFileSync(files.countriesList(mode)));
+  return countriesList
+    .slice(...(DEBUG ? [0, 1] : []))
+    .reduce((prevProm, country) => {
+      return prevProm
+        .then(() => {
+          console.log(`Starting to fetch ${country} (${mode.text})`);
+        })
+        .then(() => startFetchingPages(mode.text, 1, country))
+        .then(() => {
+          console.log(`\nFinished fetching ${country}`);
+          console.log(`Found ${idsList.length} unique users`);
+          return delay(5000);
+        });
+    }, Promise.resolve())
     .then(() => {
       saveIdsToFile(mode);
       console.log(`Done fetching list of users! (${mode.text})`);
