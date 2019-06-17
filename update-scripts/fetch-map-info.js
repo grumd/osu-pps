@@ -54,10 +54,6 @@ const addBeatmapInfo = (map, mode) => {
         }
 
         const mapId = getUniqueMapId(map);
-        if (map.p > 1) {
-          // Ignore maps with low pass count
-          maps[mapId] = map;
-        }
       } else {
         console.log('No maps found :(');
       }

@@ -61,7 +61,6 @@ module.exports = mode => {
           // Maximum nerf for overweighted maps - 25%
           newScores.push({
             n: `${allMaps[0].art} - ${allMaps[0].t} [${allMaps[0].v}]`, // map name
-            // m: modsToString(score.m), // mods string (HDHR)
             m: score.m, // mods number
             b: allMaps[0].b, // beatmap id
             p1: Math.round(score.pp), // previous PP
@@ -70,6 +69,13 @@ module.exports = mode => {
         } else {
           console.log();
           console.log(player.name, '- not found any maps -', score);
+          newScores.push({
+            n: score.b, // map name
+            m: score.m, // mods number
+            b: score.b, // beatmap id
+            p1: Math.round(score.pp), // previous PP
+            p2: Math.round(score.pp), // new PP
+          });
         }
       });
       newScores = newScores.sort((a, b) => b.p2 - a.p2);
