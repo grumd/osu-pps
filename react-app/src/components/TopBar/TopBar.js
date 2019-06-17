@@ -54,6 +54,9 @@ class TopBar extends Component {
               <li>
                 <NavLink to={routes.mappers.path(match.params)}>mappers</NavLink>
               </li>
+              <li>
+                <NavLink to={routes.rankings.path(match.params)}>rankings</NavLink>
+              </li>
             </ul>
           </nav>
           <nav>

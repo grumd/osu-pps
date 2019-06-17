@@ -35,7 +35,8 @@
   },
   "browserslist": [
     ">0.2%",
-    "not dead"
+    "not dead",
+    "ie 11"
   ],
   "homepage": "https://grumd.github.io/osu-pps/",
   "devDependencies": {

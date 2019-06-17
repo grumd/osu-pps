@@ -1,11 +1,42 @@
+import storage from 'localforage';
 import { combineReducers } from 'redux';
-import { fetchJson } from 'utils/fetch';
+import _ from 'lodash/fp';
+
+import { fetchJson, fetchJsonPartial } from 'utils/fetch';
+
 import { DEBUG_FETCH } from 'constants/common';
+import { getRankingsStorageKey, getRankingsDateStorageKey } from 'constants/storage';
+
+import { fetchMetadata } from 'reducers/metadata';
+
+const decompressData = (dataCompressed, diffInfoArrayTransformed) => {
+  return _.map(
+    (dataCompEntry = []) => ({
+      n: dataCompEntry[0],
+      s: _.map((shortText = '') => {
+        const args = shortText.split('_');
+        const diffInfo = diffInfoArrayTransformed[args[0]];
+        return (
+          diffInfo &&
+          args && {
+            n: diffInfo.n,
+            b: diffInfo.b,
+            m: args[1],
+            p1: Number(args[2]),
+            p2: Number(args[3]),
+          }
+        );
+      }, dataCompEntry[1]),
+    }),
+    dataCompressed
+  );
+};
 
 const getTypes = mode => ({
   LOADING: `${mode}/RANKINGS/LOADING`,
   SUCCESS: `${mode}/RANKINGS/SUCCESS`,
   ERROR: `${mode}/RANKINGS/ERROR`,
+  PROGRESS: `${mode}/RANKINGS/PROGRESS`,
 });
 
 const initialState = {
@@ -14,19 +45,32 @@ const initialState = {
 };
 
 const getReducer = mode => {
-  const { LOADING, SUCCESS, ERROR } = getTypes(mode);
+  const { LOADING, SUCCESS, ERROR, PROGRESS } = getTypes(mode);
   return function rankingsDataReducer(state = initialState, action) {
     switch (action.type) {
       case LOADING:
         return {
           ...state,
           isLoading: true,
+          data: [],
         };
       case SUCCESS:
         return {
           ...state,
           isLoading: false,
-          data: action.data,
+          data: [
+            ...state.data,
+            ...decompressData(action.data.slice(_.size(state.data)), action.info),
+          ],
+        };
+      case PROGRESS:
+        return {
+          ...state,
+          isLoading: true,
+          data: [
+            ...state.data,
+            ...decompressData(action.data.slice(_.size(state.data)), action.info),
+          ],
         };
       case ERROR:
         return {
@@ -47,17 +91,50 @@ export default combineReducers({
 });
 
 export const fetchRankings = mode => {
-  const { LOADING, SUCCESS, ERROR } = getTypes(mode);
-  return async dispatch => {
+  const { LOADING, SUCCESS, ERROR, PROGRESS } = getTypes(mode);
+  return async (dispatch, getState) => {
     dispatch({ type: LOADING });
+    // Fetch metadata here so we can compare storage dates
+    const metadata = await dispatch(fetchMetadata(mode));
+    const lastUpdatedFromMetadata = new Date(metadata.lastUpdated).getTime();
+    const lastUpdatedFromStorage = await storage.getItem(getRankingsDateStorageKey(mode));
     try {
-      const data = await fetchJson({
+      const diffInfoArray = await fetchJson({
         url: DEBUG_FETCH
-          ? `/data-${mode}-rankings.json`
-          : `https://raw.githubusercontent.com/grumd/osu-pps/master/data-${mode}-rankings.json`,
+          ? `/data-${mode}-rankings-diff-info.json`
+          : `https://raw.githubusercontent.com/grumd/osu-pps/master/data-${mode}-rankings-diff-info.json`,
       });
-      dispatch({ type: SUCCESS, data });
-      return data;
+      const diffInfoArrayTransformed = diffInfoArray.map(infoItem => {
+        const spacePosition = infoItem.indexOf(' ');
+        const b = infoItem.slice(0, spacePosition);
+        const n = infoItem.slice(spacePosition + 1);
+        return { b, n };
+      }, {});
+      if (lastUpdatedFromStorage > lastUpdatedFromMetadata) {
+        // Storage data is newer than database data
+        const data = await storage.getItem(getRankingsStorageKey(mode));
+        if (data && data.length) {
+          dispatch({ type: SUCCESS, data, info: diffInfoArrayTransformed });
+          return data;
+        }
+      }
+      const dataCompressed = await fetchJsonPartial({
+        url: DEBUG_FETCH
+          ? `/data-${mode}-rankings-compressed.json`
+          : `https://raw.githubusercontent.com/grumd/osu-pps/master/data-${mode}-rankings-compressed.json`,
+        intermediateIntervalBytes: 500000,
+        onIntermediateDataReceived: data => {
+          if (!_.isEmpty(data)) {
+            dispatch({ type: PROGRESS, data, info: diffInfoArrayTransformed });
+          }
+        },
+        truncateFunction: r => r.slice(0, r.lastIndexOf(']],')) + ']]]',
+      });
+      dispatch({ type: SUCCESS, data: dataCompressed, info: diffInfoArrayTransformed });
+      storage.setItem(getRankingsDateStorageKey(mode), Date.now());
+      storage.setItem(getRankingsStorageKey(mode), dataCompressed);
+      const decompressedData = getState().rankings[mode].data;
+      return decompressedData;
     } catch (error) {
       dispatch({ type: ERROR, error });
     }

@@ -22,7 +22,12 @@ export const fetchJson = async ({ url }) => {
   }
 };
 
-export const fetchJsonPartial = async ({ url, onIntermediateDataReceived }) => {
+export const fetchJsonPartial = async ({
+  url,
+  onIntermediateDataReceived,
+  intermediateIntervalBytes = 1000000,
+  truncateFunction = r => r.slice(0, r.lastIndexOf('},')) + '}]',
+}) => {
   try {
     // Step 1: start the fetch and obtain a reader
     const response = await fetch(url);
@@ -51,7 +56,8 @@ export const fetchJsonPartial = async ({ url, onIntermediateDataReceived }) => {
 
       if (
         onIntermediateDataReceived &&
-        Math.floor(receivedLength / 1000000) !== Math.floor(previousReceivedLength / 1000000)
+        Math.floor(receivedLength / intermediateIntervalBytes) !==
+          Math.floor(previousReceivedLength / intermediateIntervalBytes)
       ) {
         // Every 1MB we calculate intermediate JSON array with partial data
         const chunksAll = new Uint8Array(receivedLength);
@@ -61,7 +67,7 @@ export const fetchJsonPartial = async ({ url, onIntermediateDataReceived }) => {
           position += chunk.length;
         }
         const result = decoder.decode(chunksAll);
-        const truncatedResult = result.slice(0, result.lastIndexOf('},')) + '}]';
+        const truncatedResult = truncateFunction(result);
         try {
           onIntermediateDataReceived(JSON.parse(truncatedResult));
         } catch (e) {

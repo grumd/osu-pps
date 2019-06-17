@@ -16,6 +16,8 @@ import './rankings.scss';
 
 import { fetchRankings } from 'reducers/rankings';
 
+import { modsToString } from 'utils/common';
+
 const _ = lodashFp.convert({ cap: false });
 
 const modalStyles = {
@@ -41,7 +43,8 @@ const scoresColumns = [
     Cell: ({ original: item }) => (
       <span>
         <a href={`http://osu.ppy.sh/b/${item.b}`}>{item.name}</a>
-        {item.m && <span> +{item.m}</span>}
+        {item.m &&
+          (_.isString(item.m) ? <span> +{item.m}</span> : <span> +{modsToString(item.m)}</span>)}
       </span>
     ),
   },
@@ -91,7 +94,6 @@ class ShowScoresCell extends React.Component {
   render() {
     const { original } = this.props;
     const { isModalOpen } = this.state;
-    console.log(original);
     return (
       <>
         <button
@@ -231,7 +233,6 @@ const dataSelector = createSelector(
       })),
       // Get total new PP / calculate weighted new pp
       _.map(item => {
-        console.log(item);
         const mappedScores = item.scores.map((score, index) => ({
           name: score.n,
           m: score.m,
@@ -299,30 +300,28 @@ class TopMapper extends Component {
 
   render() {
     const { isLoading, data, error } = this.props;
-    console.log(data);
     return (
       <div className="rankings">
         <header>
-          {isLoading && <div className="loading">loading...</div>}
-          {error && error.message}
-          {!isLoading && !error && (
-            <>
-              <p>
-                osu! top 10k rankings, but adjusted for farm maps. overweighted maps are nerfed,
-                underweighted are slightly buffed. as a result, rare plays give more pp, popular
-                plays give less.
-                <br /> you won't be in this ranking if your official rank is lower than 11k.
-                <br />
-                total pp for each player is lower than official because i only count top 50 plays
-                (osu counts all of them) and i don't add bonus pp.
-              </p>
-            </>
-          )}
+          <p>
+            osu! top 10k rankings, but adjusted for farm maps. overweighted maps are nerfed,
+            underweighted are slightly buffed. as a result, rare plays give more pp, popular plays
+            give less.
+            <br /> - you won't be in this ranking if your official rank is lower than 11k.
+            <br />
+            - total pp for each player is lower than official because i only count top 50 plays (osu
+            counts all of them) and i don't add bonus pp.
+            <br />- this list is updated <b>only once a few days</b>, so it may not include latest
+            recent scores
+            <br />- this list can <b>not</b> replace the official rankings and can't even exist
+            without them
+          </p>
         </header>
         <div className="content">
+          {isLoading && <div className="loading">loading...</div>}
+          {error && error.message}
           <div className="top-list">
             <ReactTable
-              loading={isLoading}
               data={data || []}
               columns={columns}
               showPaginationTop
