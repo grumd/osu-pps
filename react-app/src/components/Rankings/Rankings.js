@@ -42,9 +42,9 @@ const scoresColumns = [
     accessor: 'name',
     Cell: ({ original: item }) => (
       <span>
+        {console.log(item)}
         <a href={`http://osu.ppy.sh/b/${item.b}`}>{item.name}</a>
-        {item.m &&
-          (_.isString(item.m) ? <span> +{item.m}</span> : <span> +{modsToString(item.m)}</span>)}
+        {item.m !== '0' && <span> +{modsToString(item.m)}</span>}
       </span>
     ),
   },
@@ -329,7 +329,8 @@ class TopMapper extends Component {
               defaultPageSize={20}
               sortable={false}
               resizable={false}
-              minRows={5}
+              minRows={4}
+              noDataText={isLoading ? 'loading...' : 'no data found'}
             />
           </div>
         </div>
