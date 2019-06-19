@@ -38,7 +38,13 @@ module.exports = mode => {
     if (playerScores) {
       // no scores - no player in rankings
       let newScores = [];
-      playerScores.forEach(score => {
+      playerScores.forEach(scoreString => {
+        const scoreArray = scoreString.split('_');
+        const score = {
+          b: scoreArray[0],
+          m: scoreArray[1],
+          pp: scoreArray[2],
+        };
         const allMaps = mapsDataWithAdjValue.filter(map => map.b == score.b);
         const nomodOrDtMaps = allMaps.filter(map => map.m == trimModsForRankings(score.m));
         if (allMaps.length) {
@@ -81,7 +87,7 @@ module.exports = mode => {
       newScores = newScores.sort((a, b) => b.p2 - a.p2);
       return {
         n: player.name,
-        s: newScores, // list of recalculated scores
+        s: newScores.slice(0, 50), // list of recalculated scores - only keep top 50 now!
       };
     }
   };

@@ -20,18 +20,27 @@ const saveIdsToFile = mode => {
   fs.writeFileSync(files.userIdsDate(mode), JSON.stringify(new Date()));
 };
 
+const fetchCountryPage = (modeText, page, country, retryCount = 0) => {
+  if (retryCount > 3) {
+    console.log('\nToo many retries, going forward');
+    return Promise.reject();
+  }
+  oneLineLog(`Fetching page #${page} (${modeText})` + (retryCount ? ` Retry #${retryCount}` : ''));
+  return axios.get(getUsersUrl(modeText, page, country)).catch(err => {
+    console.log('Error:', err.message);
+    console.log(err);
+    return delay(10000).then(() => fetchCountryPage(modeText, page, country, retryCount + 1));
+  });
+};
+
 const startFetchingPages = (modeText, page, country) => {
-  oneLineLog(`Fetching page #${page} (${modeText})`);
-  return axios
-    .get(getUsersUrl(modeText, page, country))
-    .catch(err => {
-      console.log('Error:', err.message);
-      console.log(err);
-      return delay(10000).then(() => startFetchingPages(modeText, page, country));
-    })
+  return fetchCountryPage(modeText, page, country)
     .then(({ data }) => {
       oneLineLog(`Page #${page} fetched successfully!`);
       return savePage(modeText, data, page, country);
+    })
+    .catch(() => {
+      console.log(`Fetching page #${page} unsuccessful`);
     });
 };
 
