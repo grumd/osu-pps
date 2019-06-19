@@ -62,9 +62,7 @@ module.exports = mode => {
               : Math.sqrt(adjustedX / averageOW) - 1;
 
           let pp = score.pp;
-          pp *= 1 - adjust * (adjustedX > averageOW ? 0.25 : 0.15);
-          // Maximum bonus for underweighted maps - 15%
-          // Maximum nerf for overweighted maps - 25%
+          pp *= 1 - adjust * (adjustedX > averageOW ? 0.2 : 0.125);
           newScores.push({
             n: `${allMaps[0].art} - ${allMaps[0].t} [${allMaps[0].v}]`, // map name
             m: score.m, // mods number

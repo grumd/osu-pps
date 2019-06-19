@@ -54,6 +54,7 @@ const addBeatmapInfo = (map, mode) => {
         }
 
         const mapId = getUniqueMapId(map);
+        maps[mapId] = map;
       } else {
         console.log('No maps found :(');
       }
