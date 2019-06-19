@@ -65,18 +65,24 @@ const recordData = data => {
   });
 };
 
+const fetchUserBeatmaps = (userId, modeId, scoresCount, retryCount = 0) => {
+  if (retryCount > 3) {
+    return Promise.reject(new Error('Too many retries'));
+  }
+  retryCount && oneLineLog(`Retry #${retryCount}`);
+  return axios.get(getUrl(userId, modeId, scoresCount)).catch(err => {
+    console.log('Error:', err.message);
+    console.log(err);
+    return delay(5000).then(() => fetchUserBeatmaps(userId, modeId, scoresCount, retryCount + 1));
+  });
+};
+
 const fetchUser = ({ userId, modeId, shouldRecordScores }) => {
-  return axios
-    .get(getUrl(userId, modeId, shouldRecordScores ? 50 : 20))
+  return fetchUserBeatmaps(userId, modeId, shouldRecordScores ? 100 : 20)
     .then(({ data }) => {
       if (shouldRecordScores) {
-        usersMaps[userId] =
-          data &&
-          data.map(d => ({
-            b: d.beatmap_id,
-            m: d.enabled_mods,
-            pp: d.pp,
-          }));
+        // Recording as one string for compression sake
+        usersMaps[userId] = data && data.map(d => `${d.beatmap_id}_${d.enabled_mods}_${d.pp}`);
       }
       recordData(data, userId);
     })
