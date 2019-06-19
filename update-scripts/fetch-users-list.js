@@ -55,19 +55,19 @@ const savePage = (modeText, data, page, country) => {
       };
     })
     .get();
+  const filteredUsers =
+    countriesList.indexOf(country) > 50
+      ? users.filter(user => user.pp > 6000) // for bottom 100 countries we only get top 12k rank people (>6000pp)
+      : users.filter(user => user.pp > 1000); // for top 50 countries we get >1000pp people
 
-  if (users.some(user => user.pp < 6000) && countriesList.indexOf(country) > 50) {
-    oneLineLog('Users with pp less than 6000 found');
+  if (!filteredUsers.length) {
+    oneLineLog('Didnt find users with enough total pp');
     console.log();
     return Promise.resolve();
   }
-  if (users.some(user => user.pp < 2000)) {
-    oneLineLog('Users with pp less than 2000 found');
-    console.log();
-    return Promise.resolve();
-  }
+  oneLineLog(`Found ${filteredUsers.length} users on page ${page}`);
 
-  idsList = uniq(idsList.concat(users), user => user.id);
+  idsList = uniq(idsList.concat(filteredUsers), user => user.id);
   // idsList = uniq(idsList.concat(getIdList(data)));
   // console.log(`Saved page #${page} for ${country}`);
   if (page >= 200 || DEBUG) {
