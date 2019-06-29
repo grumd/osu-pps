@@ -2,6 +2,7 @@ const fs = require('fs');
 const oneLineLog = require('single-line-log').stdout;
 const axios = require('./axios');
 
+// const { modes } = require('./constants');
 const { simplifyMods, trimModsForRankings, files, parallelRun, delay } = require('./utils');
 const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
 
@@ -35,7 +36,7 @@ module.exports = mode => {
   const scores = JSON.parse(fs.readFileSync(files.userMapsList(mode)));
   const updateDatePerUser = JSON.parse(fs.readFileSync(files.userMapsDates(mode)));
   const mapsData = JSON.parse(fs.readFileSync(files.mapsDetailedList(mode)));
-
+  console.log('Calculating overweightness for every map');
   // Calculate maximum and average Overweightness
   let maxOW = 0;
   let sum = 0;
@@ -58,10 +59,20 @@ module.exports = mode => {
   const averageOW = sum / count;
   console.log('Max OW:', maxOW, 'Avg OW:', averageOW);
 
-  const getFarmValue = player => {
-    oneLineLog(`// Getting values for player ${player.name}`);
+  console.log('Creating a maps dictionary');
+  const mapsDictionary = mapsDataWithAdjValue.reduce((dict, map) => {
+    if (dict[map.b]) {
+      dict[map.b].push(map);
+    } else {
+      dict[map.b] = [map];
+    }
+    return dict;
+  }, {});
+
+  const getFarmValue = (player, index, array) => {
     const playerScores = scores[player.id];
     if (playerScores) {
+      oneLineLog(`// Getting values for player ${player.name}, #${index}/${array.length}`);
       // no scores - no player in rankings
       let newScores = [];
       playerScores.forEach(scoreString => {
@@ -71,7 +82,7 @@ module.exports = mode => {
           m: scoreArray[1],
           pp: scoreArray[2],
         };
-        const allMaps = mapsDataWithAdjValue.filter(map => map.b == score.b);
+        const allMaps = mapsDictionary[score.b];
         const nomodOrDtMaps = allMaps.filter(map => map.m == trimModsForRankings(score.m));
         if (allMaps.length) {
           const thisMap = allMaps.find(map => map.m == simplifyMods(score.m));
@@ -123,13 +134,17 @@ module.exports = mode => {
 
   let rankings = players.map(getFarmValue).filter(a => a && a.s && a.s.length); // filter out no scores players
   console.log();
-  console.log('Recorded rankings values, getting old rank via API');
+  console.log(
+    'Recorded rankings values, getting old rank via API for ' + rankings.length + ' players'
+  );
   return parallelRun({
     items: rankings,
     job: player => {
       return fetchUserRank({ userId: player.id, modeId: mode.id })
         .then(rank => {
-          oneLineLog(`Recorded #${rank} for ${player.n}`);
+          oneLineLog(
+            `Recorded #${rank} for ${player.n} (${rankings.indexOf(player)}/${rankings.length})`
+          );
           player.rank1 = rank;
         })
         .catch(e => {
@@ -140,7 +155,7 @@ module.exports = mode => {
     },
   }).then(() => {
     rankings = rankings.filter(player => player.rank1);
-    rankings = rankings.sort((a, b) => b.rank1 - a.rank1);
+    rankings = rankings.sort((a, b) => a.rank1 - b.rank1);
     fs.writeFileSync(files.dataRankings(mode), JSON.stringify(rankings));
     console.log();
     console.log('Finished calculating rankings!');
