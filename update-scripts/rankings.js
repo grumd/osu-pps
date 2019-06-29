@@ -1,8 +1,33 @@
 const fs = require('fs');
 const oneLineLog = require('single-line-log').stdout;
+const axios = require('./axios');
 
-const { simplifyMods, trimModsForRankings, files } = require('./utils');
-// const { modes } = require('./constants');
+const { simplifyMods, trimModsForRankings, files, parallelRun, delay } = require('./utils');
+const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
+
+const getUrl = (userId, modeId) =>
+  `https://osu.ppy.sh/api/get_user?k=${apikey}&u=${userId}&type=id&m=${modeId}`;
+
+const fetchUser = (userId, modeId, retryCount = 0) => {
+  if (retryCount > 3) {
+    return Promise.reject(new Error('Too many retries'));
+  }
+  retryCount && oneLineLog(`Retry #${retryCount}`);
+  return axios.get(getUrl(userId, modeId)).catch(err => {
+    console.log('Error:', err.message);
+    return delay(5000).then(() => fetchUser(userId, modeId, retryCount + 1));
+  });
+};
+
+const fetchUserRank = ({ userId, modeId }) => {
+  return fetchUser(userId, modeId)
+    .then(({ data }) => {
+      return data[0].pp_rank;
+    })
+    .catch(error => {
+      console.log('\x1b[33m%s\x1b[0m', error.message);
+    });
+};
 
 module.exports = mode => {
   console.log('3. CALCULATING RANKINGS');
@@ -33,8 +58,8 @@ module.exports = mode => {
   const averageOW = sum / count;
   console.log('Max OW:', maxOW, 'Avg OW:', averageOW);
 
-  const getFarmValue = (player, playerIndex) => {
-    oneLineLog(`// Getting values for player ${player.name} #${playerIndex + 1}`);
+  const getFarmValue = player => {
+    oneLineLog(`// Getting values for player ${player.name}`);
     const playerScores = scores[player.id];
     if (playerScores) {
       // no scores - no player in rankings
@@ -88,6 +113,7 @@ module.exports = mode => {
       const minuteUpdated = updateDatePerUser[player.id];
       return {
         n: player.name,
+        id: player.id,
         ppDiff,
         minuteUpdated,
         s: newScores.slice(0, 50), // list of recalculated scores - only keep top 50 now!
@@ -95,13 +121,30 @@ module.exports = mode => {
     }
   };
 
-  let rankings = players
-    .sort((a, b) => b.pp - a.pp) // original pp values, to get rank1 value
-    .map(getFarmValue)
-    .filter(a => a && a.s && a.s.length); // filter out no scores players
-  fs.writeFileSync(files.dataRankings(mode), JSON.stringify(rankings));
+  let rankings = players.map(getFarmValue).filter(a => a && a.s && a.s.length); // filter out no scores players
   console.log();
-  console.log('Finished calculating rankings!');
+  console.log('Recorded rankings values, getting old rank via API');
+  return parallelRun({
+    items: rankings,
+    job: player => {
+      return fetchUserRank({ userId: player.id, modeId: mode.id })
+        .then(rank => {
+          oneLineLog(`Recorded #${rank} for ${player.n}`);
+          player.rank1 = rank;
+        })
+        .catch(e => {
+          console.log();
+          console.log(`Couldnt get rank for ${player.n}`);
+          console.log(e.message);
+        });
+    },
+  }).then(() => {
+    rankings = rankings.filter(player => player.rank1);
+    rankings = rankings.sort((a, b) => b.rank1 - a.rank1);
+    fs.writeFileSync(files.dataRankings(mode), JSON.stringify(rankings));
+    console.log();
+    console.log('Finished calculating rankings!');
+  });
 };
 
 // module.exports(modes.osu);
