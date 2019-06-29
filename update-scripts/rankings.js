@@ -8,6 +8,7 @@ module.exports = mode => {
   console.log('3. CALCULATING RANKINGS');
   const players = JSON.parse(fs.readFileSync(files.userIdsList(mode)));
   const scores = JSON.parse(fs.readFileSync(files.userMapsList(mode)));
+  const updateDatePerUser = JSON.parse(fs.readFileSync(files.userMapsDates(mode)));
   const mapsData = JSON.parse(fs.readFileSync(files.mapsDetailedList(mode)));
 
   // Calculate maximum and average Overweightness
@@ -62,9 +63,7 @@ module.exports = mode => {
               : Math.sqrt(adjustedX / averageOW) - 1;
 
           let pp = score.pp;
-          pp *= 1 - adjust * (adjustedX > averageOW ? 0.25 : 0.15);
-          // Maximum bonus for underweighted maps - 15%
-          // Maximum nerf for overweighted maps - 25%
+          pp *= 1 - adjust * (adjustedX > averageOW ? 0.2 : 0.125);
           newScores.push({
             n: `${allMaps[0].art} - ${allMaps[0].t} [${allMaps[0].v}]`, // map name
             m: score.m, // mods number
@@ -85,8 +84,12 @@ module.exports = mode => {
         }
       });
       newScores = newScores.sort((a, b) => b.p2 - a.p2);
+      const ppDiff = newScores.reduce((ppDiffSum, score) => ppDiffSum + score.p2 - score.p1, 0);
+      const minuteUpdated = updateDatePerUser[player.id];
       return {
         n: player.name,
+        ppDiff,
+        minuteUpdated,
         s: newScores.slice(0, 50), // list of recalculated scores - only keep top 50 now!
       };
     }
@@ -95,7 +98,7 @@ module.exports = mode => {
   let rankings = players
     .sort((a, b) => b.pp - a.pp) // original pp values, to get rank1 value
     .map(getFarmValue)
-    .filter(a => a); // filter out no scores players
+    .filter(a => a && a.s && a.s.length); // filter out no scores players
   fs.writeFileSync(files.dataRankings(mode), JSON.stringify(rankings));
   console.log();
   console.log('Finished calculating rankings!');

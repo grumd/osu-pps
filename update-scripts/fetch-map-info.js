@@ -54,6 +54,7 @@ const addBeatmapInfo = (map, mode) => {
         }
 
         const mapId = getUniqueMapId(map);
+        maps[mapId] = map;
       } else {
         console.log('No maps found :(');
       }
@@ -93,7 +94,7 @@ module.exports = mode => {
           }`
         );
         return addBeatmapInfo(map, mode).then(() => {
-          if ((index + 1) % 500 === 0) {
+          if ((index + 1) % 5000 === 0) {
             const arrayMaps = Object.keys(maps)
               .map(mapId => maps[mapId])
               .sort((a, b) => b.x - a.x);

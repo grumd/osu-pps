@@ -5,6 +5,7 @@ const files = {
   userIdsDate: mode => `./temp/${mode.text}/user-ids-date.json`,
   userIdsList: mode => `./temp/${mode.text}/user-ids.json`,
   userMapsList: mode => `./temp/${mode.text}/user-scores.json`,
+  userMapsDates: mode => `./temp/${mode.text}/user-scores-dates.json`,
   mapInfoCache: mode => `./temp/${mode.text}/map-cache.json`,
   mapsList: mode => `./temp/${mode.text}/maps.json`,
   mapsDetailedList: mode => `./temp/${mode.text}/maps-detailed.json`,
@@ -175,7 +176,20 @@ const levenshtein = (str1, str2) => {
   return nextCol;
 };
 
+const parallelRun = ({ items = [], job = () => {}, concurrentLimit = 3, minRequestTime = 100 }) => {
+  let remainingItems = [...items];
+  // Starts next job when one job finishes
+  const attachNextJobStarter = prevItem => {
+    return Promise.all([job(prevItem), delay(minRequestTime)]).then(() => {
+      return Promise.all(remainingItems.splice(0, 1).map(attachNextJobStarter));
+    });
+  };
+  // Add first N jobs
+  return Promise.all(remainingItems.splice(0, concurrentLimit).map(attachNextJobStarter));
+};
+
 module.exports = {
+  parallelRun,
   delay,
   uniq,
   truncateFloat,

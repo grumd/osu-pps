@@ -7,6 +7,7 @@ import classNames from 'classnames';
 import Modal from 'react-modal';
 import matchSorter from 'match-sorter';
 import lodashFp from 'lodash/fp';
+import ReactTimeAgo from 'react-time-ago';
 
 import 'react-table/react-table.css';
 import './rankings.scss';
@@ -36,13 +37,21 @@ const modalStyles = {
   },
 };
 
-const scoresColumns = [
+const getScoresColumns = player => [
   {
     minWidth: 500,
     accessor: 'name',
+    Header: () => (
+      <span>
+        last updated{' '}
+        <ReactTimeAgo
+          timeStyle={{ units: ['second', 'minute', 'hour'] }}
+          date={player.updateDate}
+        />
+      </span>
+    ),
     Cell: ({ original: item }) => (
       <span>
-        {console.log(item)}
         <a href={`http://osu.ppy.sh/b/${item.b}`}>{item.name}</a>
         {item.m !== '0' && <span> +{modsToString(item.m)}</span>}
       </span>
@@ -112,7 +121,8 @@ class ShowScoresCell extends React.Component {
         >
           <ReactTable
             data={original.scores}
-            columns={scoresColumns}
+            player={original}
+            columns={getScoresColumns(original)}
             showPagination={false}
             showPageSizeOptions={false}
             defaultPageSize={50}
@@ -187,7 +197,9 @@ const columns = [
     Cell: ({ original }) => (
       <span>
         <span className="pp">{original.pp2}pp </span>
-        <span className="pp-diff">{original.ppDiff !== null ? `+${original.ppDiff}` : ''}</span>
+        <span className="pp-diff">
+          {original.ppIncrement !== null ? `+${original.ppIncrement}` : ''}
+        </span>
       </span>
     ),
     accessor: 'pp2',
@@ -195,7 +207,7 @@ const columns = [
   {
     maxWidth: 170,
     Cell: ({ original }) => {
-      const totalChange = original.scores.reduce((sum, score) => sum + score.pp2 - score.pp1, 0);
+      const totalChange = original.ppDiff;
       return (
         <span>
           <span
@@ -228,6 +240,8 @@ const dataSelector = createSelector(
       // Get old rank from array ordering / order scores by new pp
       _.map((item, playerIndex) => ({
         name: item.n,
+        ppDiff: item.ppDiff,
+        updateDate: item.updateDate,
         rank1: playerIndex + 1,
         scores: _.orderBy(['p2'], ['desc'], item.s),
       })),
@@ -254,7 +268,7 @@ const dataSelector = createSelector(
           (item, newIndex) => ({
             ...item,
             rank2: newIndex + 1,
-            ppDiff: items[newIndex + 1] ? item.pp2 - items[newIndex + 1].pp2 : 0,
+            ppIncrement: items[newIndex + 1] ? item.pp2 - items[newIndex + 1].pp2 : 0,
           }),
           items
         )

@@ -4,7 +4,7 @@ const axios = require('./axios');
 const oneLineLog = require('single-line-log').stdout;
 const fs = require('fs');
 const { ppBlockSize, ppBlockMapCount, DEBUG } = require('./constants');
-const { uniq, truncateFloat, delay, files, simplifyMods } = require('./utils');
+const { uniq, truncateFloat, delay, files, simplifyMods, parallelRun } = require('./utils');
 
 const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
 
@@ -15,6 +15,7 @@ const getMagnitudeByIndex = x => Math.pow(Math.pow(x - 100, 2) / 10000, 20); // 
 
 let maps = {};
 let usersMaps = {};
+let usersMapsDate = {};
 let peoplePerPpBlocks = [];
 
 const calculatePp99 = map => {
@@ -72,7 +73,6 @@ const fetchUserBeatmaps = (userId, modeId, scoresCount, retryCount = 0) => {
   retryCount && oneLineLog(`Retry #${retryCount}`);
   return axios.get(getUrl(userId, modeId, scoresCount)).catch(err => {
     console.log('Error:', err.message);
-    console.log(err);
     return delay(5000).then(() => fetchUserBeatmaps(userId, modeId, scoresCount, retryCount + 1));
   });
 };
@@ -83,6 +83,7 @@ const fetchUser = ({ userId, modeId, shouldRecordScores }) => {
       if (shouldRecordScores) {
         // Recording as one string for compression sake
         usersMaps[userId] = data && data.map(d => `${d.beatmap_id}_${d.enabled_mods}_${d.pp}`);
+        usersMapsDate[userId] = Math.floor(Date.now() / 1000 / 60); // unix minutes
       }
       recordData(data, userId);
     })
@@ -95,6 +96,7 @@ module.exports = mode => {
   console.log(`1. FETCHING MAPS LIST - ${mode.text}`);
   maps = {};
   usersMaps = {};
+  usersMapsDate = {};
   peoplePerPpBlocks = [];
   let fullUsersList = [];
   try {
@@ -106,46 +108,41 @@ module.exports = mode => {
   }
   const uniqueUsersList = uniq(fullUsersList, user => user.id);
   // const fetchPromises = [];
-  return (
-    uniqueUsersList
-      .slice(...(DEBUG ? [0, 100] : []))
-      .reduce((promise, user, index) => {
-        return promise.then(() => {
-          oneLineLog(
-            `Recording data for user #${index}/${uniqueUsersList.length} (${user.name}) (${
-              mode.text
-            })`
-          );
-          const shouldRecordScores = index < 11000;
-          const currentPromise = fetchUser({
-            userId: user.id,
-            modeId: mode.id,
-            shouldRecordScores,
-          });
-          // fetchPromises.push();
-          return Promise.all([delay(100), currentPromise]);
-        });
-      }, Promise.resolve())
-      // .then(() => Promise.all(fetchPromises))
-      .then(() => {
-        console.log();
-        console.log(`${Object.keys(maps).length} unique maps found! Saving.`);
-        Object.keys(maps).forEach(mapId => {
-          if (maps[mapId].pp99 === undefined) {
-            calculatePp99(maps[mapId]);
-          }
-          maps[mapId].x = truncateFloat(maps[mapId].x);
-          const ppBlockValue = Math.floor(Math.round(maps[mapId].pp99) / ppBlockSize);
-          maps[mapId].adj = peoplePerPpBlocks[ppBlockValue] || 1;
-        });
-        const arrayMaps = Object.keys(maps).map(mapId => maps[mapId]);
-        fs.writeFileSync(files.mapsList(mode), JSON.stringify(arrayMaps));
-        console.log('Saving info about PP blocks too');
-        fs.writeFileSync(files.ppBlocks(mode), JSON.stringify(peoplePerPpBlocks));
-        console.log('Saving users maps list');
-        fs.writeFileSync(files.userMapsList(mode), JSON.stringify(usersMaps));
-        console.log(`Done fetching list of beatmaps! (${mode.text})`);
-        maps = {};
-      })
-  );
+  const items = uniqueUsersList.slice(...(DEBUG ? [0, 100] : []));
+  const parallelPromise = parallelRun({
+    items,
+    job: user => {
+      const index = items.indexOf(user);
+      oneLineLog(
+        `Recording data for user #${index}/${uniqueUsersList.length} (${user.name}) (${mode.text})`
+      );
+      const shouldRecordScores = index < 11000;
+      return fetchUser({
+        userId: user.id,
+        modeId: mode.id,
+        shouldRecordScores,
+      });
+    },
+  });
+  return parallelPromise.then(() => {
+    console.log();
+    console.log(`${Object.keys(maps).length} unique maps found! Saving.`);
+    Object.keys(maps).forEach(mapId => {
+      if (maps[mapId].pp99 === undefined) {
+        calculatePp99(maps[mapId]);
+      }
+      maps[mapId].x = truncateFloat(maps[mapId].x);
+      const ppBlockValue = Math.floor(Math.round(maps[mapId].pp99) / ppBlockSize);
+      maps[mapId].adj = peoplePerPpBlocks[ppBlockValue] || 1;
+    });
+    const arrayMaps = Object.keys(maps).map(mapId => maps[mapId]);
+    fs.writeFileSync(files.mapsList(mode), JSON.stringify(arrayMaps));
+    console.log('Saving info about PP blocks too');
+    fs.writeFileSync(files.ppBlocks(mode), JSON.stringify(peoplePerPpBlocks));
+    console.log('Saving users maps list');
+    fs.writeFileSync(files.userMapsList(mode), JSON.stringify(usersMaps));
+    fs.writeFileSync(files.userMapsDates(mode), JSON.stringify(usersMapsDate));
+    console.log(`Done fetching list of beatmaps! (${mode.text})`);
+    maps = {};
+  });
 };

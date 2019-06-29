@@ -13,6 +13,8 @@ const decompressData = (dataCompressed, diffInfoArrayTransformed) => {
   return _.map(
     (dataCompEntry = []) => ({
       n: dataCompEntry[0],
+      updateDate: new Date(dataCompEntry[1] * 1000 * 60),
+      ppDiff: dataCompEntry[2],
       s: _.map((shortText = '') => {
         const args = shortText.split('_');
         const diffInfo = diffInfoArrayTransformed[args[0]];
@@ -26,7 +28,7 @@ const decompressData = (dataCompressed, diffInfoArrayTransformed) => {
             p2: Number(args[3]),
           }
         );
-      }, dataCompEntry[1]),
+      }, dataCompEntry[3]),
     }),
     dataCompressed
   );

@@ -15,7 +15,7 @@ module.exports = mode => {
       }
       return `${index}_${score.m}_${score.p1}_${score.p2}`;
     });
-    return [player.n, scores];
+    return [player.n, player.minuteUpdated, player.ppDiff, scores];
   });
 
   fs.writeFileSync(files.dataRankingsCompressed(mode), JSON.stringify(compressedData));
