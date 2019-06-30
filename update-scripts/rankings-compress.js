@@ -2,6 +2,7 @@ const fs = require('fs');
 const { files } = require('./utils');
 
 module.exports = mode => {
+  console.log('Compressing rankings data');
   const data = JSON.parse(fs.readFileSync(files.dataRankings(mode)));
   const diffInfoArray = [];
 
@@ -20,4 +21,5 @@ module.exports = mode => {
 
   fs.writeFileSync(files.dataRankingsCompressed(mode), JSON.stringify(compressedData));
   fs.writeFileSync(files.dataRankingsInfo(mode), JSON.stringify(diffInfoArray));
+  console.log('Finished compressing');
 };

@@ -7,6 +7,12 @@ Number.isNaN =
     return value !== value;
   };
 
+if (typeof Math.sign === 'undefined') {
+  Math.sign = function(x) {
+    return x > 0 ? 1 : x < 0 ? -1 : x;
+  };
+}
+
 // https://tc39.github.io/ecma262/#sec-array.prototype.findindex
 if (!Array.prototype.findIndex) {
   Object.defineProperty(Array.prototype, 'findIndex', {

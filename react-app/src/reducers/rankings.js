@@ -111,11 +111,11 @@ export const fetchRankings = mode => {
         const b = infoItem.slice(0, spacePosition);
         const n = infoItem.slice(spacePosition + 1);
         return { b, n };
-      }, {});
+      });
       if (lastUpdatedFromStorage > lastUpdatedFromMetadata) {
         // Storage data is newer than database data
         const data = await storage.getItem(getRankingsStorageKey(mode));
-        if (data && data.length) {
+        if (data && data.length && !DEBUG_FETCH) {
           dispatch({ type: SUCCESS, data, info: diffInfoArrayTransformed });
           return data;
         }
@@ -133,8 +133,10 @@ export const fetchRankings = mode => {
         truncateFunction: r => r.slice(0, r.lastIndexOf(']],')) + ']]]',
       });
       dispatch({ type: SUCCESS, data: dataCompressed, info: diffInfoArrayTransformed });
-      storage.setItem(getRankingsDateStorageKey(mode), Date.now());
-      storage.setItem(getRankingsStorageKey(mode), dataCompressed);
+      if (!DEBUG_FETCH) {
+        storage.setItem(getRankingsDateStorageKey(mode), Date.now());
+        storage.setItem(getRankingsStorageKey(mode), dataCompressed);
+      }
       const decompressedData = getState().rankings[mode].data;
       return decompressedData;
     } catch (error) {

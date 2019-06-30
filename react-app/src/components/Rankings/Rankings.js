@@ -193,6 +193,19 @@ const columns = [
     accessor: 'name',
   },
   {
+    maxWidth: 300,
+    Cell: ({ original }) => (
+      <span className="updated-at">
+        <span>scores updated</span>
+        <ReactTimeAgo
+          timeStyle={{ units: ['second', 'minute', 'hour'] }}
+          date={original.updateDate}
+        />
+      </span>
+    ),
+    accessor: 'pp2',
+  },
+  {
     maxWidth: 170,
     Cell: ({ original }) => (
       <span>
@@ -243,7 +256,7 @@ const dataSelector = createSelector(
         ppDiff: item.ppDiff,
         updateDate: item.updateDate,
         rank1: playerIndex + 1,
-        scores: _.orderBy(['p2'], ['desc'], item.s),
+        scores: _.orderBy(['p2'], ['desc'], _.compact(item.s)),
       })),
       // Get total new PP / calculate weighted new pp
       _.map(item => {
