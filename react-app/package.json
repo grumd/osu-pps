@@ -39,7 +39,7 @@
     "not dead",
     "ie 11"
   ],
-  "homepage": "https://grumd.github.io/osu-pps/",
+  "homepage": ".",
   "devDependencies": {
     "gh-pages": "^2.0.1"
   }
