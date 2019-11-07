@@ -27,6 +27,7 @@ const modalStyles = {
   },
   content: {
     maxHeight: '80%',
+    maxWidth: '100%',
     background: '#2d2d2d',
     top: '50%',
     left: '50%',
