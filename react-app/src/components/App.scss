@@ -13,19 +13,9 @@
   .search-control {
     margin: 0;
   }
-
-  // &.mobile {
-  //   font-size: 10px;
-  //   .rt-table {
-  //     > div {
-  //       min-width: none !important;
-  //     }
-  //     .rt-td {
-  //       width: auto !important;
-  //       flex-shrink: 1 !important;
-  //     }
-  //   }
-  // }
+  &:not(.mobile) {
+    width: 1280px;
+  }
 }
 
 @media (max-width: 640px) {
