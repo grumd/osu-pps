@@ -12,6 +12,8 @@ import ReactTimeAgo from 'react-time-ago';
 import 'react-table/react-table.css';
 import './rankings.scss';
 
+import { isMobile } from 'utils/browser';
+
 // import CollapsibleBar from 'components/CollapsibleBar';
 // import ParamLink from 'components/ParamLink/ParamLink';
 
@@ -193,19 +195,23 @@ const columns = [
     ),
     accessor: 'name',
   },
-  {
-    maxWidth: 300,
-    Cell: ({ original }) => (
-      <span className="updated-at">
-        <span>scores updated</span>
-        <ReactTimeAgo
-          timeStyle={{ units: ['second', 'minute', 'hour'] }}
-          date={original.updateDate}
-        />
-      </span>
-    ),
-    accessor: 'pp2',
-  },
+  ...(isMobile
+    ? []
+    : [
+        {
+          maxWidth: 300,
+          Cell: ({ original }) => (
+            <span className="updated-at">
+              <span>scores updated</span>
+              <ReactTimeAgo
+                timeStyle={{ units: ['second', 'minute', 'hour'] }}
+                date={original.updateDate}
+              />
+            </span>
+          ),
+          accessor: 'pp2',
+        },
+      ]),
   {
     maxWidth: 170,
     Cell: ({ original }) => (

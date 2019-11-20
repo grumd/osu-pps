@@ -1,0 +1,204 @@
+.mobile-filters {
+  padding: 4px;
+  > .collapsible-bar {
+    &.open .collapsible-children {
+      height: auto;
+      overflow: visible;
+      max-height: none;
+    }
+    > .header {
+      padding: 3px 3px 3px 6px;
+    }
+  }
+}
+
+.mobile-filters-inside {
+  padding: 10px;
+  font-size: 14px;
+  > .top-filter {
+    margin-bottom: 5px;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: flex-start;
+    > .song-search {
+      flex: 1 1 auto;
+    }
+    > button {
+      margin: 5px 5px 5px 10px;
+      flex: 0 0 auto;
+    }
+  }
+  > .expanded-filter {
+    > .select {
+      margin-top: 10px;
+    }
+  }
+  > .bottom-filter {
+    margin-top: 10px;
+    display: flex;
+    .spacer {
+      flex: 1 1 auto;
+    }
+    button + button {
+      margin-left: 12px;
+    }
+  }
+  > .flexible-filters {
+    display: flex;
+    flex-flow: row wrap;
+    margin: -3px;
+    > .filter-block {
+      flex: 0 0 auto;
+      margin: 3px;
+      > .head-text {
+        text-align: center;
+      }
+      > .select {
+        width: 58px;
+      }
+      > .select > select {
+        padding: 5px;
+      }
+      > .inputs {
+        display: flex;
+        flex-flow: row nowrap;
+        > input {
+          max-width: 40px;
+          padding: 5px;
+        }
+        .time-pick {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          height: 30px;
+          width: 43px;
+          padding-left: 0;
+          padding-right: 0;
+          font-size: 12px;
+        }
+        .time-pick > input {
+          border: none;
+          width: 17px;
+        }
+        .minute {
+          text-align: right;
+        }
+      }
+    }
+  }
+}
+
+.cards-view {
+  font-size: 3.3vw;
+  line-height: 1.2;
+  > .card {
+    background: #353535;
+    border-radius: 1vw;
+    margin-bottom: 1vw;
+    padding: 1vw;
+    display: flex;
+    flex-flow: row nowrap;
+    .genre-language {
+      font-size: 80%;
+      margin-top: 0.8vw;
+      color: #ccc;
+      > .grey-title {
+        color: #888;
+      }
+    }
+    .lbl {
+      color: #999;
+      font-weight: normal;
+    }
+    > .card-column {
+      &.song-image {
+        margin-right: 1.5vw;
+        img {
+          width: 18vw;
+          padding: 0.5vw;
+        }
+        > .pp-value {
+          color: white;
+          padding-top: 0.8vw;
+          text-align: center;
+          font-weight: 600;
+          font-size: 120%;
+        }
+      }
+      &.song-title {
+        flex: 1 1 auto;
+        > .props {
+          width: 100%;
+          color: #ccc;
+          margin-top: 1.6vw;
+          display: flex;
+          flex-flow: row nowrap;
+          justify-content: space-between;
+          > .prop-block {
+            flex: 1 1 0px;
+            text-align: center;
+            display: flex;
+            flex-flow: column nowrap;
+            align-items: center;
+            justify-content: space-between;
+            &.time,
+            &.diff {
+              flex: 0 1 45px;
+            }
+            &.ow {
+              flex: 0 1 50px;
+              color: white;
+              font-weight: 600;
+            }
+            &.bpm {
+              flex: 0 1 80px;
+              span.bpm {
+                margin-right: 1vw;
+                &.slow {
+                  color: dodgerblue;
+                }
+                &.fast {
+                  color: orangered;
+                }
+              }
+            }
+            > .icon-text {
+              color: #999;
+              font-size: 80%;
+              height: 16px;
+            }
+            > svg {
+              color: #999;
+            }
+          }
+        }
+        > .mods {
+          margin-top: 1vw;
+          display: flex;
+          flex-flow: row nowrap;
+          > .mod {
+            background: #3c3c3c;
+            line-height: 6vw;
+            font-size: 90%;
+            width: 7vw;
+            height: 6vw;
+            text-align: center;
+            color: #555;
+            border-radius: 1.5vw;
+            + .mod {
+              margin-left: 0.5vw;
+            }
+            &.active {
+              color: #fff;
+              background: #e0b0743e;
+            }
+            &.inverted {
+              color: #fff;
+              background: #579cb773;
+            }
+          }
+        }
+      }
+    }
+  }
+}

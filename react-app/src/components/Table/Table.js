@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import classNames from 'classnames';
 import Select from 'react-select';
+import { FaRegClock, FaStar } from 'react-icons/fa';
+import { GiFarmer } from 'react-icons/gi';
 
 import {
   fetchMapsData,
@@ -11,14 +13,19 @@ import {
   showMore,
   recalculateVisibleData,
   emptySearchKey,
+  resetSearchKey,
 } from 'reducers/mapsData';
+
+import CollapsibleBar from 'components/CollapsibleBar';
 
 import { FIELDS, languageOptions, languageMap, genreOptions, genreMap } from 'constants/mapsData';
 import { COOKIE_SEARCH_KEY, modes } from 'constants/common';
 
 import { overweightnessCalcFromMode } from 'utils/overweightness';
+import { isMobile } from 'utils/browser';
 
 import './table.scss';
+import './cards-view.scss';
 
 function truncateFloat(number) {
   return Math.round(number * 100) / 100;
@@ -58,10 +65,102 @@ const mapStateToProps = (state, props) => {
 
 const mapDispatchToProps = {
   updateSearchKey,
+  resetSearchKey,
   showMore,
   recalculateVisibleData,
   fetchMapsData,
 };
+
+const Card = React.memo(
+  ({ item, isMania, overweightnessCoefficient: coef, overweightnessMode, expandedView }) => {
+    var mods = {
+      dt: (item.m & 64) === 64,
+      hd: (item.m & 8) === 8,
+      hr: (item.m & 16) === 16,
+      fl: (item.m & 1024) === 1024,
+      ht: (item.m & 256) === 256,
+    };
+    var mapLink = `http://osu.ppy.sh/b/${item.b}`;
+    var linkText = item.art ? `${item.art} - ${item.t} [${item.v}]` : mapLink;
+
+    var bpm = mods.dt ? (
+      <span>
+        <span className="bpm fast">{truncateFloat(item.bpm * 1.5)}</span>
+        <span>({truncateFloat(item.bpm)})</span>
+      </span>
+    ) : mods.ht ? (
+      <span>
+        <span className="bpm slow">{truncateFloat(item.bpm * 0.75)}</span>
+        <span>({truncateFloat(item.bpm)})</span>
+      </span>
+    ) : (
+      truncateFloat(item.bpm)
+    );
+
+    const overweightnessRaw = overweightnessCalcFromMode[overweightnessMode](item);
+    const overweightnessText = (overweightnessRaw * coef).toFixed(0);
+
+    return (
+      <div className="card">
+        <div className="card-column song-image">
+          <a href={mapLink} target="_blank" rel="noopener noreferrer">
+            <img src={`https://b.ppy.sh/thumb/${item.s}.jpg`} alt="background" />
+          </a>
+          <div className="pp-value">
+            {(+item.pp99).toFixed(0)}
+            <span className="lbl">pp</span>
+          </div>
+        </div>
+        <div className="card-column song-title">
+          <div>
+            <a href={mapLink} target="_blank" rel="noopener noreferrer">
+              {linkText}
+            </a>
+          </div>
+          <div className="mods">
+            {isMania && (
+              <div className={classNames('mod', { active: item.k })}>
+                {item.k ? item.k + 'K' : '?'}
+              </div>
+            )}
+            <div className={classNames('mod', { active: mods.dt, inverted: mods.ht })}>
+              {mods.ht ? 'HT' : 'DT'}
+            </div>
+            <div className={classNames('mod', { active: mods.hd })}>HD</div>
+            <div className={classNames('mod', { active: mods.hr })}>HR</div>
+            <div className={classNames('mod', { active: mods.fl })}>FL</div>
+          </div>
+          <div className="props">
+            <div className="prop-block time">
+              <FaRegClock />
+              <div>{secondsToFormatted(item.l)}</div>
+            </div>
+            <div className="prop-block bpm">
+              <div className="icon-text">bpm</div>
+              <div>{bpm}</div>
+            </div>
+            <div className="prop-block diff">
+              <FaStar />
+              <div>{item.d}</div>
+            </div>
+            <div className="prop-block ow">
+              <GiFarmer />
+              <div>{overweightnessText}</div>
+            </div>
+          </div>
+          {expandedView && (
+            <div className="genre-language">
+              <span className="grey-title">language:</span>
+              <span> {languageMap[item.ln]}, </span>
+              <span className="grey-title">genre:</span>
+              <span> {genreMap[item.g]}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+);
 
 class TableBody extends PureComponent {
   static propTypes = {
@@ -119,11 +218,15 @@ class TableBody extends PureComponent {
           return (
             <tr key={`${item.b}_${item.m}`}>
               <td className="img-td">
-                <img src={`https://b.ppy.sh/thumb/${item.s}.jpg`} alt="background" />
+                <a href={mapLink} target="_blank" rel="noopener noreferrer">
+                  <img src={`https://b.ppy.sh/thumb/${item.s}.jpg`} alt="background" />
+                </a>
               </td>
               <td>
                 <div>
-                  <a href={mapLink}>{linkText}</a>
+                  <a href={mapLink} target="_blank" rel="noopener noreferrer">
+                    {linkText}
+                  </a>
                 </div>
                 {expandedView && (
                   <div className="genre-language">
@@ -210,7 +313,7 @@ class Table extends PureComponent {
   }
 
   onChangeNumber(key, e, trailZeros = false) {
-    const value = e.target.value === '' ? null : parseFloat(e.target.value);
+    const value = e.target.value === '' ? '' : parseFloat(e.target.value);
     document.cookie = `${COOKIE_SEARCH_KEY}${key}=${e.target.value}; path=/`;
 
     this.props.updateSearchKey(key, value);
@@ -359,28 +462,24 @@ class Table extends PureComponent {
                 className="minute"
                 onBlur={() => {
                   const numValue = searchKey[FIELDS.MIN_M_LEN];
-                  const value = Math.max(Math.min(99, numValue), 0);
+                  const value = numValue === '' ? 0 : Math.max(Math.min(99, numValue), 0);
                   this.onChangeExact(FIELDS.MIN_M_LEN, value);
                 }}
                 onChange={e => this.onChangeNumber(FIELDS.MIN_M_LEN, e)}
                 value={searchKey[FIELDS.MIN_M_LEN]}
                 type="number"
-                max="99"
-                min="0"
               />
               <div>:</div>
               <input
                 className="second"
                 onBlur={() => {
                   const numValue = searchKey[FIELDS.MIN_S_LEN];
-                  const value = Math.max(Math.min(59, numValue), 0);
+                  const value = numValue === '' ? 0 : Math.max(Math.min(59, numValue), 0);
                   this.onChangeExact(FIELDS.MIN_S_LEN, ('00' + value).slice(-2));
                 }}
                 onChange={e => this.onChangeNumber(FIELDS.MIN_S_LEN, e)}
                 value={searchKey[FIELDS.MIN_S_LEN]}
                 type="number"
-                max="59"
-                min="0"
               />
             </div>
             <div
@@ -397,28 +496,24 @@ class Table extends PureComponent {
                 className="minute"
                 onBlur={() => {
                   const numValue = searchKey[FIELDS.MAX_M_LEN];
-                  const value = Math.max(Math.min(99, numValue), 0);
+                  const value = numValue === '' ? 99 : Math.max(Math.min(99, numValue), 0);
                   this.onChangeExact(FIELDS.MAX_M_LEN, value);
                 }}
                 onChange={e => this.onChangeNumber(FIELDS.MAX_M_LEN, e)}
                 value={searchKey[FIELDS.MAX_M_LEN]}
                 type="number"
-                max="99"
-                min="0"
               />
               <div>:</div>
               <input
                 className="second"
                 onBlur={() => {
                   const numValue = searchKey[FIELDS.MAX_S_LEN];
-                  const value = Math.max(Math.min(59, numValue), 0);
+                  const value = numValue === '' ? 59 : Math.max(Math.min(59, numValue), 0);
                   this.onChangeExact(FIELDS.MAX_S_LEN, ('00' + value).slice(-2));
                 }}
                 onChange={e => this.onChangeNumber(FIELDS.MAX_S_LEN, e)}
                 value={searchKey[FIELDS.MAX_S_LEN]}
                 type="number"
-                max="59"
-                min="0"
               />
             </div>
           </td>
@@ -543,7 +638,350 @@ class Table extends PureComponent {
     );
   }
 
+  renderMobileFilters() {
+    const { searchKey, match } = this.props;
+    const isMania = match.params.mode === modes.mania.text;
+    return (
+      <div className="mobile-filters-inside">
+        <div className="top-filter">
+          <div className="song-search">
+            <span>song name:</span>
+            <div className="form-group search-control">
+              <input
+                onChange={e => this.onChange(FIELDS.TEXT, e)}
+                value={searchKey[FIELDS.TEXT]}
+                type="text"
+                className={classNames('form-control input-sm', {
+                  active: searchKey[FIELDS.TEXT] !== emptySearchKey[FIELDS.TEXT],
+                })}
+                placeholder="search..."
+              />
+            </div>
+          </div>
+        </div>
+        <div className="flexible-filters">
+          <div className="filter-block">
+            <div className="head-text">pp</div>
+            <div className="inputs">
+              <input
+                onChange={e => this.onChangeNumber(FIELDS.PP_MIN, e)}
+                value={searchKey[FIELDS.PP_MIN]}
+                type="number"
+                className={classNames('form-control pp-input input-sm', {
+                  active: searchKey[FIELDS.PP_MIN] !== emptySearchKey[FIELDS.PP_MIN],
+                })}
+                placeholder="min"
+              />
+              <input
+                onChange={e => this.onChangeNumber(FIELDS.PP_MAX, e)}
+                value={searchKey[FIELDS.PP_MAX]}
+                type="number"
+                className={classNames('form-control pp-input input-sm', {
+                  active: searchKey[FIELDS.PP_MAX] !== emptySearchKey[FIELDS.PP_MAX],
+                })}
+                placeholder="max"
+              />
+            </div>
+          </div>
+          <div className="filter-block">
+            <div className="head-text">length</div>
+            <div className="inputs">
+              <div
+                className={classNames('form-control time-pick', {
+                  /* eslint-disable eqeqeq */
+                  // Need this because these can be strings and numbers
+                  active:
+                    searchKey[FIELDS.MIN_M_LEN] != emptySearchKey[FIELDS.MIN_M_LEN] ||
+                    searchKey[FIELDS.MIN_S_LEN] != emptySearchKey[FIELDS.MIN_S_LEN],
+                  /* eslint-enable eqeqeq */
+                })}
+              >
+                <input
+                  className="minute"
+                  onBlur={() => {
+                    const numValue = searchKey[FIELDS.MIN_M_LEN];
+                    const value = numValue === '' ? 0 : Math.max(Math.min(99, numValue), 0);
+                    this.onChangeExact(FIELDS.MIN_M_LEN, value);
+                  }}
+                  onChange={e => this.onChangeNumber(FIELDS.MIN_M_LEN, e)}
+                  value={searchKey[FIELDS.MIN_M_LEN]}
+                  type="number"
+                />
+                <div>:</div>
+                <input
+                  className="second"
+                  onBlur={() => {
+                    const numValue = searchKey[FIELDS.MIN_S_LEN];
+                    const value = numValue === '' ? 0 : Math.max(Math.min(59, numValue), 0);
+                    this.onChangeExact(FIELDS.MIN_S_LEN, ('00' + value).slice(-2));
+                  }}
+                  onChange={e => this.onChangeNumber(FIELDS.MIN_S_LEN, e)}
+                  value={searchKey[FIELDS.MIN_S_LEN]}
+                  type="number"
+                />
+              </div>
+              <div
+                className={classNames('form-control time-pick', {
+                  /* eslint-disable eqeqeq */
+                  // Need this because these can be strings and numbers
+                  active:
+                    searchKey[FIELDS.MAX_M_LEN] != emptySearchKey[FIELDS.MAX_M_LEN] ||
+                    searchKey[FIELDS.MAX_S_LEN] != emptySearchKey[FIELDS.MAX_S_LEN],
+                  /* eslint-enable eqeqeq */
+                })}
+              >
+                <input
+                  className="minute"
+                  onBlur={() => {
+                    const numValue = searchKey[FIELDS.MAX_M_LEN];
+                    const value = numValue === '' ? 99 : Math.max(Math.min(99, numValue), 0);
+                    this.onChangeExact(FIELDS.MAX_M_LEN, value);
+                  }}
+                  onChange={e => this.onChangeNumber(FIELDS.MAX_M_LEN, e)}
+                  value={searchKey[FIELDS.MAX_M_LEN]}
+                  type="number"
+                />
+                <div>:</div>
+                <input
+                  className="second"
+                  onBlur={() => {
+                    const numValue = searchKey[FIELDS.MAX_S_LEN];
+                    const value = numValue === '' ? 59 : Math.max(Math.min(59, numValue), 0);
+                    this.onChangeExact(FIELDS.MAX_S_LEN, ('00' + value).slice(-2));
+                  }}
+                  onChange={e => this.onChangeNumber(FIELDS.MAX_S_LEN, e)}
+                  value={searchKey[FIELDS.MAX_S_LEN]}
+                  type="number"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="filter-block">
+            <div className="head-text">bpm</div>
+            <div className="inputs">
+              <input
+                className={classNames('form-control pp-input input-sm', {
+                  active: searchKey[FIELDS.BPM_MIN] !== emptySearchKey[FIELDS.BPM_MIN],
+                })}
+                onChange={e => this.onChangeNumber(FIELDS.BPM_MIN, e)}
+                value={searchKey[FIELDS.BPM_MIN]}
+                type="number"
+                placeholder="min"
+              />
+              <input
+                className={classNames('form-control pp-input input-sm', {
+                  active: searchKey[FIELDS.BPM_MAX] !== emptySearchKey[FIELDS.BPM_MAX],
+                })}
+                onChange={e => this.onChangeNumber(FIELDS.BPM_MAX, e)}
+                value={searchKey[FIELDS.BPM_MAX]}
+                type="number"
+                placeholder="max"
+              />
+            </div>
+          </div>
+          <div className="filter-block">
+            <div className="head-text">difficulty</div>
+            <div className="inputs">
+              <input
+                className={classNames('form-control pp-input input-sm', {
+                  active: searchKey[FIELDS.DIFF_MIN] !== emptySearchKey[FIELDS.DIFF_MIN],
+                })}
+                onChange={e => this.onChangeNumber(FIELDS.DIFF_MIN, e)}
+                value={searchKey[FIELDS.DIFF_MIN]}
+                type="number"
+                placeholder="min"
+              />
+              <input
+                className={classNames('form-control pp-input input-sm', {
+                  active: searchKey[FIELDS.DIFF_MAX] !== emptySearchKey[FIELDS.DIFF_MAX],
+                })}
+                onChange={e => this.onChangeNumber(FIELDS.DIFF_MAX, e)}
+                value={searchKey[FIELDS.DIFF_MAX]}
+                type="number"
+                placeholder="max"
+              />
+            </div>
+          </div>
+        </div>
+        <div className="flexible-filters">
+          {isMania && (
+            <div className="filter-block">
+              <div className="head-text">keys</div>
+              <div className="select">
+                <select
+                  className={classNames('form-control input-sm', {
+                    active: searchKey[FIELDS.MANIA_K] !== emptySearchKey[FIELDS.MANIA_K],
+                  })}
+                  onChange={e => this.onChangeNumber(FIELDS.MANIA_K, e)}
+                  value={searchKey[FIELDS.MANIA_K]}
+                >
+                  <option value="-1">any</option>
+                  <option value="4">4k</option>
+                  <option value="5">5k</option>
+                  <option value="6">6k</option>
+                  <option value="7">7k</option>
+                  <option value="0">convert</option>
+                </select>
+              </div>
+            </div>
+          )}
+          <div className="filter-block">
+            <div className="head-text">DT</div>
+            <div className="select">
+              <select
+                className={classNames('form-control input-sm', {
+                  active: searchKey[FIELDS.DT] !== emptySearchKey[FIELDS.DT],
+                })}
+                onChange={e => this.onChange(FIELDS.DT, e)}
+                value={searchKey[FIELDS.DT]}
+              >
+                <option>any</option>
+                <option>yes</option>
+                <option>no</option>
+                <option value="ht">HT</option>
+              </select>
+            </div>
+          </div>
+          <div className="filter-block">
+            <div className="head-text">HD</div>
+            <div className="select">
+              <select
+                id="hd"
+                className={classNames('form-control input-sm', {
+                  active: searchKey[FIELDS.HD] !== emptySearchKey[FIELDS.HD],
+                })}
+                onChange={e => this.onChange(FIELDS.HD, e)}
+                value={searchKey[FIELDS.HD]}
+              >
+                <option>any</option>
+                <option>yes</option>
+                <option>no</option>
+              </select>
+            </div>
+          </div>
+          <div className="filter-block">
+            <div className="head-text">HR</div>
+            <div className="select">
+              <select
+                id="hr"
+                className={classNames('form-control input-sm', {
+                  active: searchKey[FIELDS.HR] !== emptySearchKey[FIELDS.HR],
+                })}
+                onChange={e => this.onChange(FIELDS.HR, e)}
+                value={searchKey[FIELDS.HR]}
+              >
+                <option>any</option>
+                <option>yes</option>
+                <option>no</option>
+              </select>
+            </div>
+          </div>
+          <div className="filter-block">
+            <div className="head-text">FL</div>
+            <div className="select">
+              <select
+                id="fl"
+                className={classNames('form-control input-sm', {
+                  active: searchKey[FIELDS.FL] !== emptySearchKey[FIELDS.FL],
+                })}
+                onChange={e => this.onChange(FIELDS.FL, e)}
+                value={searchKey[FIELDS.FL]}
+              >
+                <option>any</option>
+                <option>yes</option>
+                <option>no</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        {this.state.expandedView && (
+          <div className="expanded-filter">
+            <Select
+              closeMenuOnSelect={false}
+              className="select genre"
+              classNamePrefix="select"
+              placeholder="genre (empty = any genre)"
+              isMulti
+              options={genreOptions}
+              value={searchKey[FIELDS.GENRE]}
+              onChange={value => this.onChangeMulti(FIELDS.GENRE, value)}
+            />
+            <Select
+              closeMenuOnSelect={false}
+              className="select"
+              classNamePrefix="select"
+              placeholder="language (empty = any language)"
+              isMulti
+              options={languageOptions}
+              value={searchKey[FIELDS.LANG]}
+              onChange={value => this.onChangeMulti(FIELDS.LANG, value)}
+            />
+          </div>
+        )}
+        <div className="bottom-filter">
+          <button type="button" className="btn btn-sm btn-primary" onClick={this.toggleExpandView}>
+            {this.state.expandedView ? 'less' : 'more'}
+          </button>
+          <div className="spacer" />
+          <button
+            type="button"
+            className="btn btn-sm btn-reset"
+            onClick={() => {
+              if (window.confirm('Reset all filters?')) {
+                this.props.resetSearchKey();
+              }
+            }}
+          >
+            reset
+          </button>
+          <button
+            type="button"
+            className="btn btn-sm btn-primary apply"
+            onClick={() => this.props.recalculateVisibleData(match.params.mode)}
+          >
+            > apply
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   renderTable() {
+    if (isMobile) {
+      const { visibleData, searchKey, overweightnessCoefficient, match } = this.props;
+      const isMania = match.params.mode === modes.mania.text;
+      let count = 0;
+      Object.keys(searchKey).forEach(key => {
+        if (Array.isArray(searchKey[key])) {
+          if (searchKey[key].length) count++;
+          // eslint-disable-next-line eqeqeq
+        } else if (searchKey[key] != emptySearchKey[key]) {
+          count++;
+        }
+      });
+      return (
+        <>
+          <div className="mobile-filters">
+            <CollapsibleBar title={`filters ${count ? `(${count})` : ''}`}>
+              {this.renderMobileFilters()}
+            </CollapsibleBar>
+          </div>
+          <div className="cards-view">
+            {visibleData.map(item => (
+              <Card
+                key={`${item.b}_${item.m}`}
+                item={item}
+                overweightnessCoefficient={overweightnessCoefficient}
+                overweightnessMode={searchKey[FIELDS.MODE]}
+                isMania={isMania}
+                expandedView={this.state.expandedView}
+              />
+            ))}
+          </div>
+        </>
+      );
+    }
+
     return (
       <table className="table">
         {this.renderHead()}

@@ -3,6 +3,9 @@
   border-bottom: 1px solid #444;
   display: flex;
   min-height: 80px;
+  #last-update {
+    white-space: nowrap;
+  }
   .vertical-menus {
     align-items: flex-start;
     display: flex;
@@ -45,12 +48,12 @@
     padding-left: 0;
     .pp-word {
       color: #fff;
-      font-size: 28px;
+      font-size: 175%;
       cursor: default;
     }
     > li > a {
       color: #555;
-      font-size: 28px;
+      font-size: 175%;
       margin: 7px;
       &.active {
         color: #fff;
@@ -63,9 +66,47 @@
       }
     }
     > li + li::before {
-      font-size: 28px;
+      font-size: 175%;
       color: #555;
       content: '•';
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .top-bar {
+    min-height: 20px;
+    font-size: 2.5vw;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: flex-start;
+    padding-bottom: 1vw;
+    > .vertical-menus {
+      width: 100%;
+      margin-bottom: 0;
+      > nav {
+        height: auto;
+        > ul {
+          margin-bottom: 0vw;
+        }
+      }
+    }
+    > .spacer {
+      display: none;
+    }
+    > .last-update-block {
+      display: flex;
+      flex-flow: row nowrap;
+      align-items: baseline;
+      flex: 1 1 auto;
+      justify-content: flex-end;
+      > .author {
+        margin-left: 1.5vw;
+        img {
+          width: 4.5vw;
+          height: 4.5vw;
+        }
+      }
     }
   }
 }

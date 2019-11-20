@@ -88,7 +88,7 @@ class TopBar extends Component {
         <div className={classNames('loader-text', { loading: isLoadingData })}>
           {itemsCount > 0 ? `loaded ${itemsCount} maps` : 'loading...'}
         </div>
-        <div>
+        <div className="last-update-block">
           <div id="last-update" title={lastUpdatedTime || ''}>
             {isLoading ? 'loading...' : `last updated: ${lastUpdated}`}
           </div>

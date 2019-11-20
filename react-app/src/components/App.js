@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Route, Redirect, Switch } from 'react-router-dom';
+import classNames from 'classnames';
 
 import './App.scss';
 
@@ -8,10 +9,12 @@ import Table from 'components/Table/Table';
 import TopMappers from 'components/TopMappers/TopMappers';
 import Rankings from 'components/Rankings/Rankings';
 
+import { isMobile } from 'utils/browser';
+
 class App extends Component {
   render() {
     return (
-      <div className="container">
+      <div className={classNames('container', { mobile: isMobile })}>
         <Switch>
           <Route exact path="/" render={() => <Redirect to="/osu/maps" />} />
           <Route

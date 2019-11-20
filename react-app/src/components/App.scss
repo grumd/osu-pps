@@ -1,6 +1,5 @@
 .container {
   padding-bottom: 40px;
-  width: 1280px;
 
   .spacer {
     flex: 1 1 auto;
@@ -14,6 +13,30 @@
   .search-control {
     margin: 0;
   }
+
+  // &.mobile {
+  //   font-size: 10px;
+  //   .rt-table {
+  //     > div {
+  //       min-width: none !important;
+  //     }
+  //     .rt-td {
+  //       width: auto !important;
+  //       flex-shrink: 1 !important;
+  //     }
+  //   }
+  // }
+}
+
+@media (max-width: 640px) {
+  .container {
+    width: 100%;
+    padding: 0 1.5vw;
+
+    > .top-bar {
+      font-size: 2.5vw;
+    }
+  }
 }
 
 a,
@@ -22,7 +45,7 @@ a:hover {
 }
 a:visited,
 a:active {
-  color: #806044;
+  color: #a77d58;
 }
 input {
   background-color: #555 !important;
@@ -35,4 +58,9 @@ input[type='number']::-webkit-inner-spin-button {
 }
 input[type='number'] {
   -moz-appearance: textfield;
+}
+
+.btn-reset {
+  background-color: #734246;
+  border-color: #734246;
 }

@@ -17,6 +17,7 @@ const SEARCH_KEY_CHANGE = 'MAPS_DATA/SEARCH_KEY';
 const SHOW_MORE = 'MAPS_DATA/SHOW_MORE';
 const RECALC = 'MAPS_DATA/RECALC';
 const PROGRESS = 'MAPS_DATA/PROGRESS';
+const RESET_SEARCH_KEY = 'MAPS_DATA/RESET_SEARCH_KEY';
 
 function formattedToSeconds(minutes, seconds) {
   return minutes * 60 + seconds;
@@ -59,10 +60,17 @@ const getVisibleItems = (state, mode) => {
   const langList = searchKey[FIELDS.LANG].length
     ? searchKey[FIELDS.LANG].map(option => option.value)
     : null;
-
+  // const start = Date.now();
   const filteredData = data
-    .sort((a, b) => overweightnessCalc(b) - overweightnessCalc(a))
-    .filter((map, index) => {
+    .filter(map => {
+      if (searchWords.length) {
+        const linkText = `${map.art} - ${map.t} [${map.v}]`.toLowerCase();
+        const mapLink = `http://osu.ppy.sh/b/${map.b}`;
+        if (!searchWords.every(word => mapLink.indexOf(word) > -1 || linkText.indexOf(word) > -1)) {
+          return false;
+        }
+      }
+
       const mapMods = {
         dt: (map.m & 64) === 64,
         hd: (map.m & 8) === 8,
@@ -73,11 +81,6 @@ const getVisibleItems = (state, mode) => {
 
       const realBpm = mapMods.dt ? map.bpm * 1.5 : mapMods.ht ? map.bpm * 0.75 : map.bpm;
 
-      const mapLink = `http://osu.ppy.sh/b/${map.b}`;
-      const linkText = `${map.art} - ${map.t} [${map.v}]`.toLowerCase();
-      const searchMatches = searchWords.every(
-        word => mapLink.indexOf(word) > -1 || linkText.indexOf(word) > -1
-      );
       const genreMatches = !genreList || genreList.includes(map.g);
       const languageMatches = !langList || langList.includes(map.ln);
 
@@ -85,8 +88,9 @@ const getVisibleItems = (state, mode) => {
       const maniaKeyMatches =
         mode !== modes.mania.text || k === -1 || (k === 0 && !map.k) || k === map.k;
 
+      map.owCalc = overweightnessCalc(map);
+
       return (
-        searchMatches &&
         matchesMaxMin(map.pp99, searchKey[FIELDS.PP_MIN], searchKey[FIELDS.PP_MAX]) &&
         matchesMaxMin(realBpm, searchKey[FIELDS.BPM_MIN], searchKey[FIELDS.BPM_MAX]) &&
         matchesMaxMin(map.d, searchKey[FIELDS.DIFF_MIN], searchKey[FIELDS.DIFF_MAX]) &&
@@ -100,8 +104,10 @@ const getVisibleItems = (state, mode) => {
         modAllowed(searchKey[FIELDS.FL], mapMods.fl) &&
         (searchKey[FIELDS.DT] !== 'ht' || mapMods.ht)
       );
-    });
+    })
+    .sort((a, b) => b.owCalc - a.owCalc);
   const visibleData = filteredData.slice(0, visibleItemsCount);
+  // console.log(`Elapsed: ${Date.now() - start}`);
   return { filteredData, visibleData };
 };
 
@@ -247,6 +253,19 @@ export default function mapsDataReducer(state = initialState, action) {
         ...additionalState,
       };
     }
+    case RESET_SEARCH_KEY: {
+      const newState = {
+        ...state,
+        searchKey: emptySearchKey,
+      };
+      Object.keys(emptySearchKey).forEach(key => {
+        document.cookie = `${COOKIE_SEARCH_KEY}${key}=${emptySearchKey[key]}; path=/`;
+      });
+      return {
+        ...newState,
+        ...getVisibleItems(newState, state.lastMode),
+      };
+    }
     default:
       return state;
   }
@@ -291,6 +310,10 @@ export const updateSearchKey = (key, value) => ({
   type: SEARCH_KEY_CHANGE,
   key,
   value,
+});
+
+export const resetSearchKey = () => ({
+  type: RESET_SEARCH_KEY,
 });
 
 export const showMore = () => ({ type: SHOW_MORE });
