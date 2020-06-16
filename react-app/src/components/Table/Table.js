@@ -6,6 +6,7 @@ import classNames from 'classnames';
 import Select from 'react-select';
 import { FaRegClock, FaStar } from 'react-icons/fa';
 import { GiFarmer } from 'react-icons/gi';
+import ReactTimeAgo from 'react-time-ago';
 
 import {
   fetchMapsData,
@@ -18,7 +19,14 @@ import {
 
 import CollapsibleBar from 'components/CollapsibleBar';
 
-import { FIELDS, languageOptions, languageMap, genreOptions, genreMap } from 'constants/mapsData';
+import {
+  FIELDS,
+  languageOptions,
+  languageMap,
+  genreOptions,
+  genreMap,
+  rankedDateOptions,
+} from 'constants/mapsData';
 import { COOKIE_SEARCH_KEY, modes } from 'constants/common';
 
 import { overweightnessCalcFromMode } from 'utils/overweightness';
@@ -52,6 +60,8 @@ const coefficientSelector = createSelector(
 );
 
 const mapStateToProps = (state, props) => {
+  const mode = props.match.params.mode;
+  console.log(state.metadata[mode].lastUpdatedDate, state.metadata[mode]);
   return {
     hasData: !!dataSelector(state, props).length,
     visibleData: state.mapsData.visibleData,
@@ -60,6 +70,7 @@ const mapStateToProps = (state, props) => {
     searchKey: state.mapsData.searchKey,
     isLoading: state.mapsData.isLoading[props.match.params.mode],
     overweightnessCoefficient: coefficientSelector(state, props),
+    lastUpdatedDate: state.metadata[mode].lastUpdatedDate,
   };
 };
 
@@ -72,7 +83,14 @@ const mapDispatchToProps = {
 };
 
 const Card = React.memo(
-  ({ item, isMania, overweightnessCoefficient: coef, overweightnessMode, expandedView }) => {
+  ({
+    item,
+    isMania,
+    overweightnessCoefficient: coef,
+    overweightnessMode,
+    expandedView,
+    lastUpdatedDate,
+  }) => {
     var mods = {
       dt: (item.m & 64) === 64,
       hd: (item.m & 8) === 8,
@@ -153,7 +171,12 @@ const Card = React.memo(
               <span className="grey-title">language:</span>
               <span> {languageMap[item.ln]}, </span>
               <span className="grey-title">genre:</span>
-              <span> {genreMap[item.g]}</span>
+              <span> {genreMap[item.g]}, </span>
+              <span className="grey-title">ranked:</span>
+              <span>
+                {' '}
+                <ReactTimeAgo date={new Date(item.appr_h * 60 * 60 * 1000)} />
+              </span>
             </div>
           )}
         </div>
@@ -183,6 +206,7 @@ class TableBody extends PureComponent {
       overweightnessCoefficient: coef,
       expandedView,
       isMania,
+      lastUpdatedDate,
     } = this.props;
 
     return (
@@ -229,12 +253,21 @@ class TableBody extends PureComponent {
                   </a>
                 </div>
                 {expandedView && (
-                  <div className="genre-language">
-                    <span className="grey-title">language:</span>
-                    <span> {languageMap[item.ln]}, </span>
-                    <span className="grey-title">genre:</span>
-                    <span> {genreMap[item.g]}</span>
-                  </div>
+                  <>
+                    <div className="genre-language">
+                      <span className="grey-title">language:</span>
+                      <span> {languageMap[item.ln]}, </span>
+                      <span className="grey-title">genre:</span>
+                      <span> {genreMap[item.g]}</span>
+                    </div>
+                    <div className="genre-language">
+                      <span className="grey-title">ranked:</span>
+                      <span>
+                        {' '}
+                        <ReactTimeAgo date={new Date(item.appr_h * 60 * 60 * 1000)} />
+                      </span>
+                    </div>
+                  </>
                 )}
               </td>
               <td className="text-center">{(+item.pp99).toFixed(0)}</td>
@@ -592,6 +625,17 @@ class Table extends PureComponent {
                   value={searchKey[FIELDS.LANG]}
                   onChange={value => this.onChangeMulti(FIELDS.LANG, value)}
                 />
+                <Select
+                  isClearable
+                  className="select"
+                  classNamePrefix="select"
+                  placeholder="when song was ranked"
+                  options={rankedDateOptions}
+                  value={rankedDateOptions.find(opt => opt.value === searchKey[FIELDS.RANKED_DATE])}
+                  onChange={option =>
+                    this.onChangeExact(FIELDS.RANKED_DATE, option ? option.value : null)
+                  }
+                />
               </div>
             </td>
           </tr>
@@ -625,7 +669,13 @@ class Table extends PureComponent {
   }
 
   renderBody() {
-    const { visibleData, searchKey, overweightnessCoefficient, match } = this.props;
+    const {
+      visibleData,
+      searchKey,
+      overweightnessCoefficient,
+      match,
+      lastUpdatedDate,
+    } = this.props;
 
     return (
       <TableBody
@@ -634,6 +684,7 @@ class Table extends PureComponent {
         data={visibleData}
         overweightnessMode={searchKey[FIELDS.MODE]}
         overweightnessCoefficient={overweightnessCoefficient}
+        lastUpdatedDate={lastUpdatedDate}
       />
     );
   }
@@ -916,6 +967,14 @@ class Table extends PureComponent {
               value={searchKey[FIELDS.LANG]}
               onChange={value => this.onChangeMulti(FIELDS.LANG, value)}
             />
+            <Select
+              className="select"
+              classNamePrefix="select"
+              placeholder="when song was ranked"
+              options={rankedDateOptions}
+              value={rankedDateOptions.find(opt => opt.value === searchKey[FIELDS.RANKED_DATE])}
+              onChange={option => this.onChangeExact(FIELDS.RANKED_DATE, option.value)}
+            />
           </div>
         )}
         <div className="bottom-filter">
@@ -948,7 +1007,13 @@ class Table extends PureComponent {
 
   renderTable() {
     if (isMobile) {
-      const { visibleData, searchKey, overweightnessCoefficient, match } = this.props;
+      const {
+        visibleData,
+        searchKey,
+        overweightnessCoefficient,
+        match,
+        lastUpdatedDate,
+      } = this.props;
       const isMania = match.params.mode === modes.mania.text;
       let count = 0;
       Object.keys(searchKey).forEach(key => {
@@ -975,6 +1040,7 @@ class Table extends PureComponent {
                 overweightnessMode={searchKey[FIELDS.MODE]}
                 isMania={isMania}
                 expandedView={this.state.expandedView}
+                lastUpdatedDate={lastUpdatedDate}
               />
             ))}
           </div>

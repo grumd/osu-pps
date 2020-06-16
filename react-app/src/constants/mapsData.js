@@ -1,4 +1,5 @@
 export const FIELDS = {
+  RANKED_DATE: 'rankeddate',
   LANG: 'language',
   GENRE: 'genre',
   TEXT: 'text',
@@ -45,6 +46,15 @@ export const genreOptions = [
   { value: 10, label: 'electronic' },
   { value: 1, label: 'unspecified' },
   { value: 6, label: 'other' },
+];
+
+export const rankedDateOptions = [
+  { value: 7, label: 'last week' },
+  { value: 30, label: 'last 30 days' },
+  { value: 90, label: 'last 3 months' },
+  { value: 180, label: 'last 6 months' },
+  { value: 365, label: 'last year' },
+  { value: -1, label: 'all time' },
 ];
 
 export const languageMap = languageOptions.reduce(

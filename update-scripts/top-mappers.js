@@ -3,7 +3,7 @@ const _ = require('lodash/fp');
 const oneLineLog = require('single-line-log').stdout;
 
 const { get } = require('./axios');
-const { modes } = require('./constants');
+// const { modes } = require('./constants');
 const { levenshtein, getDiffHours, truncateFloat, files, parallelRun, delay } = require('./utils');
 
 const getFavs = async (id, from, count) => {
@@ -23,6 +23,7 @@ module.exports = async (mode) => {
   console.log(`Calculating TOP 20 pp mappers for ${mode.text}`);
 
   const mapCache = JSON.parse(fs.readFileSync(files.mapInfoCache(mode)));
+
   const sortedResults = JSON.parse(fs.readFileSync(files.mapsList(mode))).sort((a, b) => b.x - a.x);
 
   const mapperNames = [];
@@ -191,11 +192,14 @@ module.exports = async (mode) => {
   console.log();
   console.log('Recording temp data');
   fs.writeFileSync(files.tenMapsMappersTemp(mode), JSON.stringify(mappersWithTenMaps));
-
+  // const mappersWithTenMaps = JSON.parse(fs.readFileSync(files.tenMapsMappersTemp(mode), 'utf8'));
   const favsPerMapper = {};
   mappersWithTenMaps.forEach((mapper) => {
     mapper.favourites.forEach((fav) => {
       const mapperId = fav.user_id;
+      if (mapper.userId == mapperId) {
+        return;
+      }
       if (!favsPerMapper[mapperId]) {
         favsPerMapper[mapperId] = {
           count: 1,

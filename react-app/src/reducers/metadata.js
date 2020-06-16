@@ -34,6 +34,7 @@ const getReducer = mode => {
           isLoading: false,
           lastUpdated: new Date(action.data.lastUpdated).toLocaleDateString(),
           lastUpdatedTime: new Date(action.data.lastUpdated).toTimeString(),
+          lastUpdatedDate: new Date(action.data.lastUpdated),
         };
       default:
         return state;

@@ -60,6 +60,7 @@ const getVisibleItems = (state, mode) => {
   const langList = searchKey[FIELDS.LANG].length
     ? searchKey[FIELDS.LANG].map(option => option.value)
     : null;
+  const maxDaysSinceRanked = searchKey[FIELDS.RANKED_DATE] || -1;
   // const start = Date.now();
   const filteredData = data
     .filter(map => {
@@ -81,8 +82,12 @@ const getVisibleItems = (state, mode) => {
 
       const realBpm = mapMods.dt ? map.bpm * 1.5 : mapMods.ht ? map.bpm * 0.75 : map.bpm;
 
+      // console.log(maxDaysSinceRanked);
       const genreMatches = !genreList || genreList.includes(map.g);
       const languageMatches = !langList || langList.includes(map.ln);
+      const rankedDateMatches =
+        maxDaysSinceRanked === -1 ||
+        (Date.now() / 1000 / 60 / 60 - map.appr_h) / 24 < maxDaysSinceRanked;
 
       const k = searchKey[FIELDS.MANIA_K];
       const maniaKeyMatches =
@@ -91,13 +96,14 @@ const getVisibleItems = (state, mode) => {
       map.owCalc = overweightnessCalc(map);
 
       return (
+        genreMatches &&
+        languageMatches &&
+        maniaKeyMatches &&
+        rankedDateMatches &&
         matchesMaxMin(map.pp99, searchKey[FIELDS.PP_MIN], searchKey[FIELDS.PP_MAX]) &&
         matchesMaxMin(realBpm, searchKey[FIELDS.BPM_MIN], searchKey[FIELDS.BPM_MAX]) &&
         matchesMaxMin(map.d, searchKey[FIELDS.DIFF_MIN], searchKey[FIELDS.DIFF_MAX]) &&
         matchesMaxMin(map.l, length.min, length.max) &&
-        genreMatches &&
-        languageMatches &&
-        maniaKeyMatches &&
         modAllowed(searchKey[FIELDS.DT], mapMods.dt) &&
         modAllowed(searchKey[FIELDS.HD], mapMods.hd) &&
         modAllowed(searchKey[FIELDS.HR], mapMods.hr) &&
@@ -114,6 +120,7 @@ const getVisibleItems = (state, mode) => {
 export const emptySearchKey = {
   [FIELDS.LANG]: [],
   [FIELDS.GENRE]: [],
+  [FIELDS.RANKED_DATE]: null,
   [FIELDS.TEXT]: '',
   [FIELDS.PP_MIN]: '',
   [FIELDS.PP_MAX]: '',

@@ -89,11 +89,11 @@
   }
 }
 
-.select.genre {
-  margin-right: 15px;
+.select + .select {
+  margin-left: 15px;
 }
 .select {
-  width: 272px;
+  width: 250px;
   font-size: 12px;
   .select__control {
     min-height: 30px;

@@ -9,6 +9,12 @@
     border: 1px solid #000;
     background-color: #555;
     color: #fff;
+    .select__placeholder {
+      color: hsl(0, 0%, 65%);
+    }
+    .select__single-value {
+      color: #fff;
+    }
   }
   .search-control {
     margin: 0;
