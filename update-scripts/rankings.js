@@ -3,7 +3,14 @@ const oneLineLog = require('single-line-log').stdout;
 const axios = require('./axios');
 
 // const { modes } = require('./constants');
-const { simplifyMods, trimModsForRankings, files, parallelRun, delay } = require('./utils');
+const {
+  simplifyMods,
+  trimModsForRankings,
+  files,
+  parallelRun,
+  delay,
+  writeFileSync,
+} = require('./utils');
 const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
 
 const getUrl = (userId, modeId) =>
@@ -14,7 +21,7 @@ const fetchUser = (userId, modeId, retryCount = 0) => {
     return Promise.reject(new Error('Too many retries'));
   }
   retryCount && oneLineLog(`Retry #${retryCount}`);
-  return axios.get(getUrl(userId, modeId)).catch(err => {
+  return axios.get(getUrl(userId, modeId)).catch((err) => {
     console.log('Error:', err.message);
     return delay(5000).then(() => fetchUser(userId, modeId, retryCount + 1));
   });
@@ -25,12 +32,12 @@ const fetchUserRank = ({ userId, modeId }) => {
     .then(({ data }) => {
       return data[0].pp_rank;
     })
-    .catch(error => {
+    .catch((error) => {
       console.log('\x1b[33m%s\x1b[0m', error.message);
     });
 };
 
-module.exports = mode => {
+module.exports = (mode) => {
   console.log('3. CALCULATING RANKINGS');
   const players = JSON.parse(fs.readFileSync(files.userIdsList(mode)));
   const scores = JSON.parse(fs.readFileSync(files.userMapsList(mode)));
@@ -42,7 +49,7 @@ module.exports = mode => {
   let sum = 0;
   let count = 0;
   const mapsDataWithAdjValue = mapsData
-    .map(item => {
+    .map((item) => {
       const x = +item.x / Math.pow(item.adj || 1, 0.65) / Math.pow(+item.h || 1, 0.35);
       maxOW = maxOW < x ? x : maxOW;
       if (x > 0.00005) {
@@ -75,7 +82,7 @@ module.exports = mode => {
       oneLineLog(`// Getting values for player ${player.name}, #${index}/${array.length}`);
       // no scores - no player in rankings
       let newScores = [];
-      playerScores.forEach(scoreString => {
+      playerScores.forEach((scoreString) => {
         const scoreArray = scoreString.split('_');
         const score = {
           b: scoreArray[0],
@@ -83,9 +90,9 @@ module.exports = mode => {
           pp: scoreArray[2],
         };
         const allMaps = mapsDictionary[score.b];
-        const nomodOrDtMaps = allMaps.filter(map => map.m == trimModsForRankings(score.m));
+        const nomodOrDtMaps = allMaps.filter((map) => map.m == trimModsForRankings(score.m));
         if (allMaps.length) {
-          const thisMap = allMaps.find(map => map.m == simplifyMods(score.m));
+          const thisMap = allMaps.find((map) => map.m == simplifyMods(score.m));
           const thisMapX = thisMap ? thisMap.x : 0;
           const maxLocal = allMaps.reduce((acc, map) => (acc > map.x ? acc : map.x), 0);
           const maxLocalNomodOrDt = nomodOrDtMaps.reduce(
@@ -132,35 +139,34 @@ module.exports = mode => {
     }
   };
 
-  let rankings = players.map(getFarmValue).filter(a => a && a.s && a.s.length); // filter out no scores players
+  let rankings = players.map(getFarmValue).filter((a) => a && a.s && a.s.length); // filter out no scores players
   console.log();
   console.log(
     'Recorded rankings values, getting old rank via API for ' + rankings.length + ' players'
   );
   return parallelRun({
     items: rankings,
-    job: player => {
+    job: (player) => {
       return fetchUserRank({ userId: player.id, modeId: mode.id })
-        .then(rank => {
+        .then((rank) => {
           oneLineLog(
             `Recorded #${rank} for ${player.n} (${rankings.indexOf(player)}/${rankings.length})`
           );
           player.rank1 = rank;
         })
-        .catch(e => {
+        .catch((e) => {
           console.log();
           console.log(`Couldnt get rank for ${player.n}`);
           console.log(e.message);
         });
     },
   }).then(() => {
-    rankings = rankings.filter(player => player.rank1);
+    rankings = rankings.filter((player) => player.rank1);
     rankings = rankings.sort((a, b) => a.rank1 - b.rank1);
-    fs.writeFileSync(files.dataRankings(mode), JSON.stringify(rankings));
+    writeFileSync(files.dataRankings(mode), JSON.stringify(rankings));
     console.log();
     console.log('Finished calculating rankings!');
   });
 };
 
 // module.exports(modes.osu);
-// fs.copyFileSync(files.dataRankings(modes.osu), '../react-app/public/data-osu-rankings.json');

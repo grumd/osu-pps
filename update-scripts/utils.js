@@ -1,3 +1,4 @@
+const fs = require('fs');
 const exec = require('child_process').exec;
 
 const files = {
@@ -9,19 +10,19 @@ const files = {
   mapInfoCache: (mode) => `./temp/${mode.text}/map-cache.json`,
   mapsList: (mode) => `./temp/${mode.text}/maps.json`,
   mapsDetailedList: (mode) => `./temp/${mode.text}/maps-detailed.json`,
-  mappersList: (mode) => `./temp/${mode.text}/mappers.json`,
   ppBlocks: (mode) => `./temp/${mode.text}/pp-blocks.json`,
-  data: (mode) => `./../data-${mode.text}.json`,
+  dataRankings: (mode) => `./temp/${mode.text}/data-rankings-full.json`,
   metadata: (mode) => `./../metadata-${mode.text}.json`,
-  dataBackup: (mode) => `./../data-${mode.text}-backup.json`,
-  dataMappers: (mode) => `./../data-${mode.text}-mappers.json`,
-  dataRankings: (mode) => `./../data-${mode.text}-rankings.json`,
-  dataRankingsCompressed: (mode) => `./../data-${mode.text}-rankings-compressed.json`,
-  dataRankingsInfo: (mode) => `./../data-${mode.text}-rankings-diff-info.json`,
   mappersPlaycountTxt: (mode) => `./temp/${mode.text}/mappers-playcount.txt`,
   mappersFavsTxt: (mode) => `./temp/${mode.text}/mappers-favs.txt`,
   tenMapsMappersTemp: (mode) => `./temp/${mode.text}/mappers-ten-maps.json`,
-  mappersFavTop: (mode) => `./../data-${mode.text}-mappers-favs-top.json`,
+  // data folder
+  mapsetsCsv: (mode) => `./../data/maps/${mode.text}/mapsets.csv`,
+  diffsCsv: (mode) => `./../data/maps/${mode.text}/diffs.csv`,
+  dataMappers: (mode) => `./../data/mappers/${mode.text}/pp-mappers.json`,
+  mappersFavTop: (mode) => `./../data/mappers/${mode.text}/favored-mappers.json`,
+  dataRankingsCompressed: (mode) => `./../data/ranking/${mode.text}/compressed.json`,
+  dataRankingsInfo: (mode) => `./../data/ranking/${mode.text}/map-infos.json`,
 };
 
 const uniq = (array, getKey = (item) => item) => {
@@ -192,6 +193,14 @@ const parallelRun = ({ items = [], job = () => {}, concurrentLimit = 3, minReque
   return Promise.all(remainingItems.splice(0, concurrentLimit).map(attachNextJobStarter));
 };
 
+const writeFileSync = (path, ...rest) => {
+  const folderPath = path.slice(0, path.lastIndexOf('/'));
+  if (!fs.existsSync(folderPath)) {
+    fs.mkdirSync(folderPath, { recursive: true });
+  }
+  fs.writeFileSync(path, ...rest);
+};
+
 module.exports = {
   parallelRun,
   delay,
@@ -204,4 +213,5 @@ module.exports = {
   simplifyMods,
   trimModsForRankings,
   modsToString,
+  writeFileSync,
 };

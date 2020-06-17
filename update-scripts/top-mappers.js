@@ -2,9 +2,18 @@ const fs = require('fs');
 const _ = require('lodash/fp');
 const oneLineLog = require('single-line-log').stdout;
 
+const { DEBUG } = require('./constants');
 const { get } = require('./axios');
 // const { modes } = require('./constants');
-const { levenshtein, getDiffHours, truncateFloat, files, parallelRun, delay } = require('./utils');
+const {
+  levenshtein,
+  getDiffHours,
+  truncateFloat,
+  files,
+  parallelRun,
+  delay,
+  writeFileSync,
+} = require('./utils');
 
 const getFavs = async (id, from, count) => {
   try {
@@ -23,7 +32,6 @@ module.exports = async (mode) => {
   console.log(`Calculating TOP 20 pp mappers for ${mode.text}`);
 
   const mapCache = JSON.parse(fs.readFileSync(files.mapInfoCache(mode)));
-
   const sortedResults = JSON.parse(fs.readFileSync(files.mapsList(mode))).sort((a, b) => b.x - a.x);
 
   const mapperNames = [];
@@ -155,18 +163,21 @@ module.exports = async (mode) => {
 
   const byPlaycount = _.orderBy(['playcount'], ['desc'], list).slice(0, 51);
   const byFavs = _.orderBy(['favs'], ['desc'], list).slice(0, 51);
-  fs.writeFileSync(
+  writeFileSync(
     files.mappersPlaycountTxt(mode),
     byPlaycount.map((x) => `${x.names.join('/')}\t${(x.playcount / 1000000).toFixed(0)}`).join('\n')
   );
-  fs.writeFileSync(
+  writeFileSync(
     files.mappersFavsTxt(mode),
     byFavs.map((x) => `${x.names.join('/')}\t${x.favs.toFixed(0)}`).join('\n')
   );
 
-  const mappersWithTenMaps = _.filter((mapper) => mapper.mapsets > 9, list);
+  const mappersWithTenMaps = _.flow(
+    _.filter((mapper) => mapper.mapsets >= 3),
+    DEBUG ? (items) => items.slice(0, 5) : _.identity
+  )(list);
 
-  console.log('Mappers with 10+ maps ranked:', mappersWithTenMaps.length);
+  console.log('Mappers with 3+ maps ranked:', mappersWithTenMaps.length);
 
   await parallelRun({
     items: mappersWithTenMaps,
@@ -191,32 +202,39 @@ module.exports = async (mode) => {
   });
   console.log();
   console.log('Recording temp data');
-  fs.writeFileSync(files.tenMapsMappersTemp(mode), JSON.stringify(mappersWithTenMaps));
+  writeFileSync(files.tenMapsMappersTemp(mode), JSON.stringify(mappersWithTenMaps));
   // const mappersWithTenMaps = JSON.parse(fs.readFileSync(files.tenMapsMappersTemp(mode), 'utf8'));
   const favsPerMapper = {};
   mappersWithTenMaps.forEach((mapper) => {
-    mapper.favourites.forEach((fav) => {
-      const mapperId = fav.user_id;
-      if (mapper.userId == mapperId) {
-        return;
-      }
-      if (!favsPerMapper[mapperId]) {
-        favsPerMapper[mapperId] = {
-          count: 1,
-          mapperId,
-          names: [fav.creator],
-        };
-      } else {
-        favsPerMapper[mapperId].count++;
-        if (!favsPerMapper[mapperId].names.includes(fav.creator)) {
-          favsPerMapper[mapperId].names.push(fav.creator);
+    mapper.favourites &&
+      mapper.favourites.forEach((fav) => {
+        const mapperId = fav.user_id;
+        if (mapper.userId == mapperId) {
+          return;
         }
-      }
-    });
+
+        // Weight of the mapper's vote:
+        // -- 3 maps ranked -> 0.125 votes
+        // -- 10+ maps ranked -> 1 vote (maximum)
+        const weight = Math.min(1, (mapper.mapsets - 2) / 8);
+
+        if (!favsPerMapper[mapperId]) {
+          favsPerMapper[mapperId] = {
+            count: weight,
+            mapperId,
+            names: [fav.creator],
+          };
+        } else {
+          favsPerMapper[mapperId].count += weight;
+          if (!favsPerMapper[mapperId].names.includes(fav.creator)) {
+            favsPerMapper[mapperId].names.push(fav.creator);
+          }
+        }
+      });
   });
 
   console.log('Recorded top of mappers by mapper favs');
-  fs.writeFileSync(
+  writeFileSync(
     files.mappersFavTop(mode),
     JSON.stringify(_.orderBy(['count'], ['desc'], _.values(favsPerMapper)))
   );
@@ -252,7 +270,7 @@ module.exports = async (mode) => {
       .map(transformMapList(true)),
   };
 
-  fs.writeFileSync(files.mappersList(mode), JSON.stringify(resultingObject));
+  writeFileSync(files.dataMappers(mode), JSON.stringify(resultingObject));
   console.log('Finished calculating TOP 20 mappers!');
 };
 

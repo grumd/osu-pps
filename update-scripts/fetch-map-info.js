@@ -3,7 +3,7 @@
 const axios = require('./axios');
 const oneLineLog = require('single-line-log').stdout;
 const fs = require('fs');
-const { truncateFloat, delay, getDiffHours, files } = require('./utils');
+const { truncateFloat, delay, getDiffHours, files, writeFileSync } = require('./utils');
 const { modes } = require('./constants');
 
 const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
@@ -100,8 +100,8 @@ module.exports = (mode) => {
               .map((mapId) => maps[mapId])
               .sort((a, b) => b.x - a.x);
             lastSaveAt = index + 1;
-            fs.writeFileSync(files.mapsDetailedList(mode), JSON.stringify(arrayMaps));
-            fs.writeFileSync(files.mapInfoCache(mode), JSON.stringify(mapsCache));
+            writeFileSync(files.mapsDetailedList(mode), JSON.stringify(arrayMaps));
+            writeFileSync(files.mapInfoCache(mode), JSON.stringify(mapsCache));
           }
         });
       });
@@ -111,8 +111,8 @@ module.exports = (mode) => {
       const arrayMaps = Object.keys(maps)
         .map((mapId) => maps[mapId])
         .sort((a, b) => b.x - a.x);
-      fs.writeFileSync(files.mapsDetailedList(mode), JSON.stringify(arrayMaps));
-      fs.writeFileSync(files.mapInfoCache(mode), JSON.stringify(mapsCache));
+      writeFileSync(files.mapsDetailedList(mode), JSON.stringify(arrayMaps));
+      writeFileSync(files.mapInfoCache(mode), JSON.stringify(mapsCache));
       console.log(
         `${arrayMaps.length} maps saved. Done fetching detailed map info! (${mode.text})`
       );

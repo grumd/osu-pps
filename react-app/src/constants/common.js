@@ -17,4 +17,4 @@ export const modes = {
     id: 3,
   },
 };
-export const DEBUG_FETCH = true;
+export const DEBUG_FETCH = false;

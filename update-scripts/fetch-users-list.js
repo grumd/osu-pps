@@ -6,7 +6,7 @@ const fs = require('fs');
 
 const axios = require('./axios');
 const { DEBUG } = require('./constants');
-const { uniq, delay, files } = require('./utils');
+const { uniq, delay, files, writeFileSync } = require('./utils');
 
 const getUsersUrl = (modeText, page, country) =>
   `https://osu.ppy.sh/rankings/${modeText}/performance?page=${page}` +
@@ -15,9 +15,9 @@ const getUsersUrl = (modeText, page, country) =>
 let idsList = [];
 let countriesList = [];
 
-const saveIdsToFile = mode => {
-  fs.writeFileSync(files.userIdsList(mode), JSON.stringify(idsList));
-  fs.writeFileSync(files.userIdsDate(mode), JSON.stringify(new Date()));
+const saveIdsToFile = (mode) => {
+  writeFileSync(files.userIdsList(mode), JSON.stringify(idsList));
+  writeFileSync(files.userIdsDate(mode), JSON.stringify(new Date()));
 };
 
 const fetchCountryPage = (modeText, page, country, retryCount = 0) => {
@@ -26,7 +26,7 @@ const fetchCountryPage = (modeText, page, country, retryCount = 0) => {
     return Promise.reject();
   }
   oneLineLog(`Fetching page #${page} (${modeText})` + (retryCount ? ` Retry #${retryCount}` : ''));
-  return axios.get(getUsersUrl(modeText, page, country)).catch(err => {
+  return axios.get(getUsersUrl(modeText, page, country)).catch((err) => {
     console.log('Error:', err.message);
     console.log(err);
     return delay(10000).then(() => fetchCountryPage(modeText, page, country, retryCount + 1));
@@ -54,11 +54,7 @@ const savePage = (modeText, data, page, country) => {
         name: userLink.text().trim(),
         id: userLink.attr('data-user-id'),
         pp: parseInt(
-          tableRow
-            .find('.ranking-page-table__column--focused')
-            .text()
-            .replace(/[,.]/g, '')
-            .trim(),
+          tableRow.find('.ranking-page-table__column--focused').text().replace(/[,.]/g, '').trim(),
           10
         ),
       };
@@ -66,8 +62,8 @@ const savePage = (modeText, data, page, country) => {
     .get();
   const filteredUsers =
     countriesList.indexOf(country) > 50
-      ? users.filter(user => user.pp > 6000) // for bottom 100 countries we only get top 12k rank people (>6000pp)
-      : users.filter(user => user.pp > 1000); // for top 50 countries we get >1000pp people
+      ? users.filter((user) => user.pp > 6000) // for bottom 100 countries we only get top 12k rank people (>6000pp)
+      : users.filter((user) => user.pp > 1000); // for top 50 countries we get >1000pp people
 
   if (!filteredUsers.length) {
     oneLineLog('Didnt find users with enough total pp');
@@ -76,7 +72,7 @@ const savePage = (modeText, data, page, country) => {
   }
   oneLineLog(`Found ${filteredUsers.length} users on page ${page}`);
 
-  idsList = uniq(idsList.concat(filteredUsers), user => user.id);
+  idsList = uniq(idsList.concat(filteredUsers), (user) => user.id);
   // idsList = uniq(idsList.concat(getIdList(data)));
   // console.log(`Saved page #${page} for ${country}`);
   if (page >= 200 || DEBUG) {
@@ -86,12 +82,12 @@ const savePage = (modeText, data, page, country) => {
   }
   return delay(2000)
     .then(() => startFetchingPages(modeText, page + 1, country))
-    .catch(err => {
+    .catch((err) => {
       console.log('Error saving list:', err.message);
     });
 };
 
-module.exports = mode => {
+module.exports = (mode) => {
   idsList = [];
   if (!DEBUG) {
     if (fs.existsSync(files.userIdsDate(mode))) {
@@ -100,9 +96,7 @@ module.exports = mode => {
         if (new Date() - new Date(lastUpdatedDate) < 14 * 24 * 60 * 60 * 1000) {
           idsList = JSON.parse(fs.readFileSync(files.userIdsList(mode)));
           console.log(
-            `Last update for ${mode.text} was at ${lastUpdatedDate}, using cached list with ${
-              idsList.length
-            } user ids`
+            `Last update for ${mode.text} was at ${lastUpdatedDate}, using cached list with ${idsList.length} user ids`
           );
           return Promise.resolve();
         }
@@ -114,7 +108,7 @@ module.exports = mode => {
       console.log(`Ids backup not found`);
     }
     console.log(`Clearing old user IDs list`);
-    fs.writeFileSync(files.userIdsList(mode), '[]');
+    writeFileSync(files.userIdsList(mode), '[]');
   }
   countriesList = JSON.parse(fs.readFileSync(files.countriesList(mode)));
   return countriesList
