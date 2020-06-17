@@ -9,6 +9,7 @@ const fetchMapInfo = require('./fetch-map-info');
 const calculateTopMappers = require('./top-mappers');
 const calculateRankings = require('./rankings');
 const compressRankings = require('./rankings-compress');
+const organizeData = require('./organize-data');
 
 let jobIsRunning = false;
 
@@ -20,6 +21,7 @@ const updateModeData = (mode = modes.osu) => {
     .then(() => calculateRankings(mode))
     .then(() => compressRankings(mode))
     .then(() => calculateTopMappers(mode))
+    .then(() => organizeData(mode))
     .then(() => {
       if (fs.existsSync(files.data(mode))) {
         fs.renameSync(files.data(mode), files.dataBackup(mode));
