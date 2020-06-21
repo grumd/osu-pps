@@ -1,6 +1,6 @@
 {
   "name": "react-app",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "dependencies": {
     "localforage": "1.7.3",
