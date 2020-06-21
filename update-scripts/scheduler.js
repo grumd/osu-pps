@@ -22,13 +22,13 @@ const updateModeData = (mode = modes.osu) => {
     .then(() => {
       if (!DEBUG) {
         console.log('Saved all info, updating origin');
-        return runScript('push.sh');
+        return runScript('push-safe.sh');
       } else {
         console.log('Saved all info, debug is on - not updating origin');
       }
     })
-    .then((text) => console.log(text))
-    .catch((err) => console.error(err));
+    .then(text => console.log(text))
+    .catch(err => console.error(err));
 };
 
 const job = () => {
@@ -40,9 +40,9 @@ const job = () => {
   jobIsRunning = true;
   return Promise.resolve()
     .then(() => updateModeData(modes.osu))
-    .then(() => !DEBUG && updateModeData(modes.mania))
-    .then(() => !DEBUG && updateModeData(modes.taiko))
-    .then(() => !DEBUG && updateModeData(modes.fruits))
+    .then(() => updateModeData(modes.mania))
+    .then(() => updateModeData(modes.taiko))
+    .then(() => updateModeData(modes.fruits))
     .then(() => {
       console.log('Finished an updater cron job');
       jobIsRunning = false;

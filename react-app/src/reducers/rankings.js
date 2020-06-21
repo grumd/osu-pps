@@ -4,7 +4,7 @@ import _ from 'lodash/fp';
 
 import { fetchJson, fetchJsonPartial } from 'utils/fetch';
 
-import { DEBUG_FETCH } from 'constants/common';
+import { API_PREFIX, DEBUG_FETCH } from 'constants/common';
 import { getRankingsStorageKey, getRankingsDateStorageKey } from 'constants/storage';
 
 import { fetchMetadata } from 'reducers/metadata';
@@ -102,9 +102,7 @@ export const fetchRankings = mode => {
     const lastUpdatedFromStorage = await storage.getItem(getRankingsDateStorageKey(mode));
     try {
       const diffInfoArray = await fetchJson({
-        url: DEBUG_FETCH
-          ? `/data-${mode}-rankings-diff-info.json`
-          : `https://raw.githubusercontent.com/grumd/osu-pps/master/data-${mode}-rankings-diff-info.json`,
+        url: `${API_PREFIX}/data/ranking/${mode}/map-infos.json`,
       });
       const diffInfoArrayTransformed = diffInfoArray.map(infoItem => {
         const spacePosition = infoItem.indexOf(' ');
@@ -121,9 +119,7 @@ export const fetchRankings = mode => {
         }
       }
       const dataCompressed = await fetchJsonPartial({
-        url: DEBUG_FETCH
-          ? `/data-${mode}-rankings-compressed.json`
-          : `https://raw.githubusercontent.com/grumd/osu-pps/master/data-${mode}-rankings-compressed.json`,
+        url: `${API_PREFIX}/data/ranking/${mode}/compressed.json`,
         intermediateIntervalBytes: 500000,
         onIntermediateDataReceived: data => {
           if (!_.isEmpty(data)) {

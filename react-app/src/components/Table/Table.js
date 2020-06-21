@@ -27,7 +27,7 @@ import {
   genreMap,
   rankedDateOptions,
 } from 'constants/mapsData';
-import { COOKIE_SEARCH_KEY, modes } from 'constants/common';
+import { getCookieSearchKey, modes } from 'constants/common';
 
 import { overweightnessCalcFromMode } from 'utils/overweightness';
 import { isMobile } from 'utils/browser';
@@ -45,12 +45,13 @@ function secondsToFormatted(length) {
 const okGlyph = <span className="glyphicon glyphicon-ok" />;
 const htGlyph = <span className="glyphicon glyphicon-time" />;
 
-const dataSelector = (state, props) => state.mapsData.dataByMode[props.match.params.mode];
+const rootSelector = (state, props) => state.mapsData[props.match.params.mode];
+const dataSelector = (state, props) => rootSelector(state, props).data;
 
 const coefficientSelector = createSelector(
-  [dataSelector, state => state.mapsData.searchKey[FIELDS.MODE]],
-  (data, mode) => {
-    const calc = overweightnessCalcFromMode[mode];
+  [dataSelector, (state, props) => rootSelector(state, props).searchKey[FIELDS.MODE]],
+  (data, owMode) => {
+    const calc = overweightnessCalcFromMode[owMode];
     const maxOverweightness = data.reduce((max, item) => {
       const current = calc(item);
       return current > max ? current : max;
@@ -61,14 +62,15 @@ const coefficientSelector = createSelector(
 
 const mapStateToProps = (state, props) => {
   const mode = props.match.params.mode;
-  console.log(state.metadata[mode].lastUpdatedDate, state.metadata[mode]);
+  const mapsData = rootSelector(state, props);
   return {
-    hasData: !!dataSelector(state, props).length,
-    visibleData: state.mapsData.visibleData,
-    isShowMoreVisible: state.mapsData.visibleItemsCount < state.mapsData.filteredData.length,
-    visibleItemsCount: state.mapsData.visibleItemsCount,
-    searchKey: state.mapsData.searchKey,
-    isLoading: state.mapsData.isLoading[props.match.params.mode],
+    mode,
+    hasData: !!rootSelector(state, props).receivedAt,
+    visibleData: mapsData.visibleData,
+    isShowMoreVisible: mapsData.visibleItemsCount < mapsData.filteredData.length,
+    visibleItemsCount: mapsData.visibleItemsCount,
+    searchKey: mapsData.searchKey,
+    isLoading: mapsData.isLoading,
     overweightnessCoefficient: coefficientSelector(state, props),
     lastUpdatedDate: state.metadata[mode].lastUpdatedDate,
   };
@@ -206,7 +208,6 @@ class TableBody extends PureComponent {
       overweightnessCoefficient: coef,
       expandedView,
       isMania,
-      lastUpdatedDate,
     } = this.props;
 
     return (
@@ -311,45 +312,50 @@ class Table extends PureComponent {
   }
 
   componentDidMount() {
-    const { isLoading, hasData, match } = this.props;
+    const { isLoading, hasData, mode } = this.props;
     if (!isLoading && !hasData) {
-      this.props.fetchMapsData(match.params.mode);
+      this.props.fetchMapsData(mode);
     }
   }
 
   componentDidUpdate(prevProps) {
-    const { match, isLoading, hasData } = this.props;
+    const { isLoading, hasData, mode } = this.props;
     if (!hasData && !isLoading) {
-      this.props.fetchMapsData(match.params.mode);
+      this.props.fetchMapsData(mode);
     }
-    if (prevProps.match.params.mode !== match.params.mode) {
-      this.props.recalculateVisibleData(match.params.mode);
-    }
+    // if (prevProps.mode !== mode) {
+      // Do we need it?
+      // this.props.recalculateVisibleData(mode);
+    // }
   }
 
   onChangeExact(key, value) {
-    document.cookie = `${COOKIE_SEARCH_KEY}${key}=${value}; path=/`;
-    this.props.updateSearchKey(key, value);
+    const { mode } = this.props;
+    document.cookie = `${getCookieSearchKey({ key, mode })}=${value}; path=/`;
+    this.props.updateSearchKey(mode, key, value);
   }
 
   onChangeMulti(key, array) {
+    const { mode } = this.props;
     const cookieValue = array.map(option => option.value).join(',');
-    document.cookie = `${COOKIE_SEARCH_KEY}${key}=${cookieValue}; path=/`;
-    this.props.updateSearchKey(key, array);
+    document.cookie = `${getCookieSearchKey({ key, mode })}=${cookieValue}; path=/`;
+    this.props.updateSearchKey(mode, key, array);
   }
 
   onChange(key, e) {
+    const { mode } = this.props;
     const value = e.target.value;
-    document.cookie = `${COOKIE_SEARCH_KEY}${key}=${value}; path=/`;
+    document.cookie = `${getCookieSearchKey({ key, mode })}=${value}; path=/`;
 
-    this.props.updateSearchKey(key, value);
+    this.props.updateSearchKey(mode, key, value);
   }
 
   onChangeNumber(key, e, trailZeros = false) {
+    const { mode } = this.props;
     const value = e.target.value === '' ? '' : parseFloat(e.target.value);
-    document.cookie = `${COOKIE_SEARCH_KEY}${key}=${e.target.value}; path=/`;
+    document.cookie = `${getCookieSearchKey({ key, mode })}=${e.target.value}; path=/`;
 
-    this.props.updateSearchKey(key, value);
+    this.props.updateSearchKey(mode, key, value);
   }
 
   toggleExpandView = () => {
@@ -357,8 +363,8 @@ class Table extends PureComponent {
   };
 
   renderHead() {
-    const { searchKey, match } = this.props;
-    const isMania = match.params.mode === modes.mania.text;
+    const { searchKey, mode } = this.props;
+    const isMania = mode === modes.mania.text;
 
     return (
       <thead>
@@ -594,7 +600,7 @@ class Table extends PureComponent {
             <button
               type="button"
               className="btn btn-sm btn-primary apply"
-              onClick={() => this.props.recalculateVisibleData(match.params.mode)}
+              onClick={() => this.props.recalculateVisibleData(mode)}
             >
               > apply filters
             </button>
@@ -669,17 +675,11 @@ class Table extends PureComponent {
   }
 
   renderBody() {
-    const {
-      visibleData,
-      searchKey,
-      overweightnessCoefficient,
-      match,
-      lastUpdatedDate,
-    } = this.props;
+    const { visibleData, searchKey, overweightnessCoefficient, mode, lastUpdatedDate } = this.props;
 
     return (
       <TableBody
-        isMania={match.params.mode === modes.mania.text}
+        isMania={mode === modes.mania.text}
         expandedView={this.state.expandedView}
         data={visibleData}
         overweightnessMode={searchKey[FIELDS.MODE]}
@@ -690,8 +690,8 @@ class Table extends PureComponent {
   }
 
   renderMobileFilters() {
-    const { searchKey, match } = this.props;
-    const isMania = match.params.mode === modes.mania.text;
+    const { searchKey, mode } = this.props;
+    const isMania = mode === modes.mania.text;
     return (
       <div className="mobile-filters-inside">
         <div className="top-filter">
@@ -987,7 +987,7 @@ class Table extends PureComponent {
             className="btn btn-sm btn-reset"
             onClick={() => {
               if (window.confirm('Reset all filters?')) {
-                this.props.resetSearchKey();
+                this.props.resetSearchKey(mode);
               }
             }}
           >
@@ -996,7 +996,7 @@ class Table extends PureComponent {
           <button
             type="button"
             className="btn btn-sm btn-primary apply"
-            onClick={() => this.props.recalculateVisibleData(match.params.mode)}
+            onClick={() => this.props.recalculateVisibleData(mode)}
           >
             > apply
           </button>
@@ -1011,10 +1011,10 @@ class Table extends PureComponent {
         visibleData,
         searchKey,
         overweightnessCoefficient,
-        match,
+        mode,
         lastUpdatedDate,
       } = this.props;
-      const isMania = match.params.mode === modes.mania.text;
+      const isMania = mode === modes.mania.text;
       let count = 0;
       Object.keys(searchKey).forEach(key => {
         if (Array.isArray(searchKey[key])) {

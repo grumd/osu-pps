@@ -1,4 +1,4 @@
-export const COOKIE_SEARCH_KEY = 'osupps_1.2_key_';
+export const getCookieSearchKey = ({ key, mode }) => `osupps_1.3_key_${key}_mode_${mode}`;
 export const modes = {
   osu: {
     text: 'osu',
@@ -18,3 +18,6 @@ export const modes = {
   },
 };
 export const DEBUG_FETCH = false;
+export const API_PREFIX = DEBUG_FETCH
+  ? './'
+  : 'https://raw.githubusercontent.com/grumd/osu-pps/data/';

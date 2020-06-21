@@ -6,9 +6,9 @@ now=$(date +'%m/%d/%Y')
 echo $now
 echo
 git status
-git checkout master
+git checkout data
 git add .
 git commit --amend -m "Data update from $now"
 echo "Commited"
 git push -f
-echo "Pushed data to master"
+echo "Pushed data to branch 'data'"

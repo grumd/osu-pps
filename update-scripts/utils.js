@@ -2,44 +2,44 @@ const fs = require('fs');
 const exec = require('child_process').exec;
 
 const files = {
-  countriesList: (mode) => `./countries-${mode.text}.json`,
-  userIdsDate: (mode) => `./temp/${mode.text}/user-ids-date.json`,
-  userIdsList: (mode) => `./temp/${mode.text}/user-ids.json`,
-  userMapsList: (mode) => `./temp/${mode.text}/user-scores.json`,
-  userMapsDates: (mode) => `./temp/${mode.text}/user-scores-dates.json`,
-  mapInfoCache: (mode) => `./temp/${mode.text}/map-cache.json`,
-  mapsList: (mode) => `./temp/${mode.text}/maps.json`,
-  mapsDetailedList: (mode) => `./temp/${mode.text}/maps-detailed.json`,
-  ppBlocks: (mode) => `./temp/${mode.text}/pp-blocks.json`,
-  dataRankings: (mode) => `./temp/${mode.text}/data-rankings-full.json`,
-  metadata: (mode) => `./../metadata-${mode.text}.json`,
-  mappersPlaycountTxt: (mode) => `./temp/${mode.text}/mappers-playcount.txt`,
-  mappersFavsTxt: (mode) => `./temp/${mode.text}/mappers-favs.txt`,
-  tenMapsMappersTemp: (mode) => `./temp/${mode.text}/mappers-ten-maps.json`,
+  countriesList: mode => `./countries-${mode.text}.json`,
+  userIdsDate: mode => `./temp/${mode.text}/user-ids-date.json`,
+  userIdsList: mode => `./temp/${mode.text}/user-ids.json`,
+  userMapsList: mode => `./temp/${mode.text}/user-scores.json`,
+  userMapsDates: mode => `./temp/${mode.text}/user-scores-dates.json`,
+  mapInfoCache: mode => `./temp/${mode.text}/map-cache.json`,
+  mapsList: mode => `./temp/${mode.text}/maps.json`,
+  mapsDetailedList: mode => `./temp/${mode.text}/maps-detailed.json`,
+  ppBlocks: mode => `./temp/${mode.text}/pp-blocks.json`,
+  dataRankings: mode => `./temp/${mode.text}/data-rankings-full.json`,
+  mappersPlaycountTxt: mode => `./temp/${mode.text}/mappers-playcount.txt`,
+  mappersFavsTxt: mode => `./temp/${mode.text}/mappers-favs.txt`,
+  tenMapsMappersTemp: mode => `./temp/${mode.text}/mappers-ten-maps.json`,
   // data folder
-  mapsetsCsv: (mode) => `./../data/maps/${mode.text}/mapsets.csv`,
-  diffsCsv: (mode) => `./../data/maps/${mode.text}/diffs.csv`,
-  dataMappers: (mode) => `./../data/mappers/${mode.text}/pp-mappers.json`,
-  mappersFavTop: (mode) => `./../data/mappers/${mode.text}/favored-mappers.json`,
-  dataRankingsCompressed: (mode) => `./../data/ranking/${mode.text}/compressed.json`,
-  dataRankingsInfo: (mode) => `./../data/ranking/${mode.text}/map-infos.json`,
+  mapsetsCsv: mode => `./../data/maps/${mode.text}/mapsets.csv`,
+  diffsCsv: mode => `./../data/maps/${mode.text}/diffs.csv`,
+  dataMappers: mode => `./../data/mappers/${mode.text}/pp-mappers.json`,
+  mappersFavTop: mode => `./../data/mappers/${mode.text}/favored-mappers.json`,
+  dataRankingsCompressed: mode => `./../data/ranking/${mode.text}/compressed.json`,
+  dataRankingsInfo: mode => `./../data/ranking/${mode.text}/map-infos.json`,
+  metadata: mode => `./../data/metadata/${mode.text}/metadata.json`,
 };
 
-const uniq = (array, getKey = (item) => item) => {
+const uniq = (array, getKey = item => item) => {
   const seen = {};
-  return array.filter((item) => {
+  return array.filter(item => {
     return seen.hasOwnProperty(getKey(item)) ? false : (seen[getKey(item)] = true);
   });
 };
 
-const getDiffHours = (diff) =>
+const getDiffHours = diff =>
   Math.ceil((Date.now() - new Date(diff.last_update).getTime()) / 1000 / 60 / 60);
 
-const delay = (ms) => new Promise((r) => setTimeout(r, ms));
+const delay = ms => new Promise(r => setTimeout(r, ms));
 
-const truncateFloat = (x) => Math.floor(x * 100) / 100;
+const truncateFloat = x => Math.floor(x * 100) / 100;
 
-const runScript = (fileName) => {
+const runScript = fileName => {
   return new Promise((res, rej) => {
     exec(`bash ${fileName}`, (err, stdout, stderr) => {
       if (err) {
@@ -107,7 +107,7 @@ const trimModsForRankings = (mods, { show } = {}) => {
   return mod;
 };
 
-const modsToString = (mods) => {
+const modsToString = mods => {
   const mod = parseInt(mods, 10);
   const mapMods = {
     EZ: (mod & 2) == 2,
@@ -123,7 +123,7 @@ const modsToString = (mods) => {
     PF: (mod & 16384) == 16384,
   };
   return Object.keys(mapMods)
-    .filter((key) => mapMods[key])
+    .filter(key => mapMods[key])
     .join('');
 };
 
@@ -184,7 +184,7 @@ const levenshtein = (str1, str2) => {
 const parallelRun = ({ items = [], job = () => {}, concurrentLimit = 3, minRequestTime = 100 }) => {
   let remainingItems = [...items];
   // Starts next job when one job finishes
-  const attachNextJobStarter = (prevItem) => {
+  const attachNextJobStarter = prevItem => {
     return Promise.all([job(prevItem), delay(minRequestTime)]).then(() => {
       return Promise.all(remainingItems.splice(0, 1).map(attachNextJobStarter));
     });

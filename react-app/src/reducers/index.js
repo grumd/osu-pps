@@ -1,10 +1,13 @@
 import { combineReducers, createStore, applyMiddleware, compose } from 'redux';
 import thunk from 'redux-thunk';
+import _ from 'lodash/fp';
 
 import mapsData from 'reducers/mapsData';
 import metadata from 'reducers/metadata';
 import mappers from 'reducers/mappers';
 import rankings from 'reducers/rankings';
+
+import { modes } from 'constants/common';
 
 const rootReducer = combineReducers({
   mapsData,
@@ -22,11 +25,12 @@ export const store = createStore(
           stateSanitizer: state => ({
             ...state,
             mapsData: {
-              ...state.mapsData,
-              dataByMode: Object.keys(state.mapsData.dataByMode).reduce((acc, key) => ({
-                ...acc,
-                [key]: state.mapsData.dataByMode[key].length,
-              })),
+              ..._.mapValues(({ text }) => {
+                return {
+                  ...state.mapsData[text],
+                  data: `Big array, length: ${state.mapsData[text].data.length}`,
+                };
+              }, modes),
             },
           }),
         })

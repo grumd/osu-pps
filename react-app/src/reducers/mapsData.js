@@ -1,23 +1,26 @@
 import storage from 'localforage';
+import { combineReducers } from 'redux';
 
-import { fetchJsonPartial } from 'utils/fetch';
+import { fetchCsv } from 'utils/fetch';
 
 import { FIELDS, languageOptions, genreOptions } from 'constants/mapsData';
-import { COOKIE_SEARCH_KEY, DEBUG_FETCH, modes } from 'constants/common';
+import { getCookieSearchKey, DEBUG_FETCH, API_PREFIX, modes } from 'constants/common';
 import { getDataStorageKey, getDataDateStorageKey } from 'constants/storage';
 
 import { fetchMetadata } from 'reducers/metadata';
 
 import { overweightnessCalcFromMode } from 'utils/overweightness';
 
-const LOADING = 'MAPS_DATA/LOADING';
-const SUCCESS = 'MAPS_DATA/SUCCESS';
-const ERROR = 'MAPS_DATA/ERROR';
-const SEARCH_KEY_CHANGE = 'MAPS_DATA/SEARCH_KEY';
-const SHOW_MORE = 'MAPS_DATA/SHOW_MORE';
-const RECALC = 'MAPS_DATA/RECALC';
-const PROGRESS = 'MAPS_DATA/PROGRESS';
-const RESET_SEARCH_KEY = 'MAPS_DATA/RESET_SEARCH_KEY';
+const getTypes = mode => ({
+  LOADING: `${mode}/MAPS_DATA/LOADING`,
+  SUCCESS: `${mode}/MAPS_DATA/SUCCESS`,
+  ERROR: `${mode}/MAPS_DATA/ERROR`,
+  SEARCH_KEY_CHANGE: `${mode}/MAPS_DATA/SEARCH_KEY_CHANGE`,
+  SHOW_MORE: `${mode}/MAPS_DATA/SHOW_MORE`,
+  RECALC: `${mode}/MAPS_DATA/RECALC`,
+  PROGRESS: `${mode}/MAPS_DATA/PROGRESS`,
+  RESET_SEARCH_KEY: `${mode}/MAPS_DATA/RESET_SEARCH_KEY`,
+});
 
 function formattedToSeconds(minutes, seconds) {
   return minutes * 60 + seconds;
@@ -38,8 +41,7 @@ function matchesMaxMin(value, min, max) {
 const filterLowPasscount = data => data.filter(map => map.p > 600);
 
 const getVisibleItems = (state, mode) => {
-  const { dataByMode, visibleItemsCount, searchKey } = state;
-  const data = dataByMode[mode] || [];
+  const { data, visibleItemsCount, searchKey } = state;
 
   const overweightnessCalc = overweightnessCalcFromMode[searchKey[FIELDS.MODE]];
 
@@ -139,7 +141,6 @@ export const emptySearchKey = {
   [FIELDS.MANIA_K]: -1,
   [FIELDS.MODE]: 'adjusted',
 };
-const defaultSearchKey = {};
 const ARRAY_FIELDS = [FIELDS.LANG, FIELDS.GENRE];
 const TEXT_FIELDS = [
   FIELDS.TEXT,
@@ -152,133 +153,161 @@ const TEXT_FIELDS = [
   FIELDS.FL,
 ];
 
-const cookies = document.cookie && document.cookie.split(';');
-Object.keys(emptySearchKey).forEach(key => {
-  const cookie = cookies && cookies.find(cookie => cookie.indexOf(COOKIE_SEARCH_KEY + key) > -1);
+const getDefaultSearchKey = mode => {
+  const defaultSearchKey = {};
+  const cookies = document.cookie && document.cookie.split(';');
+  Object.keys(emptySearchKey).forEach(key => {
+    const cookie =
+      cookies && cookies.find(cookie => cookie.indexOf(getCookieSearchKey({ key, mode })) > -1);
 
-  if (cookie) {
-    const value = cookie.split('=')[1];
-    if (ARRAY_FIELDS.includes(key)) {
-      const options = key === FIELDS.LANG ? languageOptions : genreOptions;
-      defaultSearchKey[key] = value
-        .split(',')
-        .map(value => options.find(opt => opt.value === Number(value)))
-        .filter(value => value);
-    } else if (TEXT_FIELDS.includes(key)) {
-      defaultSearchKey[key] = value;
+    if (cookie) {
+      const value = cookie.split('=')[1];
+      if (ARRAY_FIELDS.includes(key)) {
+        const options = key === FIELDS.LANG ? languageOptions : genreOptions;
+        defaultSearchKey[key] = value
+          .split(',')
+          .map(value => options.find(opt => opt.value === Number(value)))
+          .filter(value => value);
+      } else if (TEXT_FIELDS.includes(key)) {
+        defaultSearchKey[key] = value;
+      } else {
+        const parsedNumber = parseFloat(value);
+        defaultSearchKey[key] = isNaN(parsedNumber) ? value : parsedNumber;
+      }
     } else {
-      const parsedNumber = parseFloat(value);
-      defaultSearchKey[key] = isNaN(parsedNumber) ? value : parsedNumber;
+      defaultSearchKey[key] = emptySearchKey[key];
     }
-  } else {
-    defaultSearchKey[key] = emptySearchKey[key];
-  }
-});
-
-const initialState = {
-  isLoading: { osu: false, mania: false, taiko: false, fruits: false },
-  dataByMode: { osu: [], mania: [], taiko: [], fruits: [] },
-  visibleData: [],
-  filteredData: [],
-  searchKey: defaultSearchKey,
-  visibleItemsCount: 20,
-  lastMode: 'osu',
+  });
+  return defaultSearchKey;
 };
 
-export default function mapsDataReducer(state = initialState, action) {
-  switch (action.type) {
-    case LOADING:
-      return {
-        ...state,
-        isLoading: { ...state.isLoading, [action.mode]: true },
-      };
-    case ERROR:
-      return {
-        ...state,
-        isLoading: { ...state.isLoading, [action.mode]: false },
-        error: action.error,
-      };
-    case SUCCESS: {
-      const newState = {
-        ...state,
-        isLoading: { ...state.isLoading, [action.mode]: false },
-        dataByMode: { ...state.dataByMode, [action.mode]: filterLowPasscount(action.data) },
-        visibleItemsCount: 20,
-      };
-      return {
-        ...newState,
-        lastMode: action.mode,
-        ...getVisibleItems(newState, action.mode),
-      };
-    }
-    case SEARCH_KEY_CHANGE: {
-      const newState = {
-        ...state,
-        searchKey: {
-          ...state.searchKey,
-          [action.key]: action.value === null ? emptySearchKey[action.key] : action.value,
-        },
-      };
-      let additionalState = {};
-      if (action.key === FIELDS.MODE) {
-        additionalState = getVisibleItems(newState, state.lastMode);
+const getInitialState = mode => {
+  return {
+    isLoading: false,
+    data: [],
+    visibleData: [],
+    filteredData: [],
+    searchKey: getDefaultSearchKey(mode),
+    visibleItemsCount: 20,
+    receivedAt: null,
+  };
+};
+
+const getReducer = mode => {
+  const {
+    LOADING,
+    SUCCESS,
+    ERROR,
+    SEARCH_KEY_CHANGE,
+    RECALC,
+    RESET_SEARCH_KEY,
+    PROGRESS,
+    SHOW_MORE,
+  } = getTypes(mode);
+  return function mapsDataReducer(state = getInitialState(mode), action) {
+    switch (action.type) {
+      case LOADING:
+        return {
+          ...state,
+          isLoading: true,
+        };
+      case ERROR:
+        return {
+          ...state,
+          isLoading: false,
+          error: action.error,
+          receivedAt: Date.now(),
+        };
+      case SUCCESS: {
+        const newState = {
+          ...state,
+          isLoading: false,
+          data: filterLowPasscount(action.data),
+          visibleItemsCount: 20,
+          receivedAt: Date.now(),
+        };
+        return {
+          ...newState,
+          ...getVisibleItems(newState, action.mode),
+        };
       }
-      return {
-        ...newState,
-        ...additionalState,
-      };
-    }
-    case SHOW_MORE: {
-      const newState = {
-        ...state,
-        visibleItemsCount: state.visibleItemsCount + 20,
-      };
-      return {
-        ...newState,
-        ...getVisibleItems(newState, state.lastMode),
-      };
-    }
-    case RECALC: {
-      return {
-        ...state,
-        lastMode: action.mode,
-        ...getVisibleItems(state, action.mode),
-      };
-    }
-    case PROGRESS: {
-      const newState = {
-        ...state,
-        dataByMode: { ...state.dataByMode, [action.mode]: filterLowPasscount(action.data) },
-      };
-      let additionalState = {};
-      if (state.visibleItemsCount > state.filteredData.length) {
-        additionalState = getVisibleItems(newState, action.mode);
+      case SEARCH_KEY_CHANGE: {
+        const newState = {
+          ...state,
+          searchKey: {
+            ...state.searchKey,
+            [action.key]: action.value === null ? emptySearchKey[action.key] : action.value,
+          },
+        };
+        let additionalState = {};
+        if (action.key === FIELDS.MODE) {
+          additionalState = getVisibleItems(newState, action.mode);
+        }
+        return {
+          ...newState,
+          ...additionalState,
+        };
       }
-      return {
-        ...newState,
-        lastMode: action.mode,
-        ...additionalState,
-      };
+      case SHOW_MORE: {
+        const newState = {
+          ...state,
+          visibleItemsCount: state.visibleItemsCount + 20,
+        };
+        return {
+          ...newState,
+          ...getVisibleItems(newState, action.mode),
+        };
+      }
+      case RECALC: {
+        return {
+          ...state,
+          ...getVisibleItems(state, action.mode),
+        };
+      }
+      case PROGRESS: {
+        const newState = {
+          ...state,
+          data: filterLowPasscount(action.data),
+        };
+        let additionalState = {};
+        if (state.visibleItemsCount > state.filteredData.length) {
+          additionalState = getVisibleItems(newState, action.mode);
+        }
+        return {
+          ...newState,
+          ...additionalState,
+        };
+      }
+      case RESET_SEARCH_KEY: {
+        const newState = {
+          ...state,
+          searchKey: emptySearchKey,
+        };
+        Object.keys(emptySearchKey).forEach(key => {
+          document.cookie = `${getCookieSearchKey({ key, mode: action.mode })}=${
+            emptySearchKey[key]
+          }; path=/`;
+        });
+        return {
+          ...newState,
+          ...getVisibleItems(newState, action.mode),
+        };
+      }
+      default:
+        return state;
     }
-    case RESET_SEARCH_KEY: {
-      const newState = {
-        ...state,
-        searchKey: emptySearchKey,
-      };
-      Object.keys(emptySearchKey).forEach(key => {
-        document.cookie = `${COOKIE_SEARCH_KEY}${key}=${emptySearchKey[key]}; path=/`;
-      });
-      return {
-        ...newState,
-        ...getVisibleItems(newState, state.lastMode),
-      };
-    }
-    default:
-      return state;
-  }
-}
+  };
+};
+
+export default combineReducers({
+  osu: getReducer('osu'),
+  taiko: getReducer('taiko'),
+  mania: getReducer('mania'),
+  fruits: getReducer('fruits'),
+});
 
 export const fetchMapsData = mode => {
+  const { LOADING, SUCCESS, ERROR } = getTypes(mode);
   return async dispatch => {
     dispatch({ type: LOADING, mode });
     // Fetch metadata here so we can compare storage dates
@@ -295,12 +324,23 @@ export const fetchMapsData = mode => {
     }
     // If storage didn't work, fetch from server
     try {
-      const data = await fetchJsonPartial({
-        url: DEBUG_FETCH
-          ? `/data-${mode}.json`
-          : `https://raw.githubusercontent.com/grumd/osu-pps/master/data-${mode}.json`,
-        onIntermediateDataReceived: data => dispatch({ type: PROGRESS, data, mode }),
+      // console.log('fetching csv');
+      const [mapsetsInfo, diffsInfo] = await Promise.all([
+        fetchCsv({ url: `${API_PREFIX}/data/maps/${mode}/mapsets.csv` }),
+        fetchCsv({ url: `${API_PREFIX}/data/maps/${mode}/diffs.csv` }),
+      ]);
+      // console.log(mapsetsInfo, diffsInfo);
+      const mapsetsDict = mapsetsInfo.reduce((dict, item) => {
+        dict[item.s] = item;
+        return dict;
+      }, {});
+      const data = diffsInfo.map(item => {
+        return {
+          ...item,
+          ...mapsetsDict[item.s],
+        };
       });
+      // console.log(mapsetsDict, data);
       dispatch({ type: SUCCESS, data, mode });
       if (!DEBUG_FETCH) {
         storage.setItem(getDataDateStorageKey(mode), Date.now());
@@ -313,16 +353,18 @@ export const fetchMapsData = mode => {
   };
 };
 
-export const updateSearchKey = (key, value) => ({
-  type: SEARCH_KEY_CHANGE,
+export const updateSearchKey = (mode, key, value) => ({
+  type: getTypes(mode).SEARCH_KEY_CHANGE,
   key,
   value,
+  mode,
 });
 
-export const resetSearchKey = () => ({
-  type: RESET_SEARCH_KEY,
+export const resetSearchKey = mode => ({
+  type: getTypes(mode).RESET_SEARCH_KEY,
+  mode,
 });
 
-export const showMore = () => ({ type: SHOW_MORE });
+export const showMore = mode => ({ mode, type: getTypes(mode).SHOW_MORE });
 
-export const recalculateVisibleData = mode => ({ type: RECALC, mode });
+export const recalculateVisibleData = mode => ({ type: getTypes(mode).RECALC, mode });

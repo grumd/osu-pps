@@ -1,4 +1,5 @@
 import encoding from 'text-encoding';
+import Papa from 'papaparse';
 
 let decoder = null;
 if (typeof TextDecoder === 'undefined') {
@@ -13,6 +14,31 @@ export const fetchJson = async ({ url }) => {
     if (response.status >= 200 && response.status < 300) {
       const data = await response.json();
       return data;
+    } else {
+      throw Error('HTTP Status ' + response.status);
+    }
+  } catch (error) {
+    console.error(error);
+    return Promise.reject(error);
+  }
+};
+
+export const fetchCsv = async ({ url }) => {
+  try {
+    const response = await fetch(url);
+    if (response.status >= 200 && response.status < 300) {
+      const text = await response.text();
+      return await new Promise(resolve => {
+        Papa.parse(text, {
+          header: true,
+          dynamicTyping: true,
+          worker: true,
+          complete: result => {
+            // console.log('Papaparse result', result);
+            resolve(result.data);
+          },
+        });
+      });
     } else {
       throw Error('HTTP Status ' + response.status);
     }

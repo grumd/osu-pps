@@ -16,8 +16,8 @@ const mapStateToProps = (state, props) => {
     lastUpdated: state.metadata[mode].lastUpdated,
     lastUpdatedTime: state.metadata[mode].lastUpdatedTime,
     isLoading: state.metadata[mode].isLoading,
-    isLoadingData: state.mapsData.isLoading[mode],
-    itemsCount: state.mapsData.dataByMode[mode].length,
+    isLoadingData: state.mapsData[mode].isLoading,
+    itemsCount: state.mapsData[mode].data.length,
   };
 };
 
