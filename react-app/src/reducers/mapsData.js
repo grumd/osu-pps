@@ -314,8 +314,10 @@ export const fetchMapsData = mode => {
     const metadata = await dispatch(fetchMetadata(mode));
     const lastUpdatedFromMetadata = new Date(metadata.lastUpdated).getTime();
     const lastUpdatedFromStorage = await storage.getItem(getDataDateStorageKey(mode));
-    if (lastUpdatedFromStorage > lastUpdatedFromMetadata) {
+    console.log(`Storage: ${lastUpdatedFromStorage}, metadata: ${lastUpdatedFromMetadata}`);
+    if (lastUpdatedFromStorage >= lastUpdatedFromMetadata) {
       // Storage data is newer than database data
+      console.log('Taking data from storage');
       const data = await storage.getItem(getDataStorageKey(mode));
       if (data && data.length && !DEBUG_FETCH) {
         dispatch({ type: SUCCESS, data, mode });
@@ -343,7 +345,7 @@ export const fetchMapsData = mode => {
       // console.log(mapsetsDict, data);
       dispatch({ type: SUCCESS, data, mode });
       if (!DEBUG_FETCH) {
-        storage.setItem(getDataDateStorageKey(mode), Date.now());
+        storage.setItem(getDataDateStorageKey(mode), new Date(metadata.lastUpdated).getTime());
         storage.setItem(getDataStorageKey(mode), data);
       }
       return data;
