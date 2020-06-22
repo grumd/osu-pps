@@ -12,7 +12,7 @@ const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
 const urlBeatmapInfo = (diffId, modeId) =>
   `https://osu.ppy.sh/api/get_beatmaps?k=${apikey}&b=${diffId}&limit=1&m=${modeId}` +
   (modeId > 0 ? '&a=1' : '');
-const getUniqueMapId = (map) => `${map.b}_${map.m}`;
+const getUniqueMapId = map => `${map.b}_${map.m}`;
 
 let maps = {};
 let mapsCache = {};
@@ -23,7 +23,7 @@ const addBeatmapInfo = (map, mode) => {
     : axios.get(urlBeatmapInfo(map.b, mode.id)).then(({ data }) => {
         if (data.length > 0) {
           const diff = data[0];
-          Object.keys(diff).forEach((key) => {
+          Object.keys(diff).forEach(key => {
             const parsed = Number(diff[key]);
             diff[key] = isNaN(parsed) ? diff[key] : truncateFloat(parsed);
           });
@@ -35,7 +35,7 @@ const addBeatmapInfo = (map, mode) => {
       });
 
   return getPromise
-    .then((diff) => {
+    .then(diff => {
       if (diff) {
         map.art = diff.artist;
         map.t = diff.title;
@@ -60,13 +60,13 @@ const addBeatmapInfo = (map, mode) => {
         console.log('No maps found :(');
       }
     })
-    .catch((err) => {
+    .catch(err => {
       console.log('Error for /b/', map.b, err.message);
       return delay(1000).then(() => addBeatmapInfo(map, mode));
     });
 };
 
-module.exports = (mode) => {
+module.exports = mode => {
   console.log(`2. FETCHING MAP INFO - ${mode.text}`);
   maps = {};
   mapsCache = {};
@@ -97,7 +97,7 @@ module.exports = (mode) => {
         return addBeatmapInfo(map, mode).then(() => {
           if ((index + 1) % 5000 === 0) {
             const arrayMaps = Object.keys(maps)
-              .map((mapId) => maps[mapId])
+              .map(mapId => maps[mapId])
               .sort((a, b) => b.x - a.x);
             lastSaveAt = index + 1;
             writeFileSync(files.mapsDetailedList(mode), JSON.stringify(arrayMaps));
@@ -109,7 +109,7 @@ module.exports = (mode) => {
     .then(() => {
       console.log();
       const arrayMaps = Object.keys(maps)
-        .map((mapId) => maps[mapId])
+        .map(mapId => maps[mapId])
         .sort((a, b) => b.x - a.x);
       writeFileSync(files.mapsDetailedList(mode), JSON.stringify(arrayMaps));
       writeFileSync(files.mapInfoCache(mode), JSON.stringify(mapsCache));
