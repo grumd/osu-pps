@@ -28,7 +28,9 @@ const getFavs = async (id, from, count) => {
   }
 };
 
-module.exports = async mode => {
+const getAdjustedX = (x, adj, h) => +x / Math.pow(adj || 1, 0.65) / Math.pow(+h || 1, 0.35);
+
+module.exports = async (mode) => {
   console.log(`Calculating TOP 20 pp mappers for ${mode.text}`);
 
   const mapCache = JSON.parse(fs.readFileSync(files.mapInfoCache(mode)));
@@ -101,6 +103,11 @@ module.exports = async mode => {
 
     const mapper = mappers.find(mapper => mapper.id === map.creator_id);
     map.h = getDiffHours(map);
+
+    const x = +res.x;
+    const xAge = (+res.x / +map.h) * 10000;
+    const xAdj = getAdjustedX(res.x, res.adj, map.h);
+
     if (!mapper) {
       mappers.push({
         name: map.creator,
@@ -109,15 +116,15 @@ module.exports = async mode => {
           {
             id: map.beatmap_id,
             pp: res.pp99,
-            x: +res.x,
-            xAge: (+res.x / +map.h) * 10000,
-            xPC: (+res.x / +map.playcount) * 100000,
+            x,
+            xAge,
+            xAdj,
             m: res.m,
           },
         ],
-        points: +res.x,
-        pointsAge: (+res.x / +map.h) * 10000,
-        pointsPC: (+res.x / +map.playcount) * 100000,
+        points: x,
+        pointsAge: xAge,
+        pointsAdj: xAdj,
       });
     } else {
       const mapRecorded = mapper.mapsRecorded.find(m => m.id === map.beatmap_id);
@@ -125,12 +132,14 @@ module.exports = async mode => {
         mapper.mapsRecorded.push({
           id: map.beatmap_id,
           pp: res.pp99,
-          x: +res.x,
-          xAge: (+res.x / +map.h) * 10000,
+          x,
+          xAge,
+          xAdj,
           m: res.m,
         });
-        mapper.points += +res.x;
-        mapper.pointsAge += (+res.x / +map.h) * 10000;
+        mapper.points += x;
+        mapper.pointsAge += xAge;
+        mapper.pointsAdj += xAdj;
       }
     }
   });
@@ -239,20 +248,20 @@ module.exports = async mode => {
     JSON.stringify(_.orderBy(['count'], ['desc'], _.values(favsPerMapper)))
   );
 
-  const transformMapList = (usingAge = false) => mapper => {
+  const transformMapList = (pointsKey = 'points', xKey = 'x') => (mapper) => {
     return {
       name: mapper.name,
       id: mapper.id,
-      points: usingAge ? truncateFloat(mapper.pointsAge) : truncateFloat(mapper.points),
+      points: truncateFloat(mapper[pointsKey]),
       mapsRecorded: mapper.mapsRecorded
-        .sort((a, b) => (usingAge ? b.xAge : b.x) - (usingAge ? a.xAge : a.x))
+        .sort((a, b) => b[xKey] - a[xKey])
         .slice(0, 20)
         .map(map => ({
           id: map.id,
           text: `${mapCache[map.id].artist} - ${mapCache[map.id].title} [${
             mapCache[map.id].version
           }]`,
-          ow: truncateFloat(usingAge ? map.xAge : map.x),
+          ow: truncateFloat(map[xKey]),
           pp: map.pp,
           m: map.m,
         })),
@@ -263,11 +272,15 @@ module.exports = async mode => {
     top20: mappers
       .sort((a, b) => b.points - a.points)
       .slice(0, 20)
-      .map(transformMapList(false)),
+      .map(transformMapList('points', 'x')),
     top20age: mappers
       .sort((a, b) => b.pointsAge - a.pointsAge)
       .slice(0, 20)
-      .map(transformMapList(true)),
+      .map(transformMapList('pointsAge', 'xAge')),
+    top20adj: mappers
+      .sort((a, b) => b.pointsAdj - a.pointsAdj)
+      .slice(0, 20)
+      .map(transformMapList('pointsAdj', 'xAdj')),
   };
 
   writeFileSync(files.dataMappers(mode), JSON.stringify(resultingObject));

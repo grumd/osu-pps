@@ -52,6 +52,7 @@ const coefficientSelector = createSelector(
   [dataSelector, (state, props) => rootSelector(state, props).searchKey[FIELDS.MODE]],
   (data, owMode) => {
     const calc = overweightnessCalcFromMode[owMode];
+    console.log(data.sort((a, b) => b.x - a.x));
     const maxOverweightness = data.reduce((max, item) => {
       const current = calc(item);
       return current > max ? current : max;
@@ -116,7 +117,6 @@ const Card = React.memo(
     ) : (
       truncateFloat(item.bpm)
     );
-
     const overweightnessRaw = overweightnessCalcFromMode[overweightnessMode](item);
     const overweightnessText = (overweightnessRaw * coef).toFixed(0);
 
@@ -324,8 +324,8 @@ class Table extends PureComponent {
       this.props.fetchMapsData(mode);
     }
     // if (prevProps.mode !== mode) {
-      // Do we need it?
-      // this.props.recalculateVisibleData(mode);
+    // Do we need it?
+    // this.props.recalculateVisibleData(mode);
     // }
   }
 
@@ -1057,7 +1057,7 @@ class Table extends PureComponent {
   }
 
   renderFooter() {
-    const { isShowMoreVisible, isLoading, visibleItemsCount } = this.props;
+    const { isShowMoreVisible, isLoading, visibleItemsCount, mode } = this.props;
 
     if (isLoading && visibleItemsCount === 0) {
       return <div className="loading">loading...</div>;
@@ -1065,7 +1065,7 @@ class Table extends PureComponent {
 
     return (
       isShowMoreVisible && (
-        <div className="show-more-div" onClick={this.props.showMore}>
+        <div className="show-more-div" onClick={() => this.props.showMore(mode)}>
           <button className="btn btn-success show-more-btn">show more</button>
         </div>
       )
@@ -1082,7 +1082,4 @@ class Table extends PureComponent {
   }
 }
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Table);
+export default connect(mapStateToProps, mapDispatchToProps)(Table);

@@ -170,6 +170,8 @@ const getDefaultSearchKey = mode => {
           .filter(value => value);
       } else if (TEXT_FIELDS.includes(key)) {
         defaultSearchKey[key] = value;
+      } else if (value === 'null') {
+        defaultSearchKey[key] = null;
       } else {
         const parsedNumber = parseFloat(value);
         defaultSearchKey[key] = isNaN(parsedNumber) ? value : parsedNumber;
@@ -314,7 +316,7 @@ export const fetchMapsData = mode => {
     const metadata = await dispatch(fetchMetadata(mode));
     const lastUpdatedFromMetadata = new Date(metadata.lastUpdated).getTime();
     const lastUpdatedFromStorage = await storage.getItem(getDataDateStorageKey(mode));
-    if (lastUpdatedFromStorage > lastUpdatedFromMetadata) {
+    if (lastUpdatedFromStorage >= lastUpdatedFromMetadata) {
       // Storage data is newer than database data
       const data = await storage.getItem(getDataStorageKey(mode));
       if (data && data.length && !DEBUG_FETCH) {
@@ -343,7 +345,7 @@ export const fetchMapsData = mode => {
       // console.log(mapsetsDict, data);
       dispatch({ type: SUCCESS, data, mode });
       if (!DEBUG_FETCH) {
-        storage.setItem(getDataDateStorageKey(mode), Date.now());
+        storage.setItem(getDataDateStorageKey(mode), new Date(metadata.lastUpdated).getTime());
         storage.setItem(getDataStorageKey(mode), data);
       }
       return data;

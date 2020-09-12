@@ -3,24 +3,30 @@ import { fetchJson } from 'utils/fetch';
 import { API_PREFIX } from 'constants/common';
 
 const getTypes = mode => ({
-  LOADING: `${mode}/METADATA/LOADING`,
-  SUCCESS: `${mode}/METADATA/SUCCESS`,
-  ERROR: `${mode}/METADATA/ERROR`,
+  LOADING: `${mode}/MAPPERS_FAVS/LOADING`,
+  SUCCESS: `${mode}/MAPPERS_FAVS/SUCCESS`,
+  ERROR: `${mode}/MAPPERS_FAVS/ERROR`,
 });
 
 const initialState = {
   isLoading: false,
-  lastUpdated: null,
+  data: null,
 };
 
 const getReducer = mode => {
   const { LOADING, SUCCESS, ERROR } = getTypes(mode);
-  return function metadataReducer(state = initialState, action) {
+  return function mappersDataReducer(state = initialState, action) {
     switch (action.type) {
       case LOADING:
         return {
           ...state,
           isLoading: true,
+        };
+      case SUCCESS:
+        return {
+          ...state,
+          isLoading: false,
+          data: action.data,
         };
       case ERROR:
         return {
@@ -28,20 +34,11 @@ const getReducer = mode => {
           isLoading: false,
           error: action.error,
         };
-      case SUCCESS:
-        return {
-          ...state,
-          isLoading: false,
-          lastUpdated: new Date(action.data.lastUpdated).toLocaleDateString(),
-          lastUpdatedTime: new Date(action.data.lastUpdated).toTimeString(),
-          lastUpdatedDate: new Date(action.data.lastUpdated),
-        };
       default:
         return state;
     }
   };
 };
-
 export default combineReducers({
   osu: getReducer('osu'),
   taiko: getReducer('taiko'),
@@ -49,13 +46,13 @@ export default combineReducers({
   fruits: getReducer('fruits'),
 });
 
-const _fetchMetadata = mode => {
+export const fetchMappersFavData = mode => {
   const { LOADING, SUCCESS, ERROR } = getTypes(mode);
   return async dispatch => {
     dispatch({ type: LOADING });
     try {
       const data = await fetchJson({
-        url: `${API_PREFIX}/data/metadata/${mode}/metadata.json`,
+        url: `${API_PREFIX}/data/mappers/${mode}/favored-mappers.json`,
       });
       dispatch({ type: SUCCESS, data });
       return data;
@@ -63,12 +60,4 @@ const _fetchMetadata = mode => {
       dispatch({ type: ERROR, error });
     }
   };
-};
-
-let promises = {};
-export const fetchMetadata = mode => {
-  if (!promises[mode]) {
-    promises[mode] = _fetchMetadata(mode);
-  }
-  return promises[mode];
 };

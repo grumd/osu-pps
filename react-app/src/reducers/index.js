@@ -5,6 +5,7 @@ import _ from 'lodash/fp';
 import mapsData from 'reducers/mapsData';
 import metadata from 'reducers/metadata';
 import mappers from 'reducers/mappers';
+import mappersFavs from 'reducers/mappersFavs';
 import rankings from 'reducers/rankings';
 
 import { modes } from 'constants/common';
@@ -13,6 +14,7 @@ const rootReducer = combineReducers({
   mapsData,
   metadata,
   mappers,
+  mappersFavs,
   rankings,
 });
 

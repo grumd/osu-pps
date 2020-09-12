@@ -9,6 +9,7 @@ const calculate = async () => {
   const mapperStats = _.mapValues((mapsArrayRaw) => {
     const mapsArray = mapsArrayRaw.filter((m) => m.mode === mode);
     const names = _.uniqBy('creator', mapsArray).map((m) => m.creator);
+    // console.log(mapsArray[0]);
     if (!mapsArray.length) {
       return { names, playcount: 0, favs: 0, count: 0, mapsets: 0 };
     }
@@ -30,6 +31,7 @@ const calculate = async () => {
 
   const byPlaycount = _.orderBy(['playcount'], ['desc'], list).slice(0, 51);
   const byFavs = _.orderBy(['favs'], ['desc'], list).slice(0, 51);
+  // const byFavs = _.orderBy(['favs'], ['desc'], list).slice(0, 51);
 
   fs.writeFileSync(
     './playcount.txt',
@@ -37,6 +39,10 @@ const calculate = async () => {
   );
   fs.writeFileSync(
     './favs.txt',
+    byFavs.map((x) => `${x.names.join('/')}\t${x.favs.toFixed(0)}`).join('\n')
+  );
+  fs.writeFileSync(
+    './draintime.txt',
     byFavs.map((x) => `${x.names.join('/')}\t${x.favs.toFixed(0)}`).join('\n')
   );
 };

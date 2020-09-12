@@ -28,10 +28,6 @@
   .container {
     width: 100%;
     padding: 0 1.5vw;
-
-    > .top-bar {
-      font-size: 2.5vw;
-    }
   }
 }
 
@@ -42,6 +38,18 @@ a:hover {
 a:visited,
 a:active {
   color: #a77d58;
+}
+button.like-a-link {
+  display: inline-block;
+  padding: 0;
+  cursor: pointer;
+  color: #e0b074;
+  background: inherit;
+  outline: none;
+  border: none;
+  &:hover {
+    text-decoration: underline;
+  }
 }
 input {
   background-color: #555 !important;
