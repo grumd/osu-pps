@@ -49,7 +49,7 @@ export default combineReducers({
   fruits: getReducer('fruits'),
 });
 
-export const fetchMetadata = mode => {
+const _fetchMetadata = mode => {
   const { LOADING, SUCCESS, ERROR } = getTypes(mode);
   return async dispatch => {
     dispatch({ type: LOADING });
@@ -63,4 +63,12 @@ export const fetchMetadata = mode => {
       dispatch({ type: ERROR, error });
     }
   };
+};
+
+let promises = {};
+export const fetchMetadata = mode => {
+  if (!promises[mode]) {
+    promises[mode] = _fetchMetadata(mode);
+  }
+  return promises[mode];
 };

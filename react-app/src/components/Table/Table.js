@@ -52,6 +52,7 @@ const coefficientSelector = createSelector(
   [dataSelector, (state, props) => rootSelector(state, props).searchKey[FIELDS.MODE]],
   (data, owMode) => {
     const calc = overweightnessCalcFromMode[owMode];
+    console.log(data.sort((a, b) => b.x - a.x));
     const maxOverweightness = data.reduce((max, item) => {
       const current = calc(item);
       return current > max ? current : max;
@@ -116,7 +117,6 @@ const Card = React.memo(
     ) : (
       truncateFloat(item.bpm)
     );
-
     const overweightnessRaw = overweightnessCalcFromMode[overweightnessMode](item);
     const overweightnessText = (overweightnessRaw * coef).toFixed(0);
 

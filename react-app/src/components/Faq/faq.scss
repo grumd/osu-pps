@@ -1,0 +1,18 @@
+.faq {
+  padding: 10px 0;
+  .faq-qa {
+    margin-left: 20px;
+    padding-right: 10px;
+    + .faq-qa {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #444;
+    }
+    .question {
+      font-weight: bold;
+    }
+    .answer {
+      margin-top: 10px;
+    }
+  }
+}

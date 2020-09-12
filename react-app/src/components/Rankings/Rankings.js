@@ -336,21 +336,6 @@ class TopMapper extends Component {
     const { isLoading, data, error } = this.props;
     return (
       <div className="rankings">
-        <header>
-          <p>
-            osu! top 10k rankings, but adjusted for farm maps. overweighted maps are nerfed,
-            underweighted are slightly buffed. as a result, rare plays give more pp, popular plays
-            give less.
-            <br /> - you won't be in this ranking if your official rank is lower than 11k.
-            <br />
-            - total pp for each player is lower than official because i only count top 50 plays (osu
-            counts all of them) and i don't add bonus pp.
-            <br />- this list is updated <b>only once a few days</b>, so it may not include latest
-            recent scores
-            <br />- this list can <b>not</b> replace the official rankings and can't even exist
-            without them
-          </p>
-        </header>
         <div className="content">
           {isLoading && <div className="loading">loading...</div>}
           {error && error.message}
@@ -373,7 +358,4 @@ class TopMapper extends Component {
   }
 }
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(TopMapper);
+export default connect(mapStateToProps, mapDispatchToProps)(TopMapper);

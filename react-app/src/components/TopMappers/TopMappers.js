@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import toBe from 'prop-types';
 import { connect } from 'react-redux';
 import classNames from 'classnames';
+import { withRouter } from 'react-router-dom';
 
 import prizeGold from './prize_gold.png';
 import prizeSilver from './prize_silver.png';
@@ -9,7 +10,7 @@ import prizeBronze from './prize_bronze.png';
 import './top-mappers.scss';
 
 import CollapsibleBar from 'components/CollapsibleBar';
-import ParamLink from 'components/ParamLink/ParamLink';
+// import ParamLink from 'components/ParamLink/ParamLink';
 
 import { fetchMappersData } from 'reducers/mappers';
 
@@ -50,9 +51,10 @@ class TopMapper extends Component {
   }
 
   render() {
-    const { isLoading, data, error, match, location } = this.props;
+    const { isLoading, data, error } = this.props;
 
-    const dataUsed = !data ? [] : match.params.sort === 'total' ? data.top20 : data.top20age;
+    // const dataUsed = !data ? [] : match.params.sort === 'total' ? data.top20 : data.top20age;
+    const dataUsed = !data ? [] : data.top20age;
 
     let maxOw = 0;
     dataUsed.forEach(mapper => {
@@ -71,20 +73,8 @@ class TopMapper extends Component {
           {!isLoading && !error && (
             <>
               <p>
-                this is the list of mappers who take advantage of current pp system the most
-                <br /> it tries its best at detecting guest diffs, but it's not easy with all the
-                custom diff names
-                <br /> congratulations to our winners! 🏆
-              </p>
-              <p>
-                you can either look at top 20 sorted by{' '}
-                <ParamLink match={match} location={location} params={{ sort: 'total' }}>
-                  total overweightness points
-                </ParamLink>
-                <br /> or adjusted for{' '}
-                <ParamLink match={match} location={location} params={{ sort: 'by-age' }}>
-                  date when the maps were ranked
-                </ParamLink>
+                This is the list of ppest pp mappers according to my calculations.
+                <br /> See faq for more info
               </p>
             </>
           )}
@@ -152,7 +142,4 @@ class TopMapper extends Component {
   }
 }
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(TopMapper);
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(TopMapper));

@@ -1,10 +1,28 @@
+.support-overlay {
+  padding: 10px;
+  background: #222 !important;
+  a {
+    align-items: center;
+    display: flex;
+    flex-flow: row nowrap;
+    span {
+      margin-right: 7px;
+    }
+  }
+}
+
 .top-bar {
   align-items: center;
   border-bottom: 1px solid #444;
   display: flex;
-  min-height: 80px;
-  #last-update {
-    white-space: nowrap;
+  flex-flow: row wrap;
+
+  > .right-side-block {
+    margin-left: auto;
+    padding: 10px 0;
+    #last-update {
+      white-space: nowrap;
+    }
   }
   .vertical-menus {
     align-items: flex-start;
@@ -13,19 +31,43 @@
     padding: 3px 0;
     margin-bottom: 6px;
     nav {
-      height: 40px;
-      ul > li:first-child > a {
-        margin-left: 0;
+      display: flex;
+      flex-flow: row wrap;
+      &.mapper-type {
+        font-size: 75%;
+      }
+      ul {
+        margin: 0;
+        > li:first-child > a {
+          margin-left: 0;
+        }
       }
     }
   }
   .loader-text {
     color: #62a6e0;
     margin-right: 10px;
-    opacity: 0;
-    transition: opacity 2s;
-    &.loading {
-      opacity: 1;
+    opacity: 1;
+    transition: opacity 3s;
+    &.exiting {
+      opacity: 0;
+    }
+    &.exited {
+      display: none;
+    }
+  }
+  .support {
+    .overlay-item {
+      display: inline-block;
+    }
+    a,
+    .like-a-link {
+      align-items: center;
+      display: flex;
+      flex-flow: row nowrap;
+      span {
+        margin-right: 7px;
+      }
     }
   }
   .author {
@@ -42,6 +84,7 @@
     }
   }
   ul {
+    flex-flow: row wrap;
     display: flex;
     align-items: center;
     list-style-type: none;
@@ -76,35 +119,43 @@
 @media (max-width: 640px) {
   .top-bar {
     min-height: 20px;
-    font-size: 2.5vw;
+    font-size: 3vw;
     display: flex;
-    flex-flow: row wrap;
     align-items: flex-start;
     padding-bottom: 1vw;
     > .vertical-menus {
       width: 100%;
       margin-bottom: 0;
       > nav {
-        height: auto;
         > ul {
           margin-bottom: 0vw;
+          > li > a {
+            margin: 1.5vw;
+          }
         }
       }
     }
     > .spacer {
       display: none;
     }
-    > .last-update-block {
-      display: flex;
-      flex-flow: row nowrap;
-      align-items: baseline;
-      flex: 1 1 auto;
-      justify-content: flex-end;
-      > .author {
-        margin-left: 1.5vw;
-        img {
-          width: 4.5vw;
-          height: 4.5vw;
+    > .right-side-block {
+      padding: 1vw 0;
+      > .last-update-block {
+        display: flex;
+        flex-flow: row wrap;
+        align-items: baseline;
+        flex: 1 1 auto;
+        justify-content: flex-end;
+        > .loader-text {
+          flex: 1 1 100%;
+          text-align: right;
+        }
+        > .author {
+          margin-left: 1.5vw;
+          img {
+            width: 4.5vw;
+            height: 4.5vw;
+          }
         }
       }
     }
