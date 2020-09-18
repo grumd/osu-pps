@@ -1,41 +1,41 @@
 const fs = require('fs');
 const oneLineLog = require('single-line-log').stdout;
-const axios = require('./axios');
+// const axios = require('./axios');
 
 // const { modes } = require('./constants');
 const {
   simplifyMods,
   trimModsForRankings,
   files,
-  parallelRun,
-  delay,
+  // parallelRun,
+  // delay,
   writeFileSync,
 } = require('./utils');
-const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
+// const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
 
-const getUrl = (userId, modeId) =>
-  `https://osu.ppy.sh/api/get_user?k=${apikey}&u=${userId}&type=id&m=${modeId}`;
+// const getUrl = (userId, modeId) =>
+//   `https://osu.ppy.sh/api/get_user?k=${apikey}&u=${userId}&type=id&m=${modeId}`;
 
-const fetchUser = (userId, modeId, retryCount = 0) => {
-  if (retryCount > 3) {
-    return Promise.reject(new Error('Too many retries'));
-  }
-  retryCount && oneLineLog(`Retry #${retryCount}`);
-  return axios.get(getUrl(userId, modeId)).catch(err => {
-    console.log('Error:', err.message);
-    return delay(5000).then(() => fetchUser(userId, modeId, retryCount + 1));
-  });
-};
+// const fetchUser = (userId, modeId, retryCount = 0) => {
+//   if (retryCount > 3) {
+//     return Promise.reject(new Error('Too many retries'));
+//   }
+//   retryCount && oneLineLog(`Retry #${retryCount}`);
+//   return axios.get(getUrl(userId, modeId)).catch(err => {
+//     console.log('Error:', err.message);
+//     return delay(5000).then(() => fetchUser(userId, modeId, retryCount + 1));
+//   });
+// };
 
-const fetchUserRank = ({ userId, modeId }) => {
-  return fetchUser(userId, modeId)
-    .then(({ data }) => {
-      return data[0].pp_rank;
-    })
-    .catch(error => {
-      console.log('\x1b[33m%s\x1b[0m', error.message);
-    });
-};
+// const fetchUserRank = ({ userId, modeId }) => {
+//   return fetchUser(userId, modeId)
+//     .then(({ data }) => {
+//       return data[0].pp_rank;
+//     })
+//     .catch(error => {
+//       console.log('\x1b[33m%s\x1b[0m', error.message);
+//     });
+// };
 
 module.exports = mode => {
   console.log('3. CALCULATING RANKINGS');

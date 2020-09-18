@@ -30,7 +30,7 @@ const getFavs = async (id, from, count) => {
 
 const getAdjustedX = (x, adj, h) => +x / Math.pow(adj || 1, 0.65) / Math.pow(+h || 1, 0.35);
 
-module.exports = async (mode) => {
+module.exports = async mode => {
   console.log(`Calculating TOP 20 pp mappers for ${mode.text}`);
 
   const mapCache = JSON.parse(fs.readFileSync(files.mapInfoCache(mode)));
@@ -108,20 +108,19 @@ module.exports = async (mode) => {
     const xAge = (+res.x / +map.h) * 10000;
     const xAdj = getAdjustedX(res.x, res.adj, map.h);
 
+    const newMapRecord = {
+      id: map.beatmap_id,
+      pp: res.pp99,
+      x,
+      xAge,
+      xAdj,
+      m: res.m,
+    };
     if (!mapper) {
       mappers.push({
         name: map.creator,
         id: map.creator_id,
-        mapsRecorded: [
-          {
-            id: map.beatmap_id,
-            pp: res.pp99,
-            x,
-            xAge,
-            xAdj,
-            m: res.m,
-          },
-        ],
+        mapsRecorded: [newMapRecord],
         points: x,
         pointsAge: xAge,
         pointsAdj: xAdj,
@@ -129,14 +128,7 @@ module.exports = async (mode) => {
     } else {
       const mapRecorded = mapper.mapsRecorded.find(m => m.id === map.beatmap_id);
       if (!mapRecorded) {
-        mapper.mapsRecorded.push({
-          id: map.beatmap_id,
-          pp: res.pp99,
-          x,
-          xAge,
-          xAdj,
-          m: res.m,
-        });
+        mapper.mapsRecorded.push(newMapRecord);
         mapper.points += x;
         mapper.pointsAge += xAge;
         mapper.pointsAdj += xAdj;
@@ -205,7 +197,6 @@ module.exports = async (mode) => {
         offset += count;
         await delay(500);
       } while (favourites.length === offset);
-
       mapper.favourites = favourites;
     },
   });
@@ -227,19 +218,42 @@ module.exports = async (mode) => {
         // -- 10+ maps ranked -> 1 vote (maximum)
         const weight = Math.min(1, (mapper.mapsets - 2) / 8);
 
+        const mapEntry = {
+          count: weight,
+          cover: _.get('cover.list', fav),
+          ..._.pick(['id', 'artist', 'title', 'ranked_date'], fav),
+        };
+
         if (!favsPerMapper[mapperId]) {
           favsPerMapper[mapperId] = {
             count: weight,
             mapperId,
-            names: [fav.creator],
+            namesDict: { [fav.creator]: weight },
+            mapsDict: {
+              [fav.id]: mapEntry,
+            },
           };
         } else {
           favsPerMapper[mapperId].count += weight;
-          if (!favsPerMapper[mapperId].names.includes(fav.creator)) {
-            favsPerMapper[mapperId].names.push(fav.creator);
+          favsPerMapper[mapperId].namesDict[fav.creator] =
+            (favsPerMapper[mapperId].namesDict[fav.creator] || 0) + weight;
+          if (!favsPerMapper[mapperId].mapsDict[fav.id]) {
+            favsPerMapper[mapperId].mapsDict[fav.id] = mapEntry;
+          } else {
+            favsPerMapper[mapperId].mapsDict[fav.id].count += weight;
           }
         }
       });
+  });
+
+  Object.keys(favsPerMapper).forEach(mapperId => {
+    favsPerMapper[mapperId].names = Object.keys(favsPerMapper[mapperId].namesDict).sort(
+      (a, b) => favsPerMapper[mapperId].namesDict[b] - favsPerMapper[mapperId].namesDict[a]
+    );
+    const mapsSorted = _.orderBy(['count'], ['desc'], _.values(favsPerMapper[mapperId].mapsDict));
+    writeFileSync(files.mappersFavTopDetails(mode, mapperId), JSON.stringify(mapsSorted));
+    delete favsPerMapper[mapperId].namesDict;
+    delete favsPerMapper[mapperId].mapsDict;
   });
 
   console.log('Recorded top of mappers by mapper favs');
@@ -248,7 +262,7 @@ module.exports = async (mode) => {
     JSON.stringify(_.orderBy(['count'], ['desc'], _.values(favsPerMapper)))
   );
 
-  const transformMapList = (pointsKey = 'points', xKey = 'x') => (mapper) => {
+  const transformMapList = (pointsKey = 'points', xKey = 'x') => mapper => {
     return {
       name: mapper.name,
       id: mapper.id,

@@ -20,6 +20,8 @@ const files = {
   diffsCsv: mode => `./../data/maps/${mode.text}/diffs.csv`,
   dataMappers: mode => `./../data/mappers/${mode.text}/pp-mappers.json`,
   mappersFavTop: mode => `./../data/mappers/${mode.text}/favored-mappers.json`,
+  mappersFavTopDetails: (mode, mapperId) =>
+    `./../data/mappers/${mode.text}/favored-mappers-maps/${mapperId}.json`,
   dataRankingsCompressed: mode => `./../data/ranking/${mode.text}/compressed.json`,
   dataRankingsInfo: mode => `./../data/ranking/${mode.text}/map-infos.json`,
   metadata: mode => `./../data/metadata/${mode.text}/metadata.json`,
