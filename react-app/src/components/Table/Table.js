@@ -52,7 +52,6 @@ const coefficientSelector = createSelector(
   [dataSelector, (state, props) => rootSelector(state, props).searchKey[FIELDS.MODE]],
   (data, owMode) => {
     const calc = overweightnessCalcFromMode[owMode];
-    console.log(data.sort((a, b) => b.x - a.x));
     const maxOverweightness = data.reduce((max, item) => {
       const current = calc(item);
       return current > max ? current : max;
@@ -602,7 +601,7 @@ class Table extends PureComponent {
               className="btn btn-sm btn-primary apply"
               onClick={() => this.props.recalculateVisibleData(mode)}
             >
-              > apply filters
+              {'>'} apply filters
             </button>
           </td>
         </tr>
@@ -998,7 +997,7 @@ class Table extends PureComponent {
             className="btn btn-sm btn-primary apply"
             onClick={() => this.props.recalculateVisibleData(mode)}
           >
-            > apply
+            {'>'} apply
           </button>
         </div>
       </div>
