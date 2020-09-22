@@ -220,7 +220,7 @@ module.exports = async (mode) => {
 
         const mapEntry = {
           count: weight,
-          cover: _.get('cover.list', fav),
+          cover: _.get('covers.list', fav),
           ..._.pick(['id', 'artist', 'title', 'ranked_date'], fav),
         };
 

@@ -14,6 +14,7 @@
 
   td,
   th {
+    padding: 8px 7px !important;
     border-top: none !important;
     vertical-align: middle !important;
   }
@@ -38,9 +39,6 @@
       color: #777;
     }
   }
-  .btn.apply {
-    width: 100%;
-  }
   .pp-input {
     display: inline;
     max-width: 40px;
@@ -59,7 +57,20 @@
     padding: 5px;
   }
   .ow-head {
-    width: 165px;
+    width: 170px;
+    &.with-buttons {
+      display: flex;
+      flex-flow: row nowrap;
+      .btn {
+        flex: 1 1 auto;
+        &.btn-reset {
+          flex: 0 0 auto;
+        }
+        + .btn {
+          margin-left: 8px;
+        }
+      }
+    }
   }
   .time-pick {
     display: inline-flex;

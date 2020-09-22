@@ -595,13 +595,24 @@ class Table extends PureComponent {
               placeholder="max"
             />
           </td>
-          <td className="ow-head">
+          <td className="ow-head with-buttons">
             <button
               type="button"
               className="btn btn-sm btn-primary apply"
               onClick={() => this.props.recalculateVisibleData(mode)}
             >
-              {'>'} apply filters
+              {'>'} apply
+            </button>
+            <button
+              type="button"
+              className="btn btn-sm btn-reset"
+              onClick={() => {
+                if (window.confirm('Reset all filters?')) {
+                  this.props.resetSearchKey(mode);
+                }
+              }}
+            >
+              reset
             </button>
           </td>
         </tr>

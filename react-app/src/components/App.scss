@@ -67,4 +67,8 @@ input[type='number'] {
 .btn-reset {
   background-color: #734246;
   border-color: #734246;
+  color: white !important;
+  &:hover {
+    background-color: #98444b;
+  }
 }
