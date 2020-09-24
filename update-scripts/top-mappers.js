@@ -183,7 +183,7 @@ module.exports = async (mode) => {
   await parallelRun({
     items: mappersWithTenMaps,
     concurrentLimit: 1,
-    minRequestTime: 1000,
+    minRequestTime: 1500,
     job: async (mapper) => {
       oneLineLog(`Fetching ${mappersWithTenMaps.indexOf(mapper)}/${mappersWithTenMaps.length}`);
       const id = mapper.userId;
@@ -214,9 +214,9 @@ module.exports = async (mode) => {
         }
 
         // Weight of the mapper's vote:
-        // -- 3 maps ranked -> 0.125 votes
+        // -- 3 maps ranked -> 0.3 votes
         // -- 10+ maps ranked -> 1 vote (maximum)
-        const weight = Math.min(1, (mapper.mapsets - 2) / 8);
+        const weight = Math.min(1, (mapper.mapsets) / 10);
 
         const mapEntry = {
           count: weight,
