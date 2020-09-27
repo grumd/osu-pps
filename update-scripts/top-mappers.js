@@ -36,7 +36,7 @@ module.exports = async (mode) => {
   const mapCache = JSON.parse(fs.readFileSync(files.mapInfoCache(mode)));
   const sortedResults = JSON.parse(fs.readFileSync(files.mapsList(mode))).sort((a, b) => b.x - a.x);
 
-  const mapperNames = [];
+  let mapperNames = [];
   Object.keys(mapCache).forEach((mapId) => {
     const map = mapCache[mapId];
 
@@ -53,12 +53,12 @@ module.exports = async (mode) => {
       });
     }
   });
+  mapperNames.sort((a, b) => _.size(b.nameLC) - _.size(a.nameLC));
 
   console.log('Recognizing guest mappers');
 
   Object.keys(mapCache).forEach((mapId) => {
     const map = mapCache[mapId];
-
     const guestMapper = mapperNames.find((mapper) => {
       if (!map.versionLC || !map.tagsLC || !mapper.nameLC) {
         return false;
@@ -216,7 +216,7 @@ module.exports = async (mode) => {
         // Weight of the mapper's vote:
         // -- 3 maps ranked -> 0.3 votes
         // -- 10+ maps ranked -> 1 vote (maximum)
-        const weight = Math.min(1, (mapper.mapsets) / 10);
+        const weight = Math.min(1, mapper.mapsets / 10);
 
         const mapEntry = {
           count: weight,
