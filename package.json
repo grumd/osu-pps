@@ -13,7 +13,7 @@
     "pp"
   ],
   "dependencies": {
-    "axios": "0.15.3",
+    "axios": "0.21.1",
     "cheerio": "^1.0.0-rc.3",
     "classnames": "2.2.6",
     "lodash": "^4.17.15",
