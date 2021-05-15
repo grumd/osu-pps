@@ -1,4 +1,5 @@
 import React, { PureComponent } from 'react';
+import _ from 'lodash/fp';
 import toBe from 'prop-types';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
@@ -45,13 +46,17 @@ function secondsToFormatted(length) {
 const okGlyph = <span className="glyphicon glyphicon-ok" />;
 const htGlyph = <span className="glyphicon glyphicon-time" />;
 
-const rootSelector = (state, props) => state.mapsData[props.match.params.mode];
+export const rootSelector = (state, props) => state.mapsData[props.match.params.mode];
 const dataSelector = (state, props) => rootSelector(state, props).data;
 
-const coefficientSelector = createSelector(
+export const coefficientSelector = createSelector(
   [dataSelector, (state, props) => rootSelector(state, props).searchKey[FIELDS.MODE]],
   (data, owMode) => {
     const calc = overweightnessCalcFromMode[owMode];
+    if (_.isEmpty(data)) {
+      return 0;
+    }
+
     const maxOverweightness = data.reduce((max, item) => {
       const current = calc(item);
       return current > max ? current : max;
@@ -676,7 +681,9 @@ class Table extends PureComponent {
               className="form-control input-sm"
             >
               <option value="total">total</option>
-              <option value="adjusted">adjusted</option>
+              <option value="adjusted">adjusted (recommended)</option>
+              <option value="playcount">by playcount</option>
+              <option value="age">by age</option>
             </select>
           </th>
         </tr>

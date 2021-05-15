@@ -9,14 +9,21 @@ import prizeSilver from './prize_silver.png';
 import prizeBronze from './prize_bronze.png';
 import './top-mappers.scss';
 
+// import { FIELDS } from 'constants/mapsData';
+
 import CollapsibleBar from 'components/CollapsibleBar';
+import { coefficientSelector, rootSelector } from 'components/Table/Table';
 // import ParamLink from 'components/ParamLink/ParamLink';
 
 import { fetchMappersData } from 'reducers/mappers';
+import { fetchMapsData } from 'reducers/mapsData';
 
 const mapStateToProps = (state, props) => {
   const mode = props.match.params.mode;
   return {
+    // overweightnessMode: rootSelector(state, props)?.searchKey?.[FIELDS.MODE],
+    isLoadingData: rootSelector(state, props).isLoading,
+    overweightnessCoefficient: coefficientSelector(state, props),
     data: state.mappers[mode].data,
     error: state.mappers[mode].error,
     isLoading: state.mappers[mode].isLoading,
@@ -25,6 +32,7 @@ const mapStateToProps = (state, props) => {
 
 const mapDispatchToProps = {
   fetchMappersData,
+  fetchMapsData,
 };
 
 class TopMapper extends Component {
@@ -34,31 +42,39 @@ class TopMapper extends Component {
     data: toBe.object,
     error: toBe.object,
     isLoading: toBe.bool.isRequired,
+    overweightnessCoefficient: toBe.number,
+    // overweightnessMode: toBe.string,
   };
 
   componentDidMount() {
-    const { isLoading, data, match } = this.props;
+    const { isLoading, data, match, isLoadingData, overweightnessCoefficient } = this.props;
+    if (!overweightnessCoefficient && !isLoadingData) {
+      this.props.fetchMapsData(match.params.mode);
+    }
     if (!isLoading && !data) {
       this.props.fetchMappersData(match.params.mode);
     }
   }
 
   componentDidUpdate() {
-    const { match, isLoading, data } = this.props;
+    const { match, isLoading, data, isLoadingData, overweightnessCoefficient } = this.props;
+    if (!overweightnessCoefficient && !isLoadingData) {
+      this.props.fetchMapsData(match.params.mode);
+    }
     if (!data && !isLoading) {
       this.props.fetchMappersData(match.params.mode);
     }
   }
 
   render() {
-    const { isLoading, data, error } = this.props;
+    const { isLoading, data, isLoadingData, error, overweightnessCoefficient } = this.props;
 
     // const dataUsed = !data ? [] : match.params.sort === 'total' ? data.top20 : data.top20age;
-    const dataUsed = !data ? [] : data.top20age;
+    const dataUsed = !data ? [] : data.top20adj;
 
     let maxOw = 0;
-    dataUsed.forEach(mapper => {
-      mapper.mapsRecorded.forEach(map => {
+    dataUsed.forEach((mapper) => {
+      mapper.mapsRecorded.forEach((map) => {
         if (map.ow > maxOw) {
           maxOw = map.ow;
         }
@@ -68,12 +84,13 @@ class TopMapper extends Component {
     return (
       <div className="top-mappers">
         <header>
-          {isLoading && <div className="loading">loading...</div>}
+          {(isLoading || isLoadingData) && <div className="loading">loading...</div>}
           {error && error.message}
-          {!isLoading && !error && (
+          {!(isLoading || isLoadingData) && !error && (
             <>
               <p>
                 This is the list of ppest pp mappers according to my calculations.
+                <br /> Using overweightness calculation mode: "adjusted"
                 <br /> See faq for more info
               </p>
             </>
@@ -105,16 +122,21 @@ class TopMapper extends Component {
                         </a>
                       </div>
                       <div className="pp" />
-                      <div className="overweightness">overweightness - {mapper.points} total</div>
+                      <div className="overweightness">
+                        overweightness - {(mapper.points * overweightnessCoefficient).toFixed(1)}{' '}
+                        total
+                      </div>
                     </div>
-                    {mapper.mapsRecorded.map(map => {
+                    {mapper.mapsRecorded.map((map) => {
                       return (
                         <div className="map-row" key={map.id}>
                           <div className="text">
                             <a href={`https://osu.ppy.sh/beatmaps/${map.id}`}>{map.text}</a>
                           </div>
                           <div className="pp">{Math.round(map.pp)}pp</div>
-                          <div className="overweightness">{Math.round(map.ow)}</div>
+                          <div className="overweightness">
+                            {Math.round(map.ow * overweightnessCoefficient)}
+                          </div>
                           <div className="graph">
                             <div
                               style={{ width: `${Math.round((map.ow / maxOw) * 10000) / 100}%` }}

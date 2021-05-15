@@ -21,7 +21,7 @@ function ModeComponent({ match }) {
 
   useEffect(() => {
     dispatch(fetchMetadata(match.params.mode));
-  }, []);
+  }, [dispatch, match.params.mode]);
 
   return (
     <>

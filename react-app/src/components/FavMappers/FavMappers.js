@@ -27,7 +27,7 @@ function MapperRow({ item, index, maxCount, mode }) {
       fetchJson({
         url: `${API_PREFIX}/data/mappers/${mode}/favored-mappers-maps/${item.mapperId}.json`,
       })
-        .then(data => {
+        .then((data) => {
           setLoading(false);
           setDetails(data);
         })
@@ -36,7 +36,7 @@ function MapperRow({ item, index, maxCount, mode }) {
     if (!expanded && error) {
       setError(null);
     }
-  }, [expanded, details, isLoading]);
+  }, [expanded, details, isLoading, error, item.mapperId, mode]);
 
   const maxSongCount = useMemo(() => {
     return Array.isArray(details) ? _.get('count', _.maxBy('count', details)) : 0;
@@ -63,10 +63,10 @@ function MapperRow({ item, index, maxCount, mode }) {
         <td className="names">
           <div>
             <a href={userLink} target="_blank" rel="noopener noreferrer">
-              {item.names.slice(0, 4).map(name => (
-                <div key="name">{name}</div>
+              {item.names.slice(0, 4).map((name) => (
+                <div key={name}>{name}</div>
               ))}
-              {item.names[4] && <div key="name">.....</div>}
+              {item.names[4] && <div key="name...">.....</div>}
             </a>
           </div>
         </td>
@@ -111,7 +111,7 @@ function MapperRow({ item, index, maxCount, mode }) {
                       </tr>
                     )}
                     {details &&
-                      details.map(song => {
+                      details.map((song) => {
                         const mapLink = `https://osu.ppy.sh/beatmapsets/${song.id}`;
                         return (
                           <tr key={song.id}>
@@ -157,9 +157,9 @@ function FavMappers({ match }) {
 
   useEffect(() => {
     dispatch(fetchMappersFavData(match.params.mode));
-  }, [match.params.mode]);
+  }, [match.params.mode, dispatch]);
 
-  const mappersData = useSelector(state => state.mappersFavs[match.params.mode]);
+  const mappersData = useSelector((state) => state.mappersFavs[match.params.mode]);
 
   if (!mappersData) {
     return null;

@@ -227,8 +227,6 @@ module.exports = async (mode) => {
         if (!favsPerMapper[mapperId]) {
           favsPerMapper[mapperId] = {
             count: weight,
-            ppCount: weight,
-            mapsCount: 1,
             mapperId,
             namesDict: { [fav.creator]: weight },
             mapsDict: {
@@ -236,10 +234,7 @@ module.exports = async (mode) => {
             },
           };
         } else {
-          favsPerMapper[mapperId].mapsCount += 1;
           favsPerMapper[mapperId].count += weight;
-          favsPerMapper[mapperId].ppCount +=
-            weight * 0.95 ** (favsPerMapper[mapperId].mapsCount - 1);
           favsPerMapper[mapperId].namesDict[fav.creator] =
             (favsPerMapper[mapperId].namesDict[fav.creator] || 0) + weight;
           if (!favsPerMapper[mapperId].mapsDict[fav.id]) {
