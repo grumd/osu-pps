@@ -18,3 +18,5 @@ export const modsToString = mods => {
     .filter(key => mapMods[key])
     .join('');
 };
+
+export const roundFloat = (x, n = 2) => Math.round(x * 10 ** n) / 10 ** n;

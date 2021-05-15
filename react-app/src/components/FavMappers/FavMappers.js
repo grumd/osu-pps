@@ -9,6 +9,7 @@ import Loader from 'components/Loader';
 
 import { fetchJson } from 'utils/fetch';
 import { isMobile } from 'utils/browser';
+import { roundFloat } from 'utils/common';
 
 import './fav-mappers.scss';
 
@@ -127,7 +128,7 @@ function MapperRow({ item, index, maxCount, mode }) {
                                     width: `${((100 * song.count) / maxSongCount).toFixed(1)}%`,
                                   }}
                                 >
-                                  {song.count}
+                                  {roundFloat(song.count, 2)}
                                 </div>
                                 {song.ranked_date && (
                                   <div className="count-ranked-date">
