@@ -179,24 +179,12 @@
           display: flex;
           flex-flow: row nowrap;
           > .mod {
-            background: #3c3c3c;
             line-height: 6vw;
-            font-size: 90%;
             width: 7vw;
             height: 6vw;
-            text-align: center;
-            color: #555;
             border-radius: 1.5vw;
             + .mod {
               margin-left: 0.5vw;
-            }
-            &.active {
-              color: #fff;
-              background: #e0b0743e;
-            }
-            &.inverted {
-              color: #fff;
-              background: #579cb773;
             }
           }
         }

@@ -276,11 +276,27 @@ class TableBody extends PureComponent {
                 )}
               </td>
               <td className="text-center">{(+item.pp99).toFixed(0)}</td>
-              {isMania && <td className="text-center">{item.k ? item.k + 'K' : '?'}</td>}
-              <td className="text-center">{mods.ht ? htGlyph : mods.dt ? okGlyph : null}</td>
-              <td className="text-center">{mods.hd ? okGlyph : null}</td>
-              <td className="text-center">{mods.hr ? okGlyph : null}</td>
-              <td className="text-center">{mods.fl ? okGlyph : null}</td>
+              {isMania && (
+                <td className="text-center">
+                  <div className={classNames('mod', { active: item.k })}>
+                    {item.k ? item.k + 'K' : '?'}
+                  </div>
+                </td>
+              )}
+              <td className="text-center">
+                <div className={classNames('mod', { active: mods.dt, inverted: mods.ht })}>
+                  {mods.ht ? 'HT' : 'DT'}
+                </div>
+              </td>
+              <td className="text-center">
+                <div className={classNames('mod', { active: mods.hd })}>HD</div>
+              </td>
+              <td className="text-center">
+                <div className={classNames('mod', { active: mods.hr })}>HR</div>
+              </td>
+              <td className="text-center">
+                <div className={classNames('mod', { active: mods.fl })}>FL</div>
+              </td>
               <td className="text-center">{secondsToFormatted(item.l)}</td>
               <td className="text-center">{bpm}</td>
               <td className="text-center">{item.d}</td>
@@ -445,7 +461,7 @@ class Table extends PureComponent {
               <option>any</option>
               <option>yes</option>
               <option>no</option>
-              <option>ht</option>
+              <option value="ht">HT</option>
             </select>
           </td>
           <td className="mod-head">
@@ -666,10 +682,10 @@ class Table extends PureComponent {
           <th>map link</th>
           <th className="text-center">pp</th>
           {isMania && <th className="text-center">keys</th>}
-          <th className="text-center">dt</th>
-          <th className="text-center">hd</th>
-          <th className="text-center">hr</th>
-          <th className="text-center">fl</th>
+          <th className="text-center">DT</th>
+          <th className="text-center">HD</th>
+          <th className="text-center">HR</th>
+          <th className="text-center">FL</th>
           <th className="text-center">length</th>
           <th className="text-center">bpm</th>
           <th className="text-center">difficulty</th>
