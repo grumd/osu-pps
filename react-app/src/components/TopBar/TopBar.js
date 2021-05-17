@@ -127,7 +127,7 @@ function TopBar({
             exit: 3000,
           }}
         >
-          {state => (
+          {(state) => (
             <div className={classNames('loader-text', state)}>
               {itemsCount > 0 ? `loaded ${itemsCount} maps` : 'loading...'}
             </div>
@@ -159,12 +159,12 @@ function TopBar({
               />
             </a>
           </div>
-          <div className="support">
+          {/* <div className="support">
             <a href="https://www.patreon.com/grumd" target="_blank" rel="noreferrer noopener">
               <span>support me</span>
               <FaHeart />
             </a>
-            {/* <Overlay
+            <Overlay
               overlayClassName="support-overlay"
               placement="bottom"
               overlayItem={
@@ -184,8 +184,8 @@ function TopBar({
                   <FaHeart />
                 </a>
               </div>
-            </Overlay> */}
-          </div>
+            </Overlay>
+          </div> */}
         </div>
       </div>
     </header>
