@@ -43,8 +43,8 @@ function secondsToFormatted(length) {
   return `${Math.floor(length / 60)}:${('0' + (length % 60)).slice(-2)}`;
 }
 
-const okGlyph = <span className="glyphicon glyphicon-ok" />;
-const htGlyph = <span className="glyphicon glyphicon-time" />;
+// const okGlyph = <span className="glyphicon glyphicon-ok" />;
+// const htGlyph = <span className="glyphicon glyphicon-time" />;
 
 export const rootSelector = (state, props) => state.mapsData[props.match.params.mode];
 const dataSelector = (state, props) => rootSelector(state, props).data;
@@ -216,7 +216,7 @@ class TableBody extends PureComponent {
 
     return (
       <tbody>
-        {data.map(item => {
+        {data.map((item) => {
           var mods = {
             dt: (item.m & 64) === 64,
             hd: (item.m & 8) === 8,
@@ -357,7 +357,7 @@ class Table extends PureComponent {
 
   onChangeMulti(key, array) {
     const { mode } = this.props;
-    const cookieValue = array.map(option => option.value).join(',');
+    const cookieValue = array.map((option) => option.value).join(',');
     document.cookie = `${getCookieSearchKey({ key, mode })}=${cookieValue}; path=/`;
     this.props.updateSearchKey(mode, key, array);
   }
@@ -379,7 +379,7 @@ class Table extends PureComponent {
   }
 
   toggleExpandView = () => {
-    this.setState(state => ({ expandedView: !state.expandedView }));
+    this.setState((state) => ({ expandedView: !state.expandedView }));
   };
 
   renderHead() {
@@ -402,7 +402,7 @@ class Table extends PureComponent {
           <td>
             <div className="form-group search-control">
               <input
-                onChange={e => this.onChange(FIELDS.TEXT, e)}
+                onChange={(e) => this.onChange(FIELDS.TEXT, e)}
                 value={searchKey[FIELDS.TEXT]}
                 type="text"
                 className={classNames('form-control input-sm', {
@@ -414,7 +414,7 @@ class Table extends PureComponent {
           </td>
           <td className="min-max-head">
             <input
-              onChange={e => this.onChangeNumber(FIELDS.PP_MIN, e)}
+              onChange={(e) => this.onChangeNumber(FIELDS.PP_MIN, e)}
               value={searchKey[FIELDS.PP_MIN]}
               type="number"
               className={classNames('form-control pp-input input-sm', {
@@ -423,7 +423,7 @@ class Table extends PureComponent {
               placeholder="min"
             />
             <input
-              onChange={e => this.onChangeNumber(FIELDS.PP_MAX, e)}
+              onChange={(e) => this.onChangeNumber(FIELDS.PP_MAX, e)}
               value={searchKey[FIELDS.PP_MAX]}
               type="number"
               className={classNames('form-control pp-input input-sm', {
@@ -438,7 +438,7 @@ class Table extends PureComponent {
                 className={classNames('form-control input-sm', {
                   active: searchKey[FIELDS.MANIA_K] !== emptySearchKey[FIELDS.MANIA_K],
                 })}
-                onChange={e => this.onChangeNumber(FIELDS.MANIA_K, e)}
+                onChange={(e) => this.onChangeNumber(FIELDS.MANIA_K, e)}
                 value={searchKey[FIELDS.MANIA_K]}
               >
                 <option value="-1">any</option>
@@ -455,7 +455,7 @@ class Table extends PureComponent {
               className={classNames('form-control input-sm', {
                 active: searchKey[FIELDS.DT] !== emptySearchKey[FIELDS.DT],
               })}
-              onChange={e => this.onChange(FIELDS.DT, e)}
+              onChange={(e) => this.onChange(FIELDS.DT, e)}
               value={searchKey[FIELDS.DT]}
             >
               <option>any</option>
@@ -470,7 +470,7 @@ class Table extends PureComponent {
               className={classNames('form-control input-sm', {
                 active: searchKey[FIELDS.HD] !== emptySearchKey[FIELDS.HD],
               })}
-              onChange={e => this.onChange(FIELDS.HD, e)}
+              onChange={(e) => this.onChange(FIELDS.HD, e)}
               value={searchKey[FIELDS.HD]}
             >
               <option>any</option>
@@ -484,7 +484,7 @@ class Table extends PureComponent {
               className={classNames('form-control input-sm', {
                 active: searchKey[FIELDS.HR] !== emptySearchKey[FIELDS.HR],
               })}
-              onChange={e => this.onChange(FIELDS.HR, e)}
+              onChange={(e) => this.onChange(FIELDS.HR, e)}
               value={searchKey[FIELDS.HR]}
             >
               <option>any</option>
@@ -498,7 +498,7 @@ class Table extends PureComponent {
               className={classNames('form-control input-sm', {
                 active: searchKey[FIELDS.FL] !== emptySearchKey[FIELDS.FL],
               })}
-              onChange={e => this.onChange(FIELDS.FL, e)}
+              onChange={(e) => this.onChange(FIELDS.FL, e)}
               value={searchKey[FIELDS.FL]}
             >
               <option>any</option>
@@ -524,7 +524,7 @@ class Table extends PureComponent {
                   const value = numValue === '' ? 0 : Math.max(Math.min(99, numValue), 0);
                   this.onChangeExact(FIELDS.MIN_M_LEN, value);
                 }}
-                onChange={e => this.onChangeNumber(FIELDS.MIN_M_LEN, e)}
+                onChange={(e) => this.onChangeNumber(FIELDS.MIN_M_LEN, e)}
                 value={searchKey[FIELDS.MIN_M_LEN]}
                 type="number"
               />
@@ -536,7 +536,7 @@ class Table extends PureComponent {
                   const value = numValue === '' ? 0 : Math.max(Math.min(59, numValue), 0);
                   this.onChangeExact(FIELDS.MIN_S_LEN, ('00' + value).slice(-2));
                 }}
-                onChange={e => this.onChangeNumber(FIELDS.MIN_S_LEN, e)}
+                onChange={(e) => this.onChangeNumber(FIELDS.MIN_S_LEN, e)}
                 value={searchKey[FIELDS.MIN_S_LEN]}
                 type="number"
               />
@@ -558,7 +558,7 @@ class Table extends PureComponent {
                   const value = numValue === '' ? 99 : Math.max(Math.min(99, numValue), 0);
                   this.onChangeExact(FIELDS.MAX_M_LEN, value);
                 }}
-                onChange={e => this.onChangeNumber(FIELDS.MAX_M_LEN, e)}
+                onChange={(e) => this.onChangeNumber(FIELDS.MAX_M_LEN, e)}
                 value={searchKey[FIELDS.MAX_M_LEN]}
                 type="number"
               />
@@ -570,7 +570,7 @@ class Table extends PureComponent {
                   const value = numValue === '' ? 59 : Math.max(Math.min(59, numValue), 0);
                   this.onChangeExact(FIELDS.MAX_S_LEN, ('00' + value).slice(-2));
                 }}
-                onChange={e => this.onChangeNumber(FIELDS.MAX_S_LEN, e)}
+                onChange={(e) => this.onChangeNumber(FIELDS.MAX_S_LEN, e)}
                 value={searchKey[FIELDS.MAX_S_LEN]}
                 type="number"
               />
@@ -581,7 +581,7 @@ class Table extends PureComponent {
               className={classNames('form-control pp-input input-sm', {
                 active: searchKey[FIELDS.BPM_MIN] !== emptySearchKey[FIELDS.BPM_MIN],
               })}
-              onChange={e => this.onChangeNumber(FIELDS.BPM_MIN, e)}
+              onChange={(e) => this.onChangeNumber(FIELDS.BPM_MIN, e)}
               value={searchKey[FIELDS.BPM_MIN]}
               type="number"
               placeholder="min"
@@ -590,7 +590,7 @@ class Table extends PureComponent {
               className={classNames('form-control pp-input input-sm', {
                 active: searchKey[FIELDS.BPM_MAX] !== emptySearchKey[FIELDS.BPM_MAX],
               })}
-              onChange={e => this.onChangeNumber(FIELDS.BPM_MAX, e)}
+              onChange={(e) => this.onChangeNumber(FIELDS.BPM_MAX, e)}
               value={searchKey[FIELDS.BPM_MAX]}
               type="number"
               placeholder="max"
@@ -601,7 +601,7 @@ class Table extends PureComponent {
               className={classNames('form-control pp-input input-sm', {
                 active: searchKey[FIELDS.DIFF_MIN] !== emptySearchKey[FIELDS.DIFF_MIN],
               })}
-              onChange={e => this.onChangeNumber(FIELDS.DIFF_MIN, e)}
+              onChange={(e) => this.onChangeNumber(FIELDS.DIFF_MIN, e)}
               value={searchKey[FIELDS.DIFF_MIN]}
               type="number"
               placeholder="min"
@@ -610,7 +610,7 @@ class Table extends PureComponent {
               className={classNames('form-control pp-input input-sm', {
                 active: searchKey[FIELDS.DIFF_MAX] !== emptySearchKey[FIELDS.DIFF_MAX],
               })}
-              onChange={e => this.onChangeNumber(FIELDS.DIFF_MAX, e)}
+              onChange={(e) => this.onChangeNumber(FIELDS.DIFF_MAX, e)}
               value={searchKey[FIELDS.DIFF_MAX]}
               type="number"
               placeholder="max"
@@ -650,7 +650,7 @@ class Table extends PureComponent {
                   isMulti
                   options={genreOptions}
                   value={searchKey[FIELDS.GENRE]}
-                  onChange={value => this.onChangeMulti(FIELDS.GENRE, value)}
+                  onChange={(value) => this.onChangeMulti(FIELDS.GENRE, value)}
                 />
                 <Select
                   closeMenuOnSelect={false}
@@ -660,7 +660,7 @@ class Table extends PureComponent {
                   isMulti
                   options={languageOptions}
                   value={searchKey[FIELDS.LANG]}
-                  onChange={value => this.onChangeMulti(FIELDS.LANG, value)}
+                  onChange={(value) => this.onChangeMulti(FIELDS.LANG, value)}
                 />
                 <Select
                   isClearable
@@ -668,8 +668,10 @@ class Table extends PureComponent {
                   classNamePrefix="select"
                   placeholder="when song was ranked"
                   options={rankedDateOptions}
-                  value={rankedDateOptions.find(opt => opt.value === searchKey[FIELDS.RANKED_DATE])}
-                  onChange={option =>
+                  value={rankedDateOptions.find(
+                    (opt) => opt.value === searchKey[FIELDS.RANKED_DATE]
+                  )}
+                  onChange={(option) =>
                     this.onChangeExact(FIELDS.RANKED_DATE, option ? option.value : null)
                   }
                 />
@@ -692,7 +694,7 @@ class Table extends PureComponent {
           <th className="text-center ow-head">
             <div>overweightness</div>
             <select
-              onChange={e => this.onChange(FIELDS.MODE, e)}
+              onChange={(e) => this.onChange(FIELDS.MODE, e)}
               value={searchKey[FIELDS.MODE]}
               className="form-control input-sm"
             >
@@ -732,7 +734,7 @@ class Table extends PureComponent {
             <span>song name:</span>
             <div className="form-group search-control">
               <input
-                onChange={e => this.onChange(FIELDS.TEXT, e)}
+                onChange={(e) => this.onChange(FIELDS.TEXT, e)}
                 value={searchKey[FIELDS.TEXT]}
                 type="text"
                 className={classNames('form-control input-sm', {
@@ -748,7 +750,7 @@ class Table extends PureComponent {
             <div className="head-text">pp</div>
             <div className="inputs">
               <input
-                onChange={e => this.onChangeNumber(FIELDS.PP_MIN, e)}
+                onChange={(e) => this.onChangeNumber(FIELDS.PP_MIN, e)}
                 value={searchKey[FIELDS.PP_MIN]}
                 type="number"
                 className={classNames('form-control pp-input input-sm', {
@@ -757,7 +759,7 @@ class Table extends PureComponent {
                 placeholder="min"
               />
               <input
-                onChange={e => this.onChangeNumber(FIELDS.PP_MAX, e)}
+                onChange={(e) => this.onChangeNumber(FIELDS.PP_MAX, e)}
                 value={searchKey[FIELDS.PP_MAX]}
                 type="number"
                 className={classNames('form-control pp-input input-sm', {
@@ -787,7 +789,7 @@ class Table extends PureComponent {
                     const value = numValue === '' ? 0 : Math.max(Math.min(99, numValue), 0);
                     this.onChangeExact(FIELDS.MIN_M_LEN, value);
                   }}
-                  onChange={e => this.onChangeNumber(FIELDS.MIN_M_LEN, e)}
+                  onChange={(e) => this.onChangeNumber(FIELDS.MIN_M_LEN, e)}
                   value={searchKey[FIELDS.MIN_M_LEN]}
                   type="number"
                 />
@@ -799,7 +801,7 @@ class Table extends PureComponent {
                     const value = numValue === '' ? 0 : Math.max(Math.min(59, numValue), 0);
                     this.onChangeExact(FIELDS.MIN_S_LEN, ('00' + value).slice(-2));
                   }}
-                  onChange={e => this.onChangeNumber(FIELDS.MIN_S_LEN, e)}
+                  onChange={(e) => this.onChangeNumber(FIELDS.MIN_S_LEN, e)}
                   value={searchKey[FIELDS.MIN_S_LEN]}
                   type="number"
                 />
@@ -821,7 +823,7 @@ class Table extends PureComponent {
                     const value = numValue === '' ? 99 : Math.max(Math.min(99, numValue), 0);
                     this.onChangeExact(FIELDS.MAX_M_LEN, value);
                   }}
-                  onChange={e => this.onChangeNumber(FIELDS.MAX_M_LEN, e)}
+                  onChange={(e) => this.onChangeNumber(FIELDS.MAX_M_LEN, e)}
                   value={searchKey[FIELDS.MAX_M_LEN]}
                   type="number"
                 />
@@ -833,7 +835,7 @@ class Table extends PureComponent {
                     const value = numValue === '' ? 59 : Math.max(Math.min(59, numValue), 0);
                     this.onChangeExact(FIELDS.MAX_S_LEN, ('00' + value).slice(-2));
                   }}
-                  onChange={e => this.onChangeNumber(FIELDS.MAX_S_LEN, e)}
+                  onChange={(e) => this.onChangeNumber(FIELDS.MAX_S_LEN, e)}
                   value={searchKey[FIELDS.MAX_S_LEN]}
                   type="number"
                 />
@@ -847,7 +849,7 @@ class Table extends PureComponent {
                 className={classNames('form-control pp-input input-sm', {
                   active: searchKey[FIELDS.BPM_MIN] !== emptySearchKey[FIELDS.BPM_MIN],
                 })}
-                onChange={e => this.onChangeNumber(FIELDS.BPM_MIN, e)}
+                onChange={(e) => this.onChangeNumber(FIELDS.BPM_MIN, e)}
                 value={searchKey[FIELDS.BPM_MIN]}
                 type="number"
                 placeholder="min"
@@ -856,7 +858,7 @@ class Table extends PureComponent {
                 className={classNames('form-control pp-input input-sm', {
                   active: searchKey[FIELDS.BPM_MAX] !== emptySearchKey[FIELDS.BPM_MAX],
                 })}
-                onChange={e => this.onChangeNumber(FIELDS.BPM_MAX, e)}
+                onChange={(e) => this.onChangeNumber(FIELDS.BPM_MAX, e)}
                 value={searchKey[FIELDS.BPM_MAX]}
                 type="number"
                 placeholder="max"
@@ -870,7 +872,7 @@ class Table extends PureComponent {
                 className={classNames('form-control pp-input input-sm', {
                   active: searchKey[FIELDS.DIFF_MIN] !== emptySearchKey[FIELDS.DIFF_MIN],
                 })}
-                onChange={e => this.onChangeNumber(FIELDS.DIFF_MIN, e)}
+                onChange={(e) => this.onChangeNumber(FIELDS.DIFF_MIN, e)}
                 value={searchKey[FIELDS.DIFF_MIN]}
                 type="number"
                 placeholder="min"
@@ -879,7 +881,7 @@ class Table extends PureComponent {
                 className={classNames('form-control pp-input input-sm', {
                   active: searchKey[FIELDS.DIFF_MAX] !== emptySearchKey[FIELDS.DIFF_MAX],
                 })}
-                onChange={e => this.onChangeNumber(FIELDS.DIFF_MAX, e)}
+                onChange={(e) => this.onChangeNumber(FIELDS.DIFF_MAX, e)}
                 value={searchKey[FIELDS.DIFF_MAX]}
                 type="number"
                 placeholder="max"
@@ -896,7 +898,7 @@ class Table extends PureComponent {
                   className={classNames('form-control input-sm', {
                     active: searchKey[FIELDS.MANIA_K] !== emptySearchKey[FIELDS.MANIA_K],
                   })}
-                  onChange={e => this.onChangeNumber(FIELDS.MANIA_K, e)}
+                  onChange={(e) => this.onChangeNumber(FIELDS.MANIA_K, e)}
                   value={searchKey[FIELDS.MANIA_K]}
                 >
                   <option value="-1">any</option>
@@ -916,7 +918,7 @@ class Table extends PureComponent {
                 className={classNames('form-control input-sm', {
                   active: searchKey[FIELDS.DT] !== emptySearchKey[FIELDS.DT],
                 })}
-                onChange={e => this.onChange(FIELDS.DT, e)}
+                onChange={(e) => this.onChange(FIELDS.DT, e)}
                 value={searchKey[FIELDS.DT]}
               >
                 <option>any</option>
@@ -934,7 +936,7 @@ class Table extends PureComponent {
                 className={classNames('form-control input-sm', {
                   active: searchKey[FIELDS.HD] !== emptySearchKey[FIELDS.HD],
                 })}
-                onChange={e => this.onChange(FIELDS.HD, e)}
+                onChange={(e) => this.onChange(FIELDS.HD, e)}
                 value={searchKey[FIELDS.HD]}
               >
                 <option>any</option>
@@ -951,7 +953,7 @@ class Table extends PureComponent {
                 className={classNames('form-control input-sm', {
                   active: searchKey[FIELDS.HR] !== emptySearchKey[FIELDS.HR],
                 })}
-                onChange={e => this.onChange(FIELDS.HR, e)}
+                onChange={(e) => this.onChange(FIELDS.HR, e)}
                 value={searchKey[FIELDS.HR]}
               >
                 <option>any</option>
@@ -968,7 +970,7 @@ class Table extends PureComponent {
                 className={classNames('form-control input-sm', {
                   active: searchKey[FIELDS.FL] !== emptySearchKey[FIELDS.FL],
                 })}
-                onChange={e => this.onChange(FIELDS.FL, e)}
+                onChange={(e) => this.onChange(FIELDS.FL, e)}
                 value={searchKey[FIELDS.FL]}
               >
                 <option>any</option>
@@ -988,7 +990,7 @@ class Table extends PureComponent {
               isMulti
               options={genreOptions}
               value={searchKey[FIELDS.GENRE]}
-              onChange={value => this.onChangeMulti(FIELDS.GENRE, value)}
+              onChange={(value) => this.onChangeMulti(FIELDS.GENRE, value)}
             />
             <Select
               closeMenuOnSelect={false}
@@ -998,15 +1000,15 @@ class Table extends PureComponent {
               isMulti
               options={languageOptions}
               value={searchKey[FIELDS.LANG]}
-              onChange={value => this.onChangeMulti(FIELDS.LANG, value)}
+              onChange={(value) => this.onChangeMulti(FIELDS.LANG, value)}
             />
             <Select
               className="select"
               classNamePrefix="select"
               placeholder="when song was ranked"
               options={rankedDateOptions}
-              value={rankedDateOptions.find(opt => opt.value === searchKey[FIELDS.RANKED_DATE])}
-              onChange={option => this.onChangeExact(FIELDS.RANKED_DATE, option.value)}
+              value={rankedDateOptions.find((opt) => opt.value === searchKey[FIELDS.RANKED_DATE])}
+              onChange={(option) => this.onChangeExact(FIELDS.RANKED_DATE, option.value)}
             />
           </div>
         )}
@@ -1040,16 +1042,11 @@ class Table extends PureComponent {
 
   renderTable() {
     if (isMobile) {
-      const {
-        visibleData,
-        searchKey,
-        overweightnessCoefficient,
-        mode,
-        lastUpdatedDate,
-      } = this.props;
+      const { visibleData, searchKey, overweightnessCoefficient, mode, lastUpdatedDate } =
+        this.props;
       const isMania = mode === modes.mania.text;
       let count = 0;
-      Object.keys(searchKey).forEach(key => {
+      Object.keys(searchKey).forEach((key) => {
         if (Array.isArray(searchKey[key])) {
           if (searchKey[key].length) count++;
           // eslint-disable-next-line eqeqeq
@@ -1065,7 +1062,7 @@ class Table extends PureComponent {
             </CollapsibleBar>
           </div>
           <div className="cards-view">
-            {visibleData.map(item => (
+            {visibleData.map((item) => (
               <Card
                 key={`${item.b}_${item.m}`}
                 item={item}

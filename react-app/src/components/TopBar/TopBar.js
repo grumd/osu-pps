@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import { NavLink, withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { Transition } from 'react-transition-group';
-import { FaHeart } from 'react-icons/fa';
+// import { FaHeart } from 'react-icons/fa';
 
 import './top-bar.scss';
 
