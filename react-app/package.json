@@ -28,7 +28,7 @@
     "reselect": "4.0.0",
     "sass": "^1.32.13",
     "text-encoding": "0.7.0",
-    "ua-parser-js": "0.7.20",
+    "ua-parser-js": "0.7.24",
     "whatwg-fetch": "3.0.0"
   },
   "scripts": {
