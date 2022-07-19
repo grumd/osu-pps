@@ -15,7 +15,7 @@ then
       echo "ERROR: Nothing to commit!"
     else
       git add .
-      if [[ $(git log -1 --pretty=%B | grep 'Data update from') ]]
+      if [[ $(git log -1 --pretty=%B | grep 'Data update') ]]
       then
         echo "Latest commit was a data update, amending"
         git commit --amend -m "Data update from $now"
