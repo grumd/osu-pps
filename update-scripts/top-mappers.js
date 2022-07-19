@@ -1,4 +1,3 @@
-const fs = require('fs');
 const _ = require('lodash/fp');
 const oneLineLog = require('single-line-log').stdout;
 
@@ -13,6 +12,8 @@ const {
   parallelRun,
   delay,
   writeFileSync,
+  readJson,
+  writeJson,
 } = require('./utils');
 
 const getFavs = async (id, from, count) => {
@@ -33,8 +34,8 @@ const getAdjustedX = (x, adj, h) => +x / Math.pow(adj || 1, 0.65) / Math.pow(+h 
 module.exports = async (mode) => {
   console.log(`Calculating TOP 20 pp mappers for ${mode.text}`);
 
-  const mapCache = JSON.parse(fs.readFileSync(files.mapInfoCache(mode)));
-  const sortedResults = JSON.parse(fs.readFileSync(files.mapsList(mode))).sort((a, b) => b.x - a.x);
+  const mapCache = await readJson(files.mapInfoCache(mode));
+  const sortedResults = (await readJson(files.mapsList(mode))).sort((a, b) => b.x - a.x);
 
   let mapperNames = [];
   Object.keys(mapCache).forEach((mapId) => {
@@ -202,8 +203,8 @@ module.exports = async (mode) => {
   });
   console.log();
   console.log('Recording temp data');
-  writeFileSync(files.tenMapsMappersTemp(mode), JSON.stringify(mappersWithTenMaps));
-  // const mappersWithTenMaps = JSON.parse(fs.readFileSync(files.tenMapsMappersTemp(mode), 'utf8'));
+  await writeJson(files.tenMapsMappersTemp(mode), mappersWithTenMaps);
+  // const mappersWithTenMaps = await readJson(files.tenMapsMappersTemp(mode), 'utf8');
   const favsPerMapper = {};
   mappersWithTenMaps.forEach((mapper) => {
     mapper.favourites &&
@@ -246,43 +247,44 @@ module.exports = async (mode) => {
       });
   });
 
-  Object.keys(favsPerMapper).forEach((mapperId) => {
+  const mapperIds = Object.keys(favsPerMapper);
+  for (const mapperId of mapperIds) {
     favsPerMapper[mapperId].names = Object.keys(favsPerMapper[mapperId].namesDict).sort(
       (a, b) => favsPerMapper[mapperId].namesDict[b] - favsPerMapper[mapperId].namesDict[a]
     );
     const mapsSorted = _.orderBy(['count'], ['desc'], _.values(favsPerMapper[mapperId].mapsDict));
-    writeFileSync(files.mappersFavTopDetails(mode, mapperId), JSON.stringify(mapsSorted));
+    await writeJson(files.mappersFavTopDetails(mode, mapperId), mapsSorted);
     delete favsPerMapper[mapperId].namesDict;
     delete favsPerMapper[mapperId].mapsDict;
-  });
+  }
 
   console.log('Recorded top of mappers by mapper favs');
-  writeFileSync(
+  await writeJson(
     files.mappersFavTop(mode),
-    JSON.stringify(_.orderBy(['count'], ['desc'], _.values(favsPerMapper)))
+    _.orderBy(['count'], ['desc'], _.values(favsPerMapper))
   );
 
-  const transformMapList = (pointsKey = 'points', xKey = 'x', shouldTruncateFloat = true) => (
-    mapper
-  ) => {
-    return {
-      name: mapper.name,
-      id: mapper.id,
-      points: shouldTruncateFloat ? truncateFloat(mapper[pointsKey]) : mapper[pointsKey],
-      mapsRecorded: mapper.mapsRecorded
-        .sort((a, b) => b[xKey] - a[xKey])
-        .slice(0, 20)
-        .map((map) => ({
-          id: map.id,
-          text: `${mapCache[map.id].artist} - ${mapCache[map.id].title} [${
-            mapCache[map.id].version
-          }]`,
-          ow: shouldTruncateFloat ? truncateFloat(map[xKey]) : map[xKey],
-          pp: map.pp,
-          m: map.m,
-        })),
+  const transformMapList =
+    (pointsKey = 'points', xKey = 'x', shouldTruncateFloat = true) =>
+    (mapper) => {
+      return {
+        name: mapper.name,
+        id: mapper.id,
+        points: shouldTruncateFloat ? truncateFloat(mapper[pointsKey]) : mapper[pointsKey],
+        mapsRecorded: mapper.mapsRecorded
+          .sort((a, b) => b[xKey] - a[xKey])
+          .slice(0, 20)
+          .map((map) => ({
+            id: map.id,
+            text: `${mapCache[map.id].artist} - ${mapCache[map.id].title} [${
+              mapCache[map.id].version
+            }]`,
+            ow: shouldTruncateFloat ? truncateFloat(map[xKey]) : map[xKey],
+            pp: map.pp,
+            m: map.m,
+          })),
+      };
     };
-  };
 
   const resultingObject = {
     top20: mappers
@@ -299,7 +301,7 @@ module.exports = async (mode) => {
       .map(transformMapList('pointsAdj', 'xAdj', false)),
   };
 
-  writeFileSync(files.dataMappers(mode), JSON.stringify(resultingObject));
+  await writeJson(files.dataMappers(mode), resultingObject);
   console.log('Finished calculating TOP 20 mappers!');
 };
 

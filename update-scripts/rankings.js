@@ -1,4 +1,3 @@
-const fs = require('fs');
 const oneLineLog = require('single-line-log').stdout;
 // const axios = require('./axios');
 
@@ -9,7 +8,8 @@ const {
   files,
   // parallelRun,
   // delay,
-  writeFileSync,
+  writeJson,
+  readJson,
 } = require('./utils');
 // const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
 
@@ -37,23 +37,23 @@ const {
 //     });
 // };
 
-module.exports = mode => {
+module.exports = async (mode) => {
   console.log('3. CALCULATING RANKINGS');
-  let players = JSON.parse(fs.readFileSync(files.userIdsList(mode)));
+  let players = await readJson(files.userIdsList(mode));
   players.sort((a, b) => b.pp - a.pp); // to get rank #
   players.forEach((pl, index) => {
     pl.rank1 = index + 1;
   });
-  const scores = JSON.parse(fs.readFileSync(files.userMapsList(mode)));
-  const updateDatePerUser = JSON.parse(fs.readFileSync(files.userMapsDates(mode)));
-  const mapsData = JSON.parse(fs.readFileSync(files.mapsDetailedList(mode)));
+  const scores = await readJson(files.userMapsList(mode));
+  const updateDatePerUser = await readJson(files.userMapsDates(mode));
+  const mapsData = await readJson(files.mapsDetailedList(mode));
   console.log('Calculating overweightness for every map');
   // Calculate maximum and average Overweightness
   let maxOW = 0;
   let sum = 0;
   let count = 0;
   const mapsDataWithAdjValue = mapsData
-    .map(item => {
+    .map((item) => {
       const x = +item.x / Math.pow(item.adj || 1, 0.65) / Math.pow(+item.h || 1, 0.35);
       maxOW = maxOW < x ? x : maxOW;
       if (x > 0.00005) {
@@ -87,7 +87,7 @@ module.exports = mode => {
         oneLineLog(`// Getting values for player #${index}/${array.length} - ${player.name}`);
       // no scores - no player in rankings
       let newScores = [];
-      playerScores.forEach(scoreString => {
+      playerScores.forEach((scoreString) => {
         const scoreArray = scoreString.split('_');
         const score = {
           b: scoreArray[0],
@@ -95,9 +95,9 @@ module.exports = mode => {
           pp: scoreArray[2],
         };
         const allMaps = mapsDictionary[score.b];
-        const nomodOrDtMaps = allMaps.filter(map => map.m == trimModsForRankings(score.m));
+        const nomodOrDtMaps = allMaps.filter((map) => map.m == trimModsForRankings(score.m));
         if (allMaps.length) {
-          const thisMap = allMaps.find(map => map.m == simplifyMods(score.m));
+          const thisMap = allMaps.find((map) => map.m == simplifyMods(score.m));
           const thisMapX = thisMap ? thisMap.x : 0;
           const maxLocal = allMaps.reduce((acc, map) => (acc > map.x ? acc : map.x), 0);
           const maxLocalNomodOrDt = nomodOrDtMaps.reduce(
@@ -144,8 +144,8 @@ module.exports = mode => {
     }
   };
 
-  const rankings = players.map(getFarmValue).filter(a => a && a.s && a.s.length); // filter out no scores players
-  writeFileSync(files.dataRankings(mode), JSON.stringify(rankings));
+  const rankings = players.map(getFarmValue).filter((a) => a && a.s && a.s.length); // filter out no scores players
+  await writeJson(files.dataRankings(mode), rankings);
   console.log();
   console.log('Finished calculating rankings!');
   /*
@@ -165,10 +165,10 @@ module.exports = mode => {
           console.log(e.message);
         });
     },
-  }).then(() => {
+  }).then(async () => {
     rankings = rankings.filter(player => player.rank1);
     rankings = rankings.sort((a, b) => a.rank1 - b.rank1);
-    writeFileSync(files.dataRankings(mode), JSON.stringify(rankings));
+    await writeJson(files.dataRankings(mode), rankings);
     console.log();
     console.log('Finished calculating rankings!');
   });

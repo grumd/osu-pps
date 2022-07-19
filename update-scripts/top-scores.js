@@ -1,16 +1,14 @@
-const fs = require('fs');
-
 const { modes } = require('./constants');
-const { levenshtein, getDiffHours, truncateFloat, files } = require('./utils');
+const { readJson, files } = require('./utils');
 
-module.exports = mode => {
+module.exports = async (mode) => {
   console.log('Recording best scores');
-  const rankings = JSON.parse(fs.readFileSync(files.dataRankings(mode)));
+  const rankings = await readJson(files.dataRankings(mode));
   const scores = [];
   let minPP = 0,
     maxPP = Infinity;
-  rankings.forEach(player => {
-    player.s.forEach(score => {
+  rankings.forEach((player) => {
+    player.s.forEach((score) => {
       if (scores.length < 100 || score.p2 > minPP) {
         scores.push({
           mapName: score.n,

@@ -6,7 +6,7 @@ const fs = require('fs');
 
 const axios = require('./axios');
 const { DEBUG } = require('./constants');
-const { uniq, delay, files, writeFileSync } = require('./utils');
+const { uniq, delay, files, writeFileSync, writeJson, readJson } = require('./utils');
 
 const getUsersUrl = (modeText, page, country) =>
   `https://osu.ppy.sh/rankings/${modeText}/performance?page=${page}` +
@@ -15,9 +15,9 @@ const getUsersUrl = (modeText, page, country) =>
 let idsList = [];
 let countriesList = [];
 
-const saveIdsToFile = (mode) => {
-  writeFileSync(files.userIdsList(mode), JSON.stringify(idsList));
-  writeFileSync(files.userIdsDate(mode), JSON.stringify(new Date()));
+const saveIdsToFile = async (mode) => {
+  await writeJson(files.userIdsList(mode), idsList);
+  await writeJson(files.userIdsDate(mode), new Date());
 };
 
 const fetchCountryPage = (modeText, page, country, retryCount = 0) => {
@@ -87,14 +87,14 @@ const savePage = (modeText, data, page, country) => {
     });
 };
 
-module.exports = (mode) => {
+module.exports = async (mode) => {
   idsList = [];
   if (!DEBUG) {
     if (fs.existsSync(files.userIdsDate(mode))) {
       try {
-        const lastUpdatedDate = JSON.parse(fs.readFileSync(files.userIdsDate(mode)));
+        const lastUpdatedDate = await readJson(files.userIdsDate(mode));
         if (new Date() - new Date(lastUpdatedDate) < 14 * 24 * 60 * 60 * 1000) {
-          idsList = JSON.parse(fs.readFileSync(files.userIdsList(mode)));
+          idsList = await readJson(files.userIdsList(mode));
           console.log(
             `Last update for ${mode.text} was at ${lastUpdatedDate}, using cached list with ${idsList.length} user ids`
           );
@@ -110,23 +110,20 @@ module.exports = (mode) => {
     console.log(`Clearing old user IDs list`);
     writeFileSync(files.userIdsList(mode), '[]');
   }
-  countriesList = JSON.parse(fs.readFileSync(files.countriesList(mode)));
-  return countriesList
-    .slice(...(DEBUG ? [0, 1] : []))
-    .reduce((prevProm, country) => {
-      return prevProm
-        .then(() => {
-          console.log(`Starting to fetch ${country} (${mode.text})`);
-        })
-        .then(() => startFetchingPages(mode.text, 1, country))
-        .then(() => {
-          console.log(`\nFinished fetching ${country}`);
-          console.log(`Found ${idsList.length} unique users`);
-          return delay(5000);
-        });
-    }, Promise.resolve())
-    .then(() => {
-      saveIdsToFile(mode);
-      console.log(`Done fetching list of users! (${mode.text})`);
-    });
+  countriesList = await readJson(files.countriesList(mode));
+  await countriesList.slice(...(DEBUG ? [0, 1] : [])).reduce((prevProm, country) => {
+    return prevProm
+      .then(() => {
+        console.log(`Starting to fetch ${country} (${mode.text})`);
+      })
+      .then(() => startFetchingPages(mode.text, 1, country))
+      .then(() => {
+        console.log(`\nFinished fetching ${country}`);
+        console.log(`Found ${idsList.length} unique users`);
+        return delay(5000);
+      });
+  }, Promise.resolve());
+
+  await saveIdsToFile(mode);
+  console.log(`Done fetching list of users! (${mode.text})`);
 };

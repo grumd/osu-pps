@@ -1,19 +1,18 @@
-const fs = require('fs');
 const _ = require('lodash/fp');
 const Papa = require('papaparse');
 
-const { files, writeFileSync } = require('./utils');
+const { files, writeFileSync, writeJson, readJson } = require('./utils');
 const { modes } = require('./constants');
 
-module.exports = mode => {
+module.exports = async (mode) => {
   console.log('Organizing data');
   console.log('Compressing rankings');
 
-  const data = JSON.parse(fs.readFileSync(files.dataRankings(mode)));
+  const data = await readJson(files.dataRankings(mode));
   const diffInfoArray = [];
 
-  const compressedData = data.map(player => {
-    const scores = player.s.map(score => {
+  const compressedData = data.map((player) => {
+    const scores = player.s.map((score) => {
       const text = `${score.b} ${score.n}`;
       let index = diffInfoArray.indexOf(text);
       if (index === -1) {
@@ -25,11 +24,11 @@ module.exports = mode => {
     return [player.n, player.minuteUpdated, player.ppDiff, scores];
   });
 
-  writeFileSync(files.dataRankingsCompressed(mode), JSON.stringify(compressedData));
-  writeFileSync(files.dataRankingsInfo(mode), JSON.stringify(diffInfoArray));
+  await writeJson(files.dataRankingsCompressed(mode), compressedData);
+  await writeJson(files.dataRankingsInfo(mode), diffInfoArray);
 
   console.log('Compressing maps data to csv');
-  const mapsData = JSON.parse(fs.readFileSync(files.mapsDetailedList(mode)));
+  const mapsData = await readJson(files.mapsDetailedList(mode));
 
   const mapsetInfos = _.flow(
     _.map(_.pick(['art', 't', 'bpm', 'g', 'ln', 's'])),
@@ -41,12 +40,7 @@ module.exports = mode => {
   writeFileSync(files.diffsCsv(mode), Papa.unparse(trimmedDiffData));
 
   console.log('Creating metadata');
-  writeFileSync(
-    files.metadata(mode),
-    JSON.stringify({
-      lastUpdated: new Date(),
-    })
-  );
+  await writeJson(files.metadata(mode), { lastUpdated: new Date() });
 
   console.log('Finished organizing data');
 };

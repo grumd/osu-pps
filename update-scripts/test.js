@@ -1,20 +1,21 @@
-const { files, writeFileSync } = require('./utils');
+const { files, readJson, writeJson } = require('./utils');
 const { modes } = require('./constants');
 const fs = require('fs');
 
-let mapsCache = {};
-let mapsArray = [];
-if (fs.existsSync(files.mapInfoCache(modes.osu))) {
-  try {
-    mapsCache = JSON.parse(fs.readFileSync(files.mapInfoCache(modes.osu)));
-    console.log('Loaded maps cache');
-  } catch (e) {
-    console.log('Error parsing ' + files.mapInfoCache(modes.osu));
+const main = async () => {
+  if (fs.existsSync(files.ppBlocks(modes.mania))) {
+    try {
+      console.log('READ START');
+      await readJson(files.ppBlocks(modes.mania));
+      console.log('READ END');
+    } catch (e) {
+      console.log('Error parsing ' + files.ppBlocks(modes.mania));
+    }
   }
-}
 
-writeFileSync(files.mapInfoCache(modes.osu), 'test');
-writeFileSync(files.mapInfoCache(modes.osu), 'tes2t');
-writeFileSync(files.mapInfoCache(modes.osu), 'test2');
-writeFileSync(files.mapInfoCache(modes.osu), 'test3');
-writeFileSync(files.mapInfoCache(modes.osu), '{"a":4}');
+  console.log('WRITE START');
+  await writeJson('./temp/sss/www/test.json', 'test');
+  console.log('WRITE END');
+};
+
+main();

@@ -11,7 +11,8 @@ const {
   files,
   simplifyMods,
   parallelRun,
-  writeFileSync,
+  writeJson,
+  readJson,
 } = require('./utils');
 
 const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
@@ -100,7 +101,7 @@ const fetchUser = ({ userId, modeId, shouldRecordScores }) => {
     });
 };
 
-module.exports = (mode) => {
+module.exports = async (mode) => {
   console.log(`1. FETCHING MAPS LIST - ${mode.text}`);
   maps = {};
   usersMaps = {};
@@ -108,16 +109,14 @@ module.exports = (mode) => {
   peoplePerPpBlocks = [];
   let fullUsersList = [];
   try {
-    fullUsersList = JSON.parse(fs.readFileSync(files.userIdsList(mode))).sort(
-      (a, b) => b.pp - a.pp
-    );
+    fullUsersList = (await readJson(files.userIdsList(mode))).sort((a, b) => b.pp - a.pp);
   } catch (e) {
     console.log('Error parsing ' + files.userIdsList(mode));
   }
   const uniqueUsersList = uniq(fullUsersList, (user) => user.id);
   // const fetchPromises = [];
   const items = uniqueUsersList.slice(...(DEBUG ? [0, 100] : []));
-  const parallelPromise = parallelRun({
+  await parallelRun({
     items,
     job: (user) => {
       const index = items.indexOf(user);
@@ -132,25 +131,24 @@ module.exports = (mode) => {
       });
     },
   });
-  return parallelPromise.then(() => {
-    console.log();
-    console.log(`${Object.keys(maps).length} unique maps found! Saving.`);
-    Object.keys(maps).forEach((mapId) => {
-      if (maps[mapId].pp99 === undefined) {
-        calculatePp99(maps[mapId]);
-      }
-      maps[mapId].x = truncateFloat(maps[mapId].x);
-      const ppBlockValue = Math.floor(Math.round(maps[mapId].pp99) / ppBlockSize);
-      maps[mapId].adj = peoplePerPpBlocks[ppBlockValue] || 1;
-    });
-    const arrayMaps = Object.keys(maps).map((mapId) => maps[mapId]);
-    writeFileSync(files.mapsList(mode), JSON.stringify(arrayMaps));
-    console.log('Saving info about PP blocks too');
-    writeFileSync(files.ppBlocks(mode), JSON.stringify(peoplePerPpBlocks));
-    console.log('Saving users maps list');
-    writeFileSync(files.userMapsList(mode), JSON.stringify(usersMaps));
-    writeFileSync(files.userMapsDates(mode), JSON.stringify(usersMapsDate));
-    console.log(`Done fetching list of beatmaps! (${mode.text})`);
-    maps = {};
+
+  console.log();
+  console.log(`${Object.keys(maps).length} unique maps found! Saving.`);
+  Object.keys(maps).forEach((mapId) => {
+    if (maps[mapId].pp99 === undefined) {
+      calculatePp99(maps[mapId]);
+    }
+    maps[mapId].x = truncateFloat(maps[mapId].x);
+    const ppBlockValue = Math.floor(Math.round(maps[mapId].pp99) / ppBlockSize);
+    maps[mapId].adj = peoplePerPpBlocks[ppBlockValue] || 1;
   });
+  const arrayMaps = Object.keys(maps).map((mapId) => maps[mapId]);
+  await writeJson(files.mapsList(mode), arrayMaps);
+  console.log('Saving info about PP blocks too');
+  await writeJson(files.ppBlocks(mode), peoplePerPpBlocks);
+  console.log('Saving users maps list');
+  await writeJson(files.userMapsList(mode), usersMaps);
+  await writeJson(files.userMapsDates(mode), usersMapsDate);
+  console.log(`Done fetching list of beatmaps! (${mode.text})`);
+  maps = {};
 };

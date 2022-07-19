@@ -3,7 +3,7 @@
 const axios = require('./axios');
 const oneLineLog = require('single-line-log').stdout;
 const fs = require('fs');
-const { truncateFloat, delay, getDiffHours, files, writeFileSync } = require('./utils');
+const { truncateFloat, delay, getDiffHours, files, writeJson, readJson } = require('./utils');
 const { modes } = require('./constants');
 
 const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
@@ -79,55 +79,52 @@ const addBeatmapInfo = (map, mode) => {
     });
 };
 
-module.exports = (mode) => {
+module.exports = async (mode) => {
   console.log(`2. FETCHING MAP INFO - ${mode.text}`);
   maps = {};
   mapsCache = {};
   let mapsArray = [];
   if (fs.existsSync(files.mapInfoCache(mode))) {
     try {
-      mapsCache = JSON.parse(fs.readFileSync(files.mapInfoCache(mode)));
+      mapsCache = await readJson(files.mapInfoCache(mode));
       console.log('Loaded maps cache');
     } catch (e) {
       console.log('Error parsing ' + files.mapInfoCache(mode));
     }
   }
   try {
-    mapsArray = JSON.parse(fs.readFileSync(files.mapsList(mode)));
+    mapsArray = await readJson(files.mapsList(mode));
     console.log('Loaded maps list');
   } catch (e) {
     console.log('Error parsing ' + files.mapsList(mode));
   }
   let lastSaveAt = null;
-  return mapsArray
-    .reduce((promise, map, index) => {
-      return promise.then(() => {
-        oneLineLog(
-          `Loading map #${index + 1}/${mapsArray.length} (${mode.text})${
-            lastSaveAt ? ' last saved at: ' + lastSaveAt : ''
-          }`
-        );
-        return addBeatmapInfo(map, mode).then(() => {
-          if ((index + 1) % 5000 === 0) {
-            const arrayMaps = Object.keys(maps)
-              .map((mapId) => maps[mapId])
-              .sort((a, b) => b.x - a.x);
-            lastSaveAt = index + 1;
-            writeFileSync(files.mapsDetailedList(mode), JSON.stringify(arrayMaps));
-            writeFileSync(files.mapInfoCache(mode), JSON.stringify(mapsCache));
-          }
-        });
-      });
-    }, Promise.resolve())
-    .then(() => {
-      console.log();
+
+  for (let index = 0; index < mapsArray.length; index++) {
+    const map = mapsArray[index];
+    oneLineLog(
+      `Loading map #${index + 1}/${mapsArray.length} (${mode.text})${
+        lastSaveAt ? ' last saved at: ' + lastSaveAt : ''
+      }`
+    );
+
+    await addBeatmapInfo(map, mode);
+
+    if ((index + 1) % 5000 === 0) {
       const arrayMaps = Object.keys(maps)
         .map((mapId) => maps[mapId])
         .sort((a, b) => b.x - a.x);
-      writeFileSync(files.mapsDetailedList(mode), JSON.stringify(arrayMaps));
-      writeFileSync(files.mapInfoCache(mode), JSON.stringify(mapsCache));
-      console.log(
-        `${arrayMaps.length} maps saved. Done fetching detailed map info! (${mode.text})`
-      );
-    });
+      lastSaveAt = index + 1;
+      await writeJson(files.mapsDetailedList(mode), arrayMaps);
+      await writeJson(files.mapInfoCache(mode), mapsCache);
+    }
+  }
+
+  console.log();
+  const arrayMaps = Object.keys(maps)
+    .map((mapId) => maps[mapId])
+    .sort((a, b) => b.x - a.x);
+  await writeJson(files.mapsDetailedList(mode), arrayMaps);
+  await writeJson(files.mapInfoCache(mode), mapsCache);
+  console.log(`${arrayMaps.length} maps saved. Done fetching detailed map info! (${mode.text})`);
 };
