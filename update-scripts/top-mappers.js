@@ -1,33 +1,17 @@
 const _ = require('lodash/fp');
-const oneLineLog = require('single-line-log').stdout;
 
 const { DEBUG } = require('./constants');
-const { get } = require('./axios');
-// const { modes } = require('./constants');
+const { fetchUserFavourites } = require('./apiv2');
 const {
   levenshtein,
   getDiffHours,
   truncateFloat,
   files,
   parallelRun,
-  delay,
   writeFileSync,
   readJson,
   writeJson,
 } = require('./utils');
-
-const getFavs = async (id, from, count) => {
-  try {
-    const res = await get(
-      `https://osu.ppy.sh/users/${id}/beatmapsets/favourite?offset=${from}&limit=${count}`
-    );
-    return res.data;
-  } catch (e) {
-    console.log('Error', e && e.response && e.response.status, id);
-    // console.log(e);
-    return [];
-  }
-};
 
 const getAdjustedX = (x, adj, h) => +x / Math.pow(adj || 1, 0.65) / Math.pow(+h || 1, 0.35);
 
@@ -184,27 +168,23 @@ module.exports = async (mode) => {
   await parallelRun({
     items: mappersWithTenMaps,
     concurrentLimit: 1,
-    minRequestTime: 1500,
+    minRequestTime: 500,
     job: async (mapper) => {
-      oneLineLog(`Fetching ${mappersWithTenMaps.indexOf(mapper)}/${mappersWithTenMaps.length}`);
       const id = mapper.userId;
-
-      let favourites = [];
-      let offset = 0;
-      const count = 50;
-      do {
-        const maps = await getFavs(id, offset, count);
-        favourites.push(...maps);
-        offset += count;
-        await delay(500);
-      } while (favourites.length === offset);
-      mapper.favourites = favourites;
+      try {
+        const data = await fetchUserFavourites(id);
+        mapper.favourites = data.map((d) => ({
+          ..._.pick(['user_id', 'creator', 'id', 'artist', 'title', 'ranked_date'], d),
+          covers: { list: d.covers && d.covers.list },
+        }));
+      } catch (error) {
+        console.error(`User ${mapper.userId} (${mapper.names[0]}) error:`, error.message);
+      }
     },
   });
-  console.log();
-  console.log('Recording temp data');
-  await writeJson(files.tenMapsMappersTemp(mode), mappersWithTenMaps);
-  // const mappersWithTenMaps = await readJson(files.tenMapsMappersTemp(mode), 'utf8');
+
+  console.log('Finished fetching favourites');
+
   const favsPerMapper = {};
   mappersWithTenMaps.forEach((mapper) => {
     mapper.favourites &&
