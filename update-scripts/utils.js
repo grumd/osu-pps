@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const exec = require('child_process').exec;
+const { spawn } = require('node:child_process');
 const { stringifyStream, parseChunked } = require('@discoveryjs/json-ext');
 
 const files = {
@@ -44,15 +44,11 @@ const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 const truncateFloat = (x) => Math.floor(x * 100) / 100;
 
 const runScript = (fileName) => {
-  return new Promise((res, rej) => {
-    exec(`bash ${fileName}`, (err, stdout, stderr) => {
-      if (err) {
-        rej(new Error(err));
-      } else if (typeof stderr !== 'string') {
-        rej(new Error(stderr));
-      } else {
-        res(stdout);
-      }
+  return new Promise((res) => {
+    const p = spawn('bash', [fileName], { stdio: 'inherit' });
+    p.on('close', (code) => {
+      console.log('Script exited with code', code);
+      res(code);
     });
   });
 };
