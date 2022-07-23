@@ -1,9 +1,16 @@
 'use strict';
 
 const axios = require('./axios');
-const oneLineLog = require('single-line-log').stdout;
 const fs = require('fs');
-const { truncateFloat, delay, getDiffHours, files, writeJson, readJson } = require('./utils');
+const {
+  truncateFloat,
+  delay,
+  getDiffHours,
+  files,
+  writeJson,
+  readJson,
+  parallelRun,
+} = require('./utils');
 const { modes } = require('./constants');
 
 const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
@@ -98,27 +105,22 @@ module.exports = async (mode) => {
   } catch (e) {
     console.log('Error parsing ' + files.mapsList(mode));
   }
-  let lastSaveAt = null;
 
-  for (let index = 0; index < mapsArray.length; index++) {
-    const map = mapsArray[index];
-    oneLineLog(
-      `Loading map #${index + 1}/${mapsArray.length} (${mode.text})${
-        lastSaveAt ? ' last saved at: ' + lastSaveAt : ''
-      }`
-    );
-
-    await addBeatmapInfo(map, mode);
-
-    if ((index + 1) % 5000 === 0) {
-      const arrayMaps = Object.keys(maps)
-        .map((mapId) => maps[mapId])
-        .sort((a, b) => b.x - a.x);
-      lastSaveAt = index + 1;
-      await writeJson(files.mapsDetailedList(mode), arrayMaps);
-      await writeJson(files.mapInfoCache(mode), mapsCache);
-    }
-  }
+  await parallelRun({
+    mapsArray,
+    concurrentLimit: 1,
+    job: async (map) => {
+      const index = mapsArray.indexOf(map);
+      await addBeatmapInfo(map, mode);
+      if ((index + 1) % 5000 === 0) {
+        const arrayMaps = Object.keys(maps)
+          .map((mapId) => maps[mapId])
+          .sort((a, b) => b.x - a.x);
+        await writeJson(files.mapsDetailedList(mode), arrayMaps);
+        await writeJson(files.mapInfoCache(mode), mapsCache);
+      }
+    },
+  });
 
   console.log();
   const arrayMaps = Object.keys(maps)

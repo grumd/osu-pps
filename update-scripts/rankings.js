@@ -1,4 +1,3 @@
-const oneLineLog = require('single-line-log').stdout;
 // const axios = require('./axios');
 
 // const { modes } = require('./constants');
@@ -20,7 +19,6 @@ const {
 //   if (retryCount > 3) {
 //     return Promise.reject(new Error('Too many retries'));
 //   }
-//   retryCount && oneLineLog(`Retry #${retryCount}`);
 //   return axios.get(getUrl(userId, modeId)).catch(err => {
 //     console.log('Error:', err.message);
 //     return delay(5000).then(() => fetchUser(userId, modeId, retryCount + 1));
@@ -80,12 +78,9 @@ module.exports = async (mode) => {
     return dict;
   }, {});
 
-  const getFarmValue = (player, index, array) => {
+  const getFarmValue = (player) => {
     const playerScores = scores[player.id];
     if (playerScores) {
-      index % 100 === 0 &&
-        oneLineLog(`// Getting values for player #${index}/${array.length} - ${player.name}`);
-      // no scores - no player in rankings
       let newScores = [];
       playerScores.forEach((scoreString) => {
         const scoreArray = scoreString.split('_');
@@ -154,9 +149,6 @@ module.exports = async (mode) => {
     job: player => {
       return fetchUserRank({ userId: player.id, modeId: mode.id })
         .then(rank => {
-          oneLineLog(
-            `Fetched #${rank} for (${rankings.indexOf(player)}/${rankings.length}) - ${player.n}`
-          );
           player.rank1 = rank;
         })
         .catch(e => {

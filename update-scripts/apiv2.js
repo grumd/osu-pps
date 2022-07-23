@@ -6,6 +6,10 @@ const { delay } = require('./utils');
 const baseURL = `https://osu.ppy.sh/api/v2/`;
 
 const setupToken = async () => {
+  if (!config.client_id || !config.client_secret) {
+    throw new Error('API Tokens not found in config.json');
+  }
+
   const { data } = await axios.post('https://osu.ppy.sh/oauth/token', {
     client_id: config.client_id,
     client_secret: config.client_secret,
@@ -22,7 +26,7 @@ const setupToken = async () => {
   }, expires_in * 1000);
 };
 
-const fetchApi = async (url, params, retries = 2) => {
+const fetchApi = async (url, params, retries = 2, wait429 = 10000) => {
   if (!axios.defaults.headers.common['Authorization']) {
     await setupToken();
   }
@@ -31,9 +35,20 @@ const fetchApi = async (url, params, retries = 2) => {
     const response = await axios.get(url, { params, baseURL });
     return response;
   } catch (error) {
-    if (error.response.status === 401) {
+    if (error.response.status === 400) {
+      console.error('Bad request:', url, {
+        params,
+        baseURL,
+        authToken: axios.defaults.headers.common['Authorization'],
+      });
+      throw new Error(error.message);
+    } else if (error.response.status === 401) {
       await setupToken();
       return fetchApi(url, params, retries);
+    } else if (error.response.status === 429) {
+      console.warn('429 - Too many requests, waiting for', wait429, 'ms');
+      await delay(wait429);
+      return fetchApi(url, params, retries, wait429 * 1.5);
     } else if (error.response.status === 404 || retries <= 1) {
       throw new Error(error.message);
     } else if (retries >= 2) {
@@ -133,7 +148,7 @@ const fetchUserFavourites = async (userId) => {
   let favourites = [];
   let shouldContinue = true;
   let offset = 0;
-  const limit = 50;
+  const limit = 100;
   do {
     const response = await fetchApi(`/users/${userId}/beatmapsets/favourite`, {
       offset,
@@ -142,7 +157,7 @@ const fetchUserFavourites = async (userId) => {
     const { data: maps } = response;
     favourites.push(...maps);
     offset = favourites.length;
-    await delay(500);
+    await delay(1000);
     shouldContinue = maps && maps.length === limit;
   } while (shouldContinue);
   return favourites;

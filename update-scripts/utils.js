@@ -181,16 +181,43 @@ const levenshtein = (str1, str2) => {
   return nextCol;
 };
 
-const parallelRun = ({ items = [], job = () => {}, concurrentLimit = 3, minRequestTime = 100 }) => {
+const parallelRun = async ({
+  items = [],
+  job = () => {},
+  concurrentLimit = 3,
+  minRequestTime = 100,
+  progress = true,
+}) => {
   let remainingItems = [...items];
+  const startTime = Date.now();
+  const logIndexes = Array(9)
+    .fill()
+    .map((_x, i) => Math.floor(((i + 1) / 10) * items.length));
+
   // Starts next job when one job finishes
   const attachNextJobStarter = (prevItem) => {
     return Promise.all([job(prevItem), delay(minRequestTime)]).then(() => {
+      if (progress && logIndexes.includes(remainingItems.length)) {
+        const left =
+          ((Date.now() - startTime) * remainingItems.length) /
+          (items.length - remainingItems.length);
+        console.log(
+          `${Math.floor(
+            (100 * (items.length - remainingItems.length)) / items.length
+          )}% done - ETA ${Math.floor(left / 60000)
+            .toString()
+            .padStart(2, '0')}:${(Math.floor(left / 1000) % 60).toString().padStart(2, '0')}`
+        );
+      }
       return Promise.all(remainingItems.splice(0, 1).map(attachNextJobStarter));
     });
   };
   // Add first N jobs
-  return Promise.all(remainingItems.splice(0, concurrentLimit).map(attachNextJobStarter));
+  const results = await Promise.all(
+    remainingItems.splice(0, concurrentLimit).map(attachNextJobStarter)
+  );
+
+  return results;
 };
 
 const writeFileSync = (filePath, ...rest) => {

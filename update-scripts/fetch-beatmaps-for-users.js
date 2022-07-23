@@ -1,7 +1,6 @@
 'use strict';
 
 const axios = require('./axios');
-const oneLineLog = require('single-line-log').stdout;
 const fs = require('fs');
 const { ppBlockSize, ppBlockMapCount, DEBUG } = require('./constants');
 const {
@@ -79,7 +78,7 @@ const fetchUserBeatmaps = (userId, modeId, scoresCount, retryCount = 0) => {
   if (retryCount > 3) {
     return Promise.reject(new Error('Too many retries'));
   }
-  retryCount && oneLineLog(`Retry #${retryCount}`);
+  retryCount && console.log(`Retry #${retryCount}`);
   return axios.get(getUrl(userId, modeId, scoresCount)).catch((err) => {
     console.log('Error:', err.message);
     return delay(5000).then(() => fetchUserBeatmaps(userId, modeId, scoresCount, retryCount + 1));
@@ -120,9 +119,6 @@ module.exports = async (mode) => {
     items,
     job: (user) => {
       const index = items.indexOf(user);
-      oneLineLog(
-        `Recording data for user #${index}/${uniqueUsersList.length} (${user.name}) (${mode.text})`
-      );
       const shouldRecordScores = index < 11000;
       return fetchUser({
         userId: user.id,
