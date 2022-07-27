@@ -1,39 +1,6 @@
-// const axios = require('./axios');
+const _ = require('lodash/fp');
 
-// const { modes } = require('./constants');
-const {
-  simplifyMods,
-  trimModsForRankings,
-  files,
-  // parallelRun,
-  // delay,
-  writeJson,
-  readJson,
-} = require('./utils');
-// const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
-
-// const getUrl = (userId, modeId) =>
-//   `https://osu.ppy.sh/api/get_user?k=${apikey}&u=${userId}&type=id&m=${modeId}`;
-
-// const fetchUser = (userId, modeId, retryCount = 0) => {
-//   if (retryCount > 3) {
-//     return Promise.reject(new Error('Too many retries'));
-//   }
-//   return axios.get(getUrl(userId, modeId)).catch(err => {
-//     console.log('Error:', err.message);
-//     return delay(5000).then(() => fetchUser(userId, modeId, retryCount + 1));
-//   });
-// };
-
-// const fetchUserRank = ({ userId, modeId }) => {
-//   return fetchUser(userId, modeId)
-//     .then(({ data }) => {
-//       return data[0].pp_rank;
-//     })
-//     .catch(error => {
-//       console.log('\x1b[33m%s\x1b[0m', error.message);
-//     });
-// };
+const { simplifyMods, trimModsForRankings, files, writeJson, readJson } = require('./utils');
 
 module.exports = async (mode) => {
   console.log('3. CALCULATING RANKINGS');
@@ -50,33 +17,24 @@ module.exports = async (mode) => {
   let maxOW = 0;
   let sum = 0;
   let count = 0;
-  const mapsDataWithAdjValue = mapsData
-    .map((item) => {
-      const x = +item.x / Math.pow(item.adj || 1, 0.65) / Math.pow(+item.h || 1, 0.35);
-      maxOW = maxOW < x ? x : maxOW;
-      if (x > 0.00005) {
-        sum += x;
-        count++;
-      }
-      return {
-        ...item,
-        x,
-      };
-    })
-    .sort((a, b) => b.x - a.x);
+  const mapsDataWithAdjValue = mapsData.map((item) => {
+    const x = +item.x / Math.pow(item.adj || 1, 0.65) / Math.pow(+item.h || 1, 0.35);
+    maxOW = maxOW < x ? x : maxOW;
+    if (x > 0.00005) {
+      sum += x;
+      count++;
+    }
+    return {
+      ...item,
+      x,
+    };
+  });
 
   const averageOW = sum / count;
   console.log('Max OW:', maxOW, 'Avg OW:', averageOW);
 
   console.log('Creating a maps dictionary');
-  const mapsDictionary = mapsDataWithAdjValue.reduce((dict, map) => {
-    if (dict[map.b]) {
-      dict[map.b].push(map);
-    } else {
-      dict[map.b] = [map];
-    }
-    return dict;
-  }, {});
+  const mapsDictionary = _.groupBy('b', mapsDataWithAdjValue);
 
   const getFarmValue = (player) => {
     const playerScores = scores[player.id];

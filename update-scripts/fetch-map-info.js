@@ -21,9 +21,6 @@ const urlBeatmapInfo = (diffId, modeId) =>
   (modeId > 0 ? '&a=1' : '');
 const getUniqueMapId = (map) => `${map.b}_${map.m}`;
 
-let maps = {};
-let mapsCache = {};
-
 const shouldUpdateCached = (cached) => {
   const hasMapUpdatedAfterCached =
     new Date(cached.last_update) > new Date(cached.cache_date) ||
@@ -32,64 +29,10 @@ const shouldUpdateCached = (cached) => {
   return !cached.cache_date || hasMapUpdatedAfterCached || cached.passcount < 1000;
 };
 
-const addBeatmapInfo = (map, mode) => {
-  const shouldFetchMapInfo = !mapsCache[map.b] || shouldUpdateCached(mapsCache[map.b]);
-
-  const getPromise = !shouldFetchMapInfo
-    ? Promise.resolve(mapsCache[map.b])
-    : axios.get(urlBeatmapInfo(map.b, mode.id)).then(({ data }) => {
-        if (data.length > 0) {
-          const diff = data[0];
-          Object.keys(diff).forEach((key) => {
-            const parsed = Number(diff[key]);
-            diff[key] = isNaN(parsed) ? diff[key] : truncateFloat(parsed);
-          });
-          mapsCache[map.b] = {
-            ...diff,
-            cache_date: new Date().toISOString().replace('T', ' ').slice(0, 19),
-          };
-          return diff;
-        } else {
-          console.log('No maps found :(');
-        }
-      });
-
-  return getPromise
-    .then((diff) => {
-      if (diff) {
-        map.art = diff.artist;
-        map.t = diff.title;
-        map.v = diff.version;
-        map.s = diff.beatmapset_id;
-        map.l = diff.hit_length;
-        map.bpm = diff.bpm;
-        map.d = diff.difficultyrating;
-        map.p = diff.passcount;
-        map.h = getDiffHours(diff); // Hours since it was ranked
-        map.appr_h = Math.floor(new Date(diff.approved_date).getTime() / 1000 / 60 / 60); // Hours since 1970
-        map.g = diff.genre_id;
-        map.ln = diff.language_id;
-        if (mode === modes.mania && diff.mode === modes.mania.id) {
-          // Key count for mania
-          map.k = diff.diff_size;
-        }
-
-        const mapId = getUniqueMapId(map);
-        maps[mapId] = map;
-      } else {
-        console.log('No maps found :(');
-      }
-    })
-    .catch((err) => {
-      console.log('Error for /b/', map.b, err.message);
-      return delay(1000).then(() => addBeatmapInfo(map, mode));
-    });
-};
-
 module.exports = async (mode) => {
   console.log(`2. FETCHING MAP INFO - ${mode.text}`);
-  maps = {};
-  mapsCache = {};
+  const maps = {};
+  let mapsCache = {};
   let mapsArray = [];
   if (fs.existsSync(files.mapInfoCache(mode))) {
     try {
@@ -106,8 +49,66 @@ module.exports = async (mode) => {
     console.log('Error parsing ' + files.mapsList(mode));
   }
 
+  const addBeatmapInfo = (map, mode) => {
+    const shouldFetchMapInfo = !mapsCache[map.b] || shouldUpdateCached(mapsCache[map.b]);
+
+    const getPromise = !shouldFetchMapInfo
+      ? Promise.resolve(mapsCache[map.b])
+      : Promise.all([
+          delay(300),
+          axios.get(urlBeatmapInfo(map.b, mode.id)).then(({ data }) => {
+            if (data.length > 0) {
+              const diff = data[0];
+              Object.keys(diff).forEach((key) => {
+                const parsed = Number(diff[key]);
+                diff[key] = isNaN(parsed) ? diff[key] : truncateFloat(parsed);
+              });
+              mapsCache[map.b] = {
+                ...diff,
+                cache_date: new Date().toISOString().replace('T', ' ').slice(0, 19),
+              };
+              return diff;
+            } else {
+              console.log('No maps found :(');
+            }
+          }),
+        ]);
+
+    return getPromise
+      .then((diff) => {
+        if (diff) {
+          map.art = diff.artist;
+          map.t = diff.title;
+          map.v = diff.version;
+          map.s = diff.beatmapset_id;
+          map.l = diff.hit_length;
+          map.bpm = diff.bpm;
+          map.d = diff.difficultyrating;
+          map.p = diff.passcount;
+          map.h = getDiffHours(diff); // Hours since it was ranked
+          map.appr_h = Math.floor(new Date(diff.approved_date).getTime() / 1000 / 60 / 60); // Hours since 1970
+          map.g = diff.genre_id;
+          map.ln = diff.language_id;
+          if (mode === modes.mania && diff.mode === modes.mania.id) {
+            // Key count for mania
+            map.k = diff.diff_size;
+          }
+
+          const mapId = getUniqueMapId(map);
+          maps[mapId] = map;
+        } else {
+          console.log('No maps found :(');
+        }
+      })
+      .catch((err) => {
+        console.log('Error for /b/', map.b, err.message);
+        return delay(1000).then(() => addBeatmapInfo(map, mode));
+      });
+  };
+
+  console.log('Fetching detailed diff info about every beatmap...');
   await parallelRun({
-    mapsArray,
+    items: mapsArray,
     concurrentLimit: 1,
     job: async (map) => {
       const index = mapsArray.indexOf(map);
@@ -122,7 +123,6 @@ module.exports = async (mode) => {
     },
   });
 
-  console.log();
   const arrayMaps = Object.keys(maps)
     .map((mapId) => maps[mapId])
     .sort((a, b) => b.x - a.x);

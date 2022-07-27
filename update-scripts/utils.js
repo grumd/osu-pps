@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawn } = require('node:child_process');
 const { stringifyStream, parseChunked } = require('@discoveryjs/json-ext');
+const { execute } = require('many-promises');
 
 const files = {
   countriesList: (mode) => `./countries-${mode.text}.json`,
@@ -182,42 +183,67 @@ const levenshtein = (str1, str2) => {
 };
 
 const parallelRun = async ({
-  items = [],
-  job = () => {},
+  items,
+  job,
   concurrentLimit = 3,
-  minRequestTime = 100,
+  minRequestTime,
   progress = true,
+  onProgress,
 }) => {
-  let remainingItems = [...items];
   const startTime = Date.now();
   const logIndexes = Array(9)
     .fill()
     .map((_x, i) => Math.floor(((i + 1) / 10) * items.length));
 
-  // Starts next job when one job finishes
-  const attachNextJobStarter = (prevItem) => {
-    return Promise.all([job(prevItem), delay(minRequestTime)]).then(() => {
-      if (progress && logIndexes.includes(remainingItems.length)) {
-        const left =
-          ((Date.now() - startTime) * remainingItems.length) /
-          (items.length - remainingItems.length);
-        console.log(
-          `${Math.floor(
-            (100 * (items.length - remainingItems.length)) / items.length
-          )}% done - ETA ${Math.floor(left / 60000)
-            .toString()
-            .padStart(2, '0')}:${(Math.floor(left / 1000) % 60).toString().padStart(2, '0')}`
-        );
-      }
-      return Promise.all(remainingItems.splice(0, 1).map(attachNextJobStarter));
-    });
-  };
-  // Add first N jobs
-  const results = await Promise.all(
-    remainingItems.splice(0, concurrentLimit).map(attachNextJobStarter)
-  );
+  let currentIndex = 0;
 
-  return results;
+  const timeoutId = setTimeout(() => {
+    showProgress(currentIndex);
+  }, 5000);
+
+  const showProgress = (index) => {
+    if (progress) {
+      const left = ((Date.now() - startTime) / index) * (items.length - index);
+      console.log(
+        `${Math.floor((100 * index) / items.length)}% done - ETA ${Math.floor(left / 60000)
+          .toString()
+          .padStart(2, '0')}:${(Math.floor(left / 1000) % 60).toString().padStart(2, '0')}`
+      );
+      onProgress && onProgress(index);
+    }
+  };
+
+  if (concurrentLimit === 1) {
+    const results = [];
+    for (let index = 0; index < items.length; index++) {
+      currentIndex = index;
+      const item = items[index];
+      if (minRequestTime) {
+        const [result] = await Promise.all([job(item), delay(minRequestTime)]);
+        results.push(result);
+      } else {
+        const result = await job(item);
+        results.push(result);
+      }
+      logIndexes.includes(currentIndex) && showProgress(currentIndex);
+    }
+    clearTimeout(timeoutId);
+    return results;
+  } else {
+    const results = await execute({
+      items,
+      job: async (item) => {
+        currentIndex = items.indexOf(item);
+        const result = await job(item);
+        logIndexes.includes(currentIndex) && showProgress(currentIndex);
+        return result;
+      },
+      concurrentLimit,
+      minJobTime: minRequestTime,
+    });
+    clearTimeout(timeoutId);
+    return results;
+  }
 };
 
 const writeFileSync = (filePath, ...rest) => {
@@ -228,7 +254,7 @@ const writeFileSync = (filePath, ...rest) => {
   fs.writeFileSync(filePath, ...rest);
 };
 
-const writeJson = (filePath, data) => {
+const writeJson = (filePath, data, { disableLog } = {}) => {
   const folderPath = path.dirname(filePath);
   if (!fs.existsSync(folderPath)) {
     fs.mkdirSync(folderPath, { recursive: true });
@@ -238,7 +264,9 @@ const writeJson = (filePath, data) => {
     stringifyStream(data)
       .pipe(fs.createWriteStream(filePath, 'utf8'))
       .on('finish', () => {
-        console.log('Write success', filePath);
+        if (!disableLog) {
+          console.log('Write success', filePath);
+        }
         resolve();
       })
       .on('error', (error) => {

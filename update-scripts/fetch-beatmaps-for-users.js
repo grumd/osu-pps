@@ -115,8 +115,10 @@ module.exports = async (mode) => {
   const uniqueUsersList = uniq(fullUsersList, (user) => user.id);
   // const fetchPromises = [];
   const items = uniqueUsersList.slice(...(DEBUG ? [0, 100] : []));
+  console.log('Fetching scores of all users to find the list of popular maps...');
   await parallelRun({
     items,
+    minRequestTime: 100,
     job: (user) => {
       const index = items.indexOf(user);
       const shouldRecordScores = index < 11000;
@@ -128,7 +130,6 @@ module.exports = async (mode) => {
     },
   });
 
-  console.log();
   console.log(`${Object.keys(maps).length} unique maps found! Saving.`);
   Object.keys(maps).forEach((mapId) => {
     if (maps[mapId].pp99 === undefined) {

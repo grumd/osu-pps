@@ -26,12 +26,17 @@ const setupToken = async () => {
   }, expires_in * 1000);
 };
 
-const fetchApi = async (url, params, retries = 2, wait429 = 10000) => {
+const fetchApi = async (url, params, options = {}) => {
+  const { wait429 = 10000, retries = 2, disableLogs = false } = options;
+
   if (!axios.defaults.headers.common['Authorization']) {
     await setupToken();
   }
+
   try {
-    console.log('Fetching', url, params);
+    if (!disableLogs) {
+      console.log('Fetching', url, params);
+    }
     const response = await axios.get(url, { params, baseURL });
     return response;
   } catch (error) {
@@ -44,18 +49,18 @@ const fetchApi = async (url, params, retries = 2, wait429 = 10000) => {
       throw new Error(error.message);
     } else if (error.response.status === 401) {
       await setupToken();
-      return fetchApi(url, params, retries);
+      return fetchApi(url, params, options);
     } else if (error.response.status === 429) {
       console.warn('429 - Too many requests, waiting for', wait429, 'ms');
       await delay(wait429);
-      return fetchApi(url, params, retries, wait429 * 1.5);
-    } else if (error.response.status === 404 || retries <= 1) {
+      return fetchApi(url, params, { ...options, wait429: wait429 * 1.5 });
+    } else if (error.response.status === 404 || retries < 1) {
       throw new Error(error.message);
-    } else if (retries >= 2) {
+    } else if (retries >= 1) {
       console.warn(error.message);
       console.warn(`Retrying ${retries - 1} times...`);
       await delay(5000);
-      return fetchApi(url, params, retries - 1);
+      return fetchApi(url, params, { ...options, retries: retries - 1 });
     }
   }
 };
@@ -150,10 +155,14 @@ const fetchUserFavourites = async (userId) => {
   let offset = 0;
   const limit = 100;
   do {
-    const response = await fetchApi(`/users/${userId}/beatmapsets/favourite`, {
-      offset,
-      limit,
-    });
+    const response = await fetchApi(
+      `/users/${userId}/beatmapsets/favourite`,
+      {
+        offset,
+        limit,
+      },
+      { disableLogs: true }
+    );
     const { data: maps } = response;
     favourites.push(...maps);
     offset = favourites.length;
