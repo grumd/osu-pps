@@ -30,6 +30,8 @@ const RootContainer = styled('div', {
 
 const LayoutContainer = styled('div', {
   width: space.pageWidth,
+  paddingLeft: space[150],
+  paddingRight: space[150],
 });
 
 export const RootLayout = () => {
@@ -41,8 +43,8 @@ export const RootLayout = () => {
         <Header
           themeToggle={
             <SunMoonToggle
-              night={theme !== 'light'}
-              onChange={(night) => setTheme(night ? 'dark' : 'light')}
+              dark={theme !== 'light'}
+              onChange={(dark) => setTheme(dark ? 'dark' : 'light')}
             />
           }
         />

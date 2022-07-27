@@ -79,7 +79,7 @@ export const HeaderAside = ({ themeToggle }: { themeToggle: React.ReactNode }) =
           </a>
         </RowBlock>
         <RowBlock>
-          donate <IconDonate />
+          support me <IconDonate />
         </RowBlock>
       </AsideSubBlock>
     </Aside>

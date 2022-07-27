@@ -1,5 +1,4 @@
-import { useSpring, a } from '@react-spring/web';
-import { fonts, styled } from 'styles';
+import { styled } from 'styles';
 
 const sunColor = '#dbb21e';
 const moonColor = '#7ac5d5';
@@ -18,82 +17,111 @@ const half = size / 2,
   d2 = 24, // distance from center to near end of a sun ray
   moonOffset = 25;
 
+const duration = '0.5s';
+const easing = 'ease-in-out';
+
 const SunMoonButton = styled('button', {
   all: 'unset',
   cursor: 'pointer',
+
+  '& > svg': {
+    transition: `stroke ${duration} ${easing}, fill ${duration} ${easing}`,
+
+    '& circle': {
+      transition: `transform ${duration} ${easing}`,
+    },
+  },
+});
+
+const SunRayG = styled('g', {
+  transition: `stroke-opacity ${duration} ${easing} 0.1s`,
+  stroke: sunColor,
+  strokeOpacity: 1,
+
+  '& > line': {
+    transition: `transform ${duration} ${easing}`,
+  },
+
+  variants: {
+    dark: {
+      true: {
+        transition: `stroke-opacity 0.3s cubic-bezier(0.66, 0.09, 0.50, 0.07) 0s`,
+        strokeOpacity: 0,
+      },
+    },
+  },
 });
 
 export const SunMoonToggle = ({
-  night,
+  dark,
   onChange,
 }: {
-  night: boolean;
-  onChange: (night: boolean) => void;
+  dark: boolean;
+  onChange: (dark: boolean) => void;
 }) => {
-  const { x, color } = useSpring({
-    x: night ? 0 : 1,
-    color: night ? moonColor : sunColor,
-  });
+  const color = dark ? moonColor : sunColor;
+  const x = dark ? 0 : 1;
 
   return (
     <SunMoonButton
       type="button"
       aria-label="dark mode toggle"
-      aria-pressed={night}
-      onClick={() => onChange(!night)}
+      aria-pressed={dark}
+      onClick={() => onChange(!dark)}
     >
-      <a.svg
+      <svg
         xmlns="http://www.w3.org/2000/svg"
         width="1em"
         height="1em"
         viewBox="0 0 64 64"
-        fill="none"
-        stroke={color}
         strokeWidth="5"
         strokeLinecap="round"
         strokeLinejoin="round"
+        fill={color}
+        stroke={color}
       >
         <defs>
           <mask id="moon-mask">
             <rect width="100%" height="100%" fill="white" />
-            <a.circle
-              cx={x.to((x) => size - moonOffset * (1 - x))}
-              cy={x.to((x) => moonOffset * (1 - x))}
+            <circle
+              cx={size}
+              cy={0}
               r="18"
               fill="black"
               stroke="white"
+              transform={`translate(${-moonOffset * (1 - x)}, ${moonOffset * (1 - x)})`}
             />
           </mask>
         </defs>
-        <a.circle id="sun" fill={color} cx={half} cy={half} r="14" mask="url(#moon-mask)" />
-        <g stroke={sunColor}>
-          {angles.map((rad, index) => {
-            return (
-              <a.line
-                key={index}
-                strokeOpacity={x.to((x) => (x < 0.5 ? 0 : x))}
-                x1={x.to((x) => half + x * d1 * Math.cos(rad))}
-                y1={x.to((x) => half + x * d1 * Math.sin(rad))}
-                x2={x.to((x) => half + x * d2 * Math.cos(rad))}
-                y2={x.to((x) => half + x * d2 * Math.sin(rad))}
+        <circle id="sun" cx={half} cy={half} r="14" mask="url(#moon-mask)" />
+        {angles.map((rad, index) => {
+          return (
+            <SunRayG key={index} dark={dark}>
+              <line
+                x1={half}
+                y1={half}
+                x2={half + (d2 - d1) * Math.cos(rad)}
+                y2={half + (d2 - d1) * Math.sin(rad)}
+                transform={`translate(${x * d1 * Math.cos(rad)}, ${x * d1 * Math.sin(rad)})`}
               />
-            );
-          })}
-          {stars.map(([cx, cy], index) => {
-            const r = Math.random() * 2 + 1;
-            return (
-              <a.circle
-                key={index}
-                r={x.to((x) => (1 - x) * r)}
-                strokeWidth={0}
-                fill="currentColor"
-                cx={cx * size}
-                cy={cy * size}
-              />
-            );
-          })}
-        </g>
-      </a.svg>
+            </SunRayG>
+          );
+        })}
+        {stars.map(([cx, cy], index) => {
+          const r = Math.random() * 2 + 1;
+          return (
+            <circle
+              key={index}
+              r={r}
+              strokeWidth={0}
+              fill="white"
+              cx={0}
+              cy={0}
+              transform={`translate(${cx * size}, ${cy * size}), scale(${1 - x}) `}
+            />
+          );
+        })}
+      </svg>
     </SunMoonButton>
   );
 };

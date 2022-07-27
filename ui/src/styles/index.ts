@@ -51,7 +51,7 @@ export const { styled, createTheme, globalCss, theme, config } = createStitches(
 
 export const lightTheme = createTheme({
   colors: {
-    bgGrey300: '#f0f0f0',
+    bgGrey300: '#fafafa',
     bgGrey400: '#d3d3d3',
     bgGrey500: '#bcbcbc',
     bgGrey800: '#6f6f6f',

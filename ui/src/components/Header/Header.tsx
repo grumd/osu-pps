@@ -5,7 +5,7 @@ import { HeaderAside } from './HeaderAside';
 import { HeaderNavigation } from './HeaderNavigation';
 
 const HeaderContainer = styled('header', {
-  padding: `${space[75]} ${space[150]}`,
+  padding: `${space[75]} 0`,
   display: 'flex',
   flexFlow: 'row nowrap',
   justifyContent: 'space-between',

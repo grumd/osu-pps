@@ -18,17 +18,14 @@
     "format": "prettier \"src/**/*.{js,jsx,ts,tsx,css,scss}\" --write",
     "ts": "tsc",
     "ts:watch": "tsc --watch",
-    "test": "jest",
-    "commit": "cz"
-  },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
+    "test": "jest"
   },
   "dependencies": {
     "@react-spring/web": "^9.5.2",
     "@stitches/react": "^1.2.8",
+    "@tanstack/react-query": "^4.0.10",
+    "localforage": "^1.10.0",
+    "papaparse": "^5.3.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.4.0",
@@ -36,19 +33,17 @@
     "typesafe-routes": "^8.0.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.0.3",
-    "@commitlint/config-conventional": "^17.0.3",
     "@react-spring/types": "^9.5.2",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^14.2.5",
     "@types/jest": "^28.1.6",
+    "@types/papaparse": "^5.3.2",
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
     "@typescript-eslint/eslint-plugin": "^5.30.7",
     "@typescript-eslint/parser": "^5.30.7",
     "@vitejs/plugin-react": "^2.0.0",
-    "commitizen": "^4.2.5",
     "eslint": "^8.19.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^17.0.0",
