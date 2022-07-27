@@ -1,5 +1,5 @@
 module.exports = {
-  DEBUG: true,
+  DEBUG: false,
   ppBlockSize: 5,
   ppBlockMapCount: 10,
   modes: {
