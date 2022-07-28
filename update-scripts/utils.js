@@ -254,7 +254,7 @@ const writeFileSync = (filePath, ...rest) => {
   fs.writeFileSync(filePath, ...rest);
 };
 
-const writeJson = (filePath, data, { disableLog } = {}) => {
+const writeJson = (filePath, data) => {
   const folderPath = path.dirname(filePath);
   if (!fs.existsSync(folderPath)) {
     fs.mkdirSync(folderPath, { recursive: true });
@@ -264,9 +264,6 @@ const writeJson = (filePath, data, { disableLog } = {}) => {
     stringifyStream(data)
       .pipe(fs.createWriteStream(filePath, 'utf8'))
       .on('finish', () => {
-        if (!disableLog) {
-          console.log('Write success', filePath);
-        }
         resolve();
       })
       .on('error', (error) => {
@@ -278,7 +275,6 @@ const writeJson = (filePath, data, { disableLog } = {}) => {
 
 const readJson = (filePath) => {
   return parseChunked(fs.createReadStream(filePath)).then((res) => {
-    console.log('Read success', filePath);
     return res;
   });
 };

@@ -234,7 +234,7 @@ module.exports = async (mode) => {
       (a, b) => favsPerMapper[mapperId].namesDict[b] - favsPerMapper[mapperId].namesDict[a]
     );
     const mapsSorted = _.orderBy(['count'], ['desc'], _.values(favsPerMapper[mapperId].mapsDict));
-    await writeJson(files.mappersFavTopDetails(mode, mapperId), mapsSorted, { disableLog: true });
+    await writeJson(files.mappersFavTopDetails(mode, mapperId), mapsSorted);
     delete favsPerMapper[mapperId].namesDict;
     delete favsPerMapper[mapperId].mapsDict;
   }
