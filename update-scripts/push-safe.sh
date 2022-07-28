@@ -1,35 +1,35 @@
 #! /usr/bin/bash
 echo
 [[ "$PWD" =~ "update-scripts" ]] && cd ..
-pwd
+echo "[GIT] Working dir: $PWD"
 now=$(date +'%m/%d/%Y')
 branchname=data
-echo Setup for branch \'$branchname\'
-echo $now
+echo "[GIT] Date: $now"
+echo "[GIT] Setup for branch '$branchname'"
 echo
 if [[ $(git rev-parse --abbrev-ref HEAD) = $branchname ]]
 then
-  echo "Currently on branch $branchname"
+  echo "[GIT] Currently on branch $branchname"
   if [[ $(git status | grep 'nothing to commit') ]]
   then
-    echo "ERROR: Nothing to commit!"
+    echo "[GIT] ERROR: Nothing to commit!"
   else
     git add .
     if [[ $(git log -1 --pretty=%B | grep 'Data update') ]]
     then
-      echo "Latest commit was a data update, amending"
-      git commit --amend -m "Data update from $now"
-      echo "Commited"
-      git push -f
-      echo "Pushed data (-f) to branch '$branchname'"
+      echo "[GIT] Latest commit was a data update, amending"
+      git commit --quiet --amend -m "Data update from $now"
+      echo "[GIT] Commited successfully"
+      git push --quiet -f
+      echo "[GIT] Pushed data (-f) to branch '$branchname' successfully"
     else
-      echo "Latest commit not a data update, creating new commit"
+      echo "[GIT] Latest commit not a data update, creating new commit"
       git commit -m "Data update from $now"
-      echo "Commited"
+      echo "[GIT] Commited"
       git push
-      echo "Pushed data to branch '$branchname'"
+      echo "[GIT] Pushed data to branch '$branchname'"
     fi
   fi
 else
-  echo "ERROR: Not on branch $branchname - current branch is $(git rev-parse --abbrev-ref HEAD)"
+  echo "[GIT] ERROR: Not on branch $branchname - current branch is $(git rev-parse --abbrev-ref HEAD)"
 fi
