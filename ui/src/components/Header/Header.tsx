@@ -1,5 +1,6 @@
 import type * as React from 'react';
-import { space, styled } from 'styles';
+
+import { space, styled } from '@/styles';
 
 import { HeaderAside } from './HeaderAside';
 import { HeaderNavigation } from './HeaderNavigation';

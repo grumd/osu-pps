@@ -1,3 +1,5 @@
+import { CalcMode } from '@/constants/modes';
+
 export interface BeatmapDiffLegacy {
   m: number;
   b: number; // map id
@@ -11,6 +13,7 @@ export interface BeatmapDiffLegacy {
   p: number;
   h: number;
   appr_h: number;
+  k?: number;
 }
 
 export interface BeatmapSetLegacy {
@@ -37,6 +40,7 @@ export interface BeatmapDiff {
   passCount: number;
   hoursSinceRanked: number;
   approvedHoursTimestamp: number;
+  maniaKeys?: number;
 }
 
 export interface BeatmapSet {
@@ -48,4 +52,6 @@ export interface BeatmapSet {
   language: number;
 }
 
-export interface Beatmap extends BeatmapDiff, BeatmapSet {}
+export interface Beatmap extends BeatmapDiff, BeatmapSet {
+  farmValues: Record<CalcMode, number>;
+}

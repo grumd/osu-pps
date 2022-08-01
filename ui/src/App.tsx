@@ -1,21 +1,18 @@
-import { BrowserRouter, Routes, Navigate, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
-import { Mode } from 'constants/modes';
-
-import { Faq } from 'features/faq/Faq';
-import { MappersFav } from 'features/mappers/favs/MappersFav';
-import { MappersPp } from 'features/mappers/pp/MappersPp';
-import { Maps } from 'features/maps/Maps';
-import { Rankings } from 'features/rankings/Rankings';
-import { RootLayout } from 'features/RootLayout';
-
-import { faq, mode } from 'routes';
-import { mappers, pp, fav } from 'routes/mappers';
-import { maps } from 'routes/maps';
-import { rankings } from 'routes/rankings';
-
-import { globalStyles } from 'styles/global';
+import { Mode } from '@/constants/modes';
+import { RootLayout } from '@/features/RootLayout';
+import { Faq } from '@/features/faq/Faq';
+import { MappersFav } from '@/features/mappers/favs/MappersFav';
+import { MappersPp } from '@/features/mappers/pp/MappersPp';
+import { Maps } from '@/features/maps';
+import { Rankings } from '@/features/rankings/Rankings';
+import { faq, mode } from '@/routes';
+import { fav, mappers, pp } from '@/routes/mappers';
+import { maps } from '@/routes/maps';
+import { rankings } from '@/routes/rankings';
+import { globalStyles } from '@/styles/global';
 
 const queryClient = new QueryClient();
 

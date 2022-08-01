@@ -1,4 +1,4 @@
-import { BeatmapDiff, BeatmapDiffLegacy, BeatmapSet, BeatmapSetLegacy } from './types';
+import { BeatmapDiff, BeatmapDiffLegacy, BeatmapSet, BeatmapSetLegacy } from '../types';
 
 export const isLegacyMapset = (map: BeatmapSet | BeatmapSetLegacy): map is BeatmapSetLegacy => {
   return !!(map as BeatmapSetLegacy).s;
@@ -37,6 +37,7 @@ export const normalizeBeatmap = (diff: BeatmapDiff | BeatmapDiffLegacy): Beatmap
       passCount: diff.p,
       hoursSinceRanked: diff.h,
       approvedHoursTimestamp: diff.appr_h,
+      maniaKeys: diff.k,
     };
   }
   return diff;

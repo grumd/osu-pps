@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export type ColorScheme = 'light' | 'dark' | 'no-preference';
 
@@ -42,10 +42,10 @@ export function useThemeWithPreference(): [ColorScheme, (theme: ColorScheme) => 
 }
 
 export function useThemeWithDefault(
-  defaultTheme: ColorScheme = 'dark',
+  defaultTheme: ColorScheme = 'dark'
 ): [ColorScheme, (theme: ColorScheme) => void] {
   const [selected, setSelected] = useState<ColorScheme>(
-    defaultSelected === 'no-preference' ? defaultTheme : defaultSelected,
+    defaultSelected === 'no-preference' ? defaultTheme : defaultSelected
   );
 
   // Update selected color scheme

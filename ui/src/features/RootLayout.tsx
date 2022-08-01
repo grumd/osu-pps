@@ -1,16 +1,14 @@
 import { Outlet } from 'react-router-dom';
 
-import { lightTheme, styled, colors, space } from 'styles';
-
-import { useThemeWithDefault } from 'hooks/useTheme';
-
-import { Header } from 'components/Header/Header';
-import { SunMoonToggle } from 'components/SunMoonToggle/SunMoonToggle';
+import { Header } from '@/components/Header/Header';
+import { SunMoonToggle } from '@/components/SunMoonToggle/SunMoonToggle';
+import { useThemeWithDefault } from '@/hooks/useTheme';
+import { colors, lightTheme, space, styled } from '@/styles';
 
 const RootContainer = styled('div', {
   display: 'flex',
   justifyContent: 'center',
-  background: colors.bgGrey300,
+  background: colors.bgMain,
   color: colors.textPrimary,
   width: '100%',
   minHeight: '100%',
@@ -32,6 +30,12 @@ const LayoutContainer = styled('div', {
   width: space.pageWidth,
   paddingLeft: space[150],
   paddingRight: space[150],
+  display: 'flex',
+  flexFlow: 'column nowrap',
+
+  '& > header': {
+    flex: '0 0 auto',
+  },
 });
 
 export const RootLayout = () => {
@@ -48,9 +52,7 @@ export const RootLayout = () => {
             />
           }
         />
-        <main>
-          <Outlet />
-        </main>
+        <Outlet />
       </LayoutContainer>
     </RootContainer>
   );

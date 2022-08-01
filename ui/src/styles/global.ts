@@ -1,4 +1,4 @@
-import { colors, fonts, globalCss, space } from 'styles';
+import { colors, fonts, globalCss, space } from '@/styles';
 
 export const globalStyles = globalCss({
   'html, body, #root': {

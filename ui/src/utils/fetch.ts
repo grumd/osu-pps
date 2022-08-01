@@ -1,18 +1,10 @@
+import axios from 'axios';
 import Papa from 'papaparse';
 
-import { DEBUG_FETCH } from 'constants/api';
-import { Mode } from 'constants/modes';
-
-import { Metadata } from 'types/metadata';
-
-import {
-  getLastUpdated,
-  setMapsData,
-  getMapsData,
-  setLastUpdated,
-  getStorageItem,
-  setStorageItem,
-} from 'utils/storage';
+import { DEBUG_FETCH } from '@/constants/api';
+import { Mode } from '@/constants/modes';
+import { Metadata } from '@/types/metadata';
+import { getLastUpdated, getStorageItem, setLastUpdated, setStorageItem } from '@/utils/storage';
 
 export const fetchJson = async <T>({ url }: { url: string }): Promise<T> => {
   try {
@@ -29,12 +21,57 @@ export const fetchJson = async <T>({ url }: { url: string }): Promise<T> => {
   }
 };
 
+export const fetchCsvWithProgress = async <T>({
+  path,
+  setProgress,
+}: {
+  path: string;
+  setProgress: (progress: number) => void;
+}): Promise<T[]> => {
+  setProgress(0);
+
+  // Github API
+  // https://api.github.com/repos/grumd/osu-pps/contents/data/maps/osu/diffs.csv?ref=data
+  const apiResponse = await axios.get(
+    `https://api.github.com/repos/grumd/osu-pps/contents/${path}?ref=data`
+  );
+  const contentSize = apiResponse.data.size;
+  const downloadUrl = apiResponse.data.download_url;
+
+  setProgress(0.05);
+
+  const response = await axios.get(downloadUrl, {
+    responseType: 'text',
+    onDownloadProgress: (progressEvent) => {
+      // Math.min for the sanity check, just in case downloaded content is bigger than contentSize
+      setProgress(Math.min(0.95, (progressEvent.loaded / contentSize) * 0.9 + 0.05));
+    },
+  });
+
+  setProgress(0.95);
+
+  const parsed = await new Promise<T[]>((resolve) => {
+    Papa.parse<T>(response.data, {
+      header: true,
+      dynamicTyping: true,
+      worker: true,
+      complete: (result) => {
+        resolve(result.data);
+      },
+    });
+  });
+
+  setProgress(1);
+
+  return parsed;
+};
+
 export const fetchCsv = async <T>({ url }: { url: string }): Promise<T[]> => {
   try {
     const response = await fetch(url);
     if (response.status >= 200 && response.status < 300) {
       const text = await response.text();
-      return await new Promise((resolve) => {
+      const parsePromise = new Promise<T[]>((resolve) => {
         Papa.parse<T>(text, {
           header: true,
           dynamicTyping: true,
@@ -44,6 +81,8 @@ export const fetchCsv = async <T>({ url }: { url: string }): Promise<T[]> => {
           },
         });
       });
+
+      return parsePromise;
     } else {
       throw Error('HTTP Status ' + response.status);
     }

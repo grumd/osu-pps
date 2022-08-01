@@ -1,27 +1,54 @@
+import {
+  amberA,
+  amberDarkA,
+  grassA,
+  grassDarkA,
+  indigo,
+  indigoA,
+  indigoDark,
+  indigoDarkA,
+  redA,
+  redDarkA,
+  sand,
+  sandDark,
+} from '@radix-ui/colors';
 import { createStitches } from '@stitches/react';
 import type * as Stitches from '@stitches/react';
 
-export const { styled, createTheme, globalCss, theme, config } = createStitches({
+const colorAliases = {
+  bgMain: '$sand2',
+  bgElement: '$sand4',
+  bgOrange: '$amberA6',
+  bgBrightOrange: '$amberA8',
+  bgBlue: '$indigoA6',
+  bgError: '$redA5',
+  textPrimary: '$sand12',
+  textInactive: '$sand9',
+  textInactiveSecondary: '$sand10',
+  textBlue: '$indigo11',
+  textRed: '$redA11',
+};
+
+export const { styled, createTheme, globalCss, theme, config, keyframes } = createStitches({
   media: {
     small: '(max-width: 1280px)',
+    highDpi:
+      'only screen and (-webkit-min-device-pixel-ratio: 1.3), only screen and (min-device-pixel-ratio: 1.3), only screen and (min-resolution: 120dpi)',
   },
   theme: {
     colors: {
-      bgGrey300: 'hsl(0, 0%, 18%)',
-      bgGrey400: 'hsl(0, 0%, 23%)',
-      bgGrey500: 'hsl(0, 0%, 28%)',
-      bgGrey800: 'hsl(0, 0%, 43%)',
-      bgOrange: 'hsla(33, 67%, 63%, 0.3)',
-      bgBlue: 'hsla(197, 40%, 53%, 0.45)',
-      textPrimary: 'white',
-      textInactive: 'hsl(0, 0%, 33%)',
-      textInactiveSecondary: 'grey',
-      link: '#e0b074',
+      ...sandDark,
+      ...redDarkA,
+      ...grassDarkA,
+      ...amberDarkA,
+      ...indigoDark,
+      ...indigoDarkA,
+      ...colorAliases,
+      textWhite: 'white',
+      link: '#ebaf66',
       linkActive: '#a77d58',
-      textPlus: 'green',
-      textMinus: '#ff4500',
-      textBlue: '#6495ed',
-      textBluePale: '#1e90ff',
+      textGreen: 'green',
+      textRed: '#ff4500',
     },
     space: {
       50: '0.3rem',
@@ -51,21 +78,18 @@ export const { styled, createTheme, globalCss, theme, config } = createStitches(
 
 export const lightTheme = createTheme({
   colors: {
-    bgGrey300: '#fafafa',
-    bgGrey400: '#d3d3d3',
-    bgGrey500: '#bcbcbc',
-    bgGrey800: '#6f6f6f',
-    bgOrange: 'rgba(224,168,98,.3)',
-    bgBlue: 'rgba(87,156,183,.45)',
-    textPrimary: '#1a1a1a',
-    textInactive: '#b2b2b2',
-    textInactiveSecondary: '#555',
-    link: '#e0b074',
-    linkActive: '#a77d58',
-    textPlus: 'green',
-    textMinus: '#ff4500',
-    textBlue: '#6495ed',
-    textBluePale: '#1e90ff',
+    ...sand,
+    ...redA,
+    ...grassA,
+    ...amberA,
+    ...indigo,
+    ...indigoA,
+    ...colorAliases,
+    textWhite: 'black',
+    link: '#6a4416',
+    linkActive: '#b6a697',
+    textGreen: 'green',
+    textRed: '#ff4500',
   },
 });
 

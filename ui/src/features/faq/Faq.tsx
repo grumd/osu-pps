@@ -1,4 +1,4 @@
-import { colors, space, styled } from 'styles';
+import { colors, space, styled } from '@/styles';
 
 const faqs = [
   {
@@ -73,13 +73,13 @@ const faqs = [
 const FaqList = styled('ul', {
   marginTop: 0,
   paddingLeft: space[200],
-  borderTop: `1px solid ${colors.bgGrey500}`,
+  borderTop: `1px solid ${colors.sand6}`,
 
   '& > li': {
     paddingTop: space[150],
 
     '& + li': {
-      borderTop: `1px solid ${colors.bgGrey500}`,
+      borderTop: `1px solid ${colors.sand6}`,
     },
 
     '& > div': {

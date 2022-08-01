@@ -14,6 +14,7 @@
   ],
   "dependencies": {
     "@discoveryjs/json-ext": "^0.5.7",
+    "@radix-ui/react-progress": "^1.0.0",
     "axios": "0.15.3",
     "cheerio": "^1.0.0-rc.3",
     "classnames": "2.2.6",

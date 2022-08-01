@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
-import { colors, fonts, space, styled } from 'styles';
+
+import { colors, fonts, space, styled } from '@/styles';
 
 export default styled(NavLink, {
   fontSize: fonts[175],

@@ -1,4 +1,4 @@
-import { styled } from 'styles';
+import { styled } from '@/styles';
 
 const sunColor = '#dbb21e';
 const moonColor = '#7ac5d5';

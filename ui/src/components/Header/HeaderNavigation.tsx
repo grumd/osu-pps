@@ -1,12 +1,10 @@
 import { generatePath, useMatch } from 'react-router-dom';
 import { useRouteParams } from 'typesafe-routes';
 
-import { colors, fonts, space, styled } from 'styles';
-
-import MenuLink from 'components/MenuLink/MenuLink';
-
-import { mode, faq } from 'routes';
-import { Mode } from 'constants/modes';
+import MenuLink from '@/components/MenuLink/MenuLink';
+import { Mode } from '@/constants/modes';
+import { faq, mode } from '@/routes';
+import { colors, fonts, space, styled } from '@/styles';
 
 const FakeListItem = styled('li', {
   fontSize: fonts[175],
