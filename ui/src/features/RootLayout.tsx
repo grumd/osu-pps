@@ -21,15 +21,15 @@ const RootContainer = styled('div', {
       light: {
         colorScheme: 'light',
       },
-      ['no-preference']: {},
+      'no-preference': {},
     },
   },
 });
 
 const LayoutContainer = styled('div', {
   width: space.pageWidth,
-  paddingLeft: space[150],
-  paddingRight: space[150],
+  paddingLeft: space.lg,
+  paddingRight: space.lg,
   display: 'flex',
   flexFlow: 'column nowrap',
 
@@ -38,7 +38,7 @@ const LayoutContainer = styled('div', {
   },
 });
 
-export const RootLayout = () => {
+export function RootLayout() {
   const [theme, setTheme] = useThemeWithDefault('dark');
 
   return (
@@ -56,4 +56,4 @@ export const RootLayout = () => {
       </LayoutContainer>
     </RootContainer>
   );
-};
+}

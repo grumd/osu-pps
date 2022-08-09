@@ -6,6 +6,4 @@ export enum ColorCodeStyle {
   Border,
 }
 
-export const useColorCodeStyle = (): ColorCodeStyle => {
-  return ColorCodeStyle.Background;
-};
+export const useColorCodeStyle = (): ColorCodeStyle => ColorCodeStyle.Background;

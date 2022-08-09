@@ -2,20 +2,25 @@ import axios from 'axios';
 import Papa from 'papaparse';
 
 import { DEBUG_FETCH } from '@/constants/api';
-import { Mode } from '@/constants/modes';
-import { Metadata } from '@/types/metadata';
+import type { Mode } from '@/constants/modes';
+import type { Metadata } from '@/types/metadata';
 import { getLastUpdated, getStorageItem, setLastUpdated, setStorageItem } from '@/utils/storage';
+
+interface GithubFileApiResponse {
+  size: number;
+  download_url: string;
+}
 
 export const fetchJson = async <T>({ url }: { url: string }): Promise<T> => {
   try {
     const response = await fetch(url);
     if (response.status >= 200 && response.status < 300) {
-      const data = await response.json();
-      return data as T;
-    } else {
-      throw Error('HTTP Status ' + response.status);
+      const data = (await response.json()) as T;
+      return data;
     }
+    throw Error(`HTTP Status ${response.status}`);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error(error);
     return Promise.reject(error);
   }
@@ -32,17 +37,19 @@ export const fetchCsvWithProgress = async <T>({
 
   // Github API
   // https://api.github.com/repos/grumd/osu-pps/contents/data/maps/osu/diffs.csv?ref=data
-  const apiResponse = await axios.get(
-    `https://api.github.com/repos/grumd/osu-pps/contents/${path}?ref=data`
-  );
+  const apiResponse = DEBUG_FETCH
+    ? { data: { size: 1, download_url: `/${path}` } }
+    : await axios.get<GithubFileApiResponse>(
+        `https://api.github.com/repos/grumd/osu-pps/contents/${path}?ref=data`
+      );
   const contentSize = apiResponse.data.size;
   const downloadUrl = apiResponse.data.download_url;
 
   setProgress(0.05);
 
-  const response = await axios.get(downloadUrl, {
+  const response = await axios.get<string>(downloadUrl, {
     responseType: 'text',
-    onDownloadProgress: (progressEvent) => {
+    onDownloadProgress: (progressEvent: { loaded: number }) => {
       // Math.min for the sanity check, just in case downloaded content is bigger than contentSize
       setProgress(Math.min(0.95, (progressEvent.loaded / contentSize) * 0.9 + 0.05));
     },
@@ -82,18 +89,18 @@ export const fetchCsv = async <T>({ url }: { url: string }): Promise<T[]> => {
         });
       });
 
-      return parsePromise;
-    } else {
-      throw Error('HTTP Status ' + response.status);
+      return await parsePromise;
     }
+    throw Error(`HTTP Status ${response.status}`);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error(error);
     return Promise.reject(error);
   }
 };
 
 export const fetchWithPersist =
-  <T extends any[], Args extends [Mode, ...any[]]>({
+  <T extends unknown[], Args extends [Mode, ...unknown[]]>({
     storageKey,
     metadata,
     action,

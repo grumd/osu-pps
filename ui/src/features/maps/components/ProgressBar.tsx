@@ -6,7 +6,7 @@ const Progress = styled(ProgressPrimitive.Root, {
   position: 'relative',
   overflow: 'hidden',
   background: colors.sand1,
-  borderRadius: space[75],
+  borderRadius: space.sm,
   width: '25em',
   height: '1.5em',
 });
@@ -17,10 +17,10 @@ const Indicator = styled(ProgressPrimitive.Indicator, {
   transition: 'transform 400ms cubic-bezier(0.65, 0, 0.35, 1)',
 });
 
-export const ProgressBar = ({ progress }: { progress: number }) => {
+export function ProgressBar({ progress }: { progress: number }) {
   return (
     <Progress value={progress} max={1}>
       <Indicator style={{ width: `${Math.round(progress * 100)}%` }} />
     </Progress>
   );
-};
+}

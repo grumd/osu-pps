@@ -12,10 +12,10 @@ const stars = [
   [0.1, 0.2],
 ];
 const size = 64;
-const half = size / 2,
-  d1 = 29, // distance from center to far end of a sun ray
-  d2 = 24, // distance from center to near end of a sun ray
-  moonOffset = 25;
+const half = size / 2;
+const d1 = 29; // distance from center to far end of a sun ray
+const d2 = 24; // distance from center to near end of a sun ray
+const moonOffset = 25;
 
 const duration = '0.5s';
 const easing = 'ease-in-out';
@@ -52,13 +52,13 @@ const SunRayG = styled('g', {
   },
 });
 
-export const SunMoonToggle = ({
+export function SunMoonToggle({
   dark,
   onChange,
 }: {
   dark: boolean;
   onChange: (dark: boolean) => void;
-}) => {
+}) {
   const color = dark ? moonColor : sunColor;
   const x = dark ? 0 : 1;
 
@@ -94,23 +94,22 @@ export const SunMoonToggle = ({
           </mask>
         </defs>
         <circle id="sun" cx={half} cy={half} r="14" mask="url(#moon-mask)" />
-        {angles.map((rad, index) => {
-          return (
-            <SunRayG key={index} dark={dark}>
-              <line
-                x1={half}
-                y1={half}
-                x2={half + (d2 - d1) * Math.cos(rad)}
-                y2={half + (d2 - d1) * Math.sin(rad)}
-                transform={`translate(${x * d1 * Math.cos(rad)}, ${x * d1 * Math.sin(rad)})`}
-              />
-            </SunRayG>
-          );
-        })}
+        {angles.map((rad) => (
+          <SunRayG key={rad} dark={dark}>
+            <line
+              x1={half}
+              y1={half}
+              x2={half + (d2 - d1) * Math.cos(rad)}
+              y2={half + (d2 - d1) * Math.sin(rad)}
+              transform={`translate(${x * d1 * Math.cos(rad)}, ${x * d1 * Math.sin(rad)})`}
+            />
+          </SunRayG>
+        ))}
         {stars.map(([cx, cy], index) => {
           const r = Math.random() * 2 + 1;
           return (
             <circle
+              // eslint-disable-next-line react/no-array-index-key
               key={index}
               r={r}
               strokeWidth={0}
@@ -124,4 +123,4 @@ export const SunMoonToggle = ({
       </svg>
     </SunMoonButton>
   );
-};
+}

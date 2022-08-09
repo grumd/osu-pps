@@ -1,4 +1,4 @@
-import { colors, fonts, globalCss, space } from '@/styles';
+import { fonts, globalCss, space } from '@/styles';
 
 export const globalStyles = globalCss({
   'html, body, #root': {
@@ -13,8 +13,8 @@ export const globalStyles = globalCss({
   },
 
   p: {
-    marginTop: space[150],
-    marginBottom: space[150],
+    marginTop: space.lg,
+    marginBottom: space.lg,
   },
 
   ':root': {

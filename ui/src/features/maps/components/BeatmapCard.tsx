@@ -1,31 +1,30 @@
-import * as AspectRatio from '@radix-ui/react-aspect-ratio';
-
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/HoverCard/HoverCard';
 import { ExternalLink } from '@/components/Link/ExternalLink';
 import { Mode } from '@/constants/modes';
 import { useMode } from '@/hooks/useMode';
 import { colors, fonts, space, styled } from '@/styles';
-import { getBpmColour, getDiffColour, getLengthColour } from '@/utils/beatmap';
+import { getBpmColour, getDiffColour, getLengthColour, getMapNameLink } from '@/utils/beatmap';
 
-import { useCalcMode } from '../hooks/useCalcMode';
 import { ColorCodeStyle, useColorCodeStyle } from '../hooks/useColorCodeStyle';
-import { Beatmap } from '../types';
+import { useFiltersStore } from '../hooks/useFilters';
+import type { Beatmap } from '../types';
 
 const Article = styled('article', {
   display: 'flex',
   alignItems: 'center',
   color: colors.textWhite,
-  borderRadius: space[100],
+  borderRadius: space.md,
   background: colors.bgElement,
-  margin: `${space[75]} 0`,
-  gap: space[100],
+  gap: space.md,
+  height: space.beatmapHeight,
+  marginBottom: space.sm,
 });
 
 const MapCoverLink = styled(ExternalLink, {
-  borderRadius: space[100],
+  borderRadius: space.md,
   overflow: 'hidden',
   height: '100%',
-  width: '5em',
+  width: space.beatmapHeight,
 });
 
 const MapCoverBackground = styled('div', {
@@ -40,11 +39,12 @@ const MapCoverBackground = styled('div', {
 });
 
 const MapLink = styled(ExternalLink, {
-  flex: '3.5 1 0',
+  flex: '3 1 0',
 });
 
 const PpNumber = styled('span', {
   flex: '1 1 0',
+  textAlign: 'center',
 
   '& > span:first-child': {
     fontSize: fonts['150'],
@@ -58,8 +58,8 @@ const PpNumber = styled('span', {
 
 const ModBlock = styled('div', {
   fontSize: fonts[125],
-  padding: `${space[75]} ${space[100]}`,
-  borderRadius: space[75],
+  padding: `${space.sm} ${space.md}`,
+  borderRadius: space.sm,
   background: colors.sand6,
   color: colors.textInactiveSecondary,
 
@@ -87,40 +87,26 @@ const TextCell = styled('span', {
   textAlign: 'center',
 });
 
-const BeatmapDetailsBlock = styled('div', {
-  flex: '3 1 0',
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-});
-
 const ColoredCellContainer = styled('span', {
-  flex: '0 1 33%',
+  flex: '1 1 0',
   fontWeight: 'bold',
   display: 'flex',
   flexFlow: 'row nowrap',
   justifyContent: 'center',
   alignItems: 'center',
-
-  variants: {
-    size: {
-      auto: { flex: '0 1 33%' },
-      lg: { flex: '1 0 auto' },
-    },
-  },
 });
 
 const ColoredCellSpan = styled('span', {
   fontSize: fonts['125'],
   textAlign: 'center',
-  padding: `${space[50]} ${space[100]}`,
+  padding: `${space.xs} ${space.md}`,
 
   variants: {
     kind: {
       [ColorCodeStyle.None]: {},
       [ColorCodeStyle.Background]: {
         flex: '0 1 auto',
-        borderRadius: space[75],
+        borderRadius: space.sm,
         backgroundColor: 'var(--color)',
       },
       [ColorCodeStyle.Underline]: {
@@ -155,68 +141,59 @@ const ColoredCellSpan = styled('span', {
   },
 });
 
-const ColoredCell = ({
-  size = 'auto',
+function ColoredCell({
   color,
   children,
   kind = ColorCodeStyle.Background,
 }: {
-  size?: 'auto' | 'lg';
   color?: string;
   children: React.ReactNode;
   kind?: ColorCodeStyle;
-}) => {
+}) {
   return (
-    <ColoredCellContainer size={size}>
+    <ColoredCellContainer>
       <ColoredCellSpan kind={kind} style={{ '--color': color }}>
         {children}
       </ColoredCellSpan>
     </ColoredCellContainer>
   );
-};
+}
 
-const truncateFloat = (number: number) => {
-  return Math.round(number * 100) / 100;
-};
+const truncateFloat = (number: number) => Math.round(number * 100) / 100;
 
-const secondsToFormatted = (seconds: number) => {
-  return `${Math.floor(seconds / 60)}:${('0' + (seconds % 60)).slice(-2)}`;
-};
+const secondsToFormatted = (seconds: number) =>
+  `${Math.floor(seconds / 60)}:${`0${seconds % 60}`.slice(-2)}`;
 
-const getMods = ({ mods }: Beatmap) => {
-  return {
-    dt: (mods & 64) === 64,
-    hd: (mods & 8) === 8,
-    hr: (mods & 16) === 16,
-    fl: (mods & 1024) === 1024,
-    ht: (mods & 256) === 256,
-  };
-};
+const getMods = ({ mods }: Beatmap) => ({
+  dt: (mods & 64) === 64,
+  hd: (mods & 8) === 8,
+  hr: (mods & 16) === 16,
+  fl: (mods & 1024) === 1024,
+  ht: (mods & 256) === 256,
+});
 
-const CoverImage = ({ url, mapsetId }: { url: string; mapsetId: number }) => {
+function CoverImage({ url, mapsetId }: { url: string; mapsetId: number }) {
   return (
     <MapCoverLink url={url}>
-      <AspectRatio.Root ratio={1}>
-        <MapCoverBackground
-          style={{
-            '--bg': `url("https://assets.ppy.sh/beatmaps/${mapsetId}/covers/list.jpg")`,
-            '--bg2x': `url("https://assets.ppy.sh/beatmaps/${mapsetId}/covers/list@2x.jpg")`,
-          }}
-        />
-      </AspectRatio.Root>
+      <MapCoverBackground
+        style={{
+          '--bg': `url("https://assets.ppy.sh/beatmaps/${mapsetId}/covers/list.jpg")`,
+          '--bg2x': `url("https://assets.ppy.sh/beatmaps/${mapsetId}/covers/list@2x.jpg")`,
+        }}
+      />
     </MapCoverLink>
   );
-};
+}
 
-export const BeatmapCard = ({ map }: { map: Beatmap }) => {
+export function BeatmapCard({ map }: { map: Beatmap }) {
   const mods = getMods(map);
-  const calcMode = useCalcMode();
+  const calcMode = useFiltersStore((state) => state.filters.calcMode);
   const mode = useMode();
   const colorCodeStyle = useColorCodeStyle();
 
   const isMania = mode === Mode.mania;
-  const mapLink = `https://osu.ppy.sh/beatmapsets/${map.mapsetId}#osu/${map.beatmapId}`;
-  const linkText = map.artist ? `${map.artist} - ${map.title} [${map.version}]` : mapLink;
+  const { link: mapLink, name: linkText } = getMapNameLink(map);
+  // eslint-disable-next-line no-nested-ternary
   const bpmFactor = mods.dt ? 1.5 : mods.ht ? 0.75 : 1;
 
   const colorOpacity = 0.25;
@@ -230,7 +207,7 @@ export const BeatmapCard = ({ map }: { map: Beatmap }) => {
         <span>pp</span>
       </PpNumber>
       {isMania && (
-        <ModBlock active={!!map.maniaKeys}>{map.maniaKeys ? map.maniaKeys + 'K' : '?'}</ModBlock>
+        <ModBlock active={!!map.maniaKeys}>{map.maniaKeys ? `${map.maniaKeys}K` : '?'}</ModBlock>
       )}
       <ModBlock active={mods.dt} inverted={mods.ht}>
         {mods.ht ? 'HT' : 'DT'}
@@ -238,51 +215,28 @@ export const BeatmapCard = ({ map }: { map: Beatmap }) => {
       <ModBlock active={mods.hd}>HD</ModBlock>
       <ModBlock active={mods.hr}>HR</ModBlock>
       <ModBlock active={mods.fl}>FL</ModBlock>
-      <BeatmapDetailsBlock>
-        <ColoredCell kind={colorCodeStyle} color={getLengthColour(map.length, colorOpacity)}>
-          {secondsToFormatted(map.length)}
-        </ColoredCell>
+      <ColoredCell kind={colorCodeStyle} color={getLengthColour(map.length, colorOpacity)}>
+        {secondsToFormatted(map.length)}
+      </ColoredCell>
+      <ColoredCell kind={colorCodeStyle} color={getBpmColour(map.bpm * bpmFactor, colorOpacity)}>
         {mods.dt || mods.ht ? (
-          <HoverCard>
-            <HoverCardTrigger>
-              <ColoredCell
-                kind={colorCodeStyle}
-                size="lg"
-                color={getBpmColour(map.bpm * bpmFactor, colorOpacity)}
-              >
-                {map.bpm * bpmFactor}*
-              </ColoredCell>
-            </HoverCardTrigger>
+          <HoverCard css={{ flex: '1 1 0' }}>
+            <HoverCardTrigger>{truncateFloat(map.bpm * bpmFactor)}*</HoverCardTrigger>
             <HoverCardContent>
-              <div>Original BPM: {map.bpm}</div>
+              <div>Original BPM: {truncateFloat(map.bpm)}</div>
               <div>
-                With {mods.dt ? 'DT' : 'HT'}: {map.bpm * bpmFactor}
+                With {mods.dt ? 'DT' : 'HT'}: {truncateFloat(map.bpm * bpmFactor)}
               </div>
             </HoverCardContent>
           </HoverCard>
         ) : (
-          <ColoredCell
-            kind={colorCodeStyle}
-            size="lg"
-            color={getBpmColour(map.bpm * bpmFactor, colorOpacity)}
-          >
-            {map.bpm}
-          </ColoredCell>
+          truncateFloat(map.bpm)
         )}
-        <ColoredCell kind={colorCodeStyle} color={getDiffColour(map.difficulty, colorOpacity)}>
-          {map.difficulty.toFixed(2)}
-        </ColoredCell>
-      </BeatmapDetailsBlock>
-      {/* <TextCell>{secondsToFormatted(map.length)}</TextCell> */}
-      {/* <TextCell>
-        <Bpm bpm={map.bpm} multiplier={mods.dt ? 1.5 : mods.ht ? 0.75 : 1} />
-      </TextCell> */}
+      </ColoredCell>
+      <ColoredCell kind={colorCodeStyle} color={getDiffColour(map.difficulty, colorOpacity)}>
+        {map.difficulty.toFixed(2)}
+      </ColoredCell>
       <TextCell>{map.farmValues[calcMode].toFixed(0)}</TextCell>
-      {/* 
-      <td className="text-center">{secondsToFormatted(item.l)}</td>
-      <td className="text-center">{bpm}</td>
-      <td className="text-center">{item.d}</td>
-      <td className="text-center">{overweightnessText}</td> */}
     </Article>
   );
-};
+}

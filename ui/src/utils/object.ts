@@ -1,5 +1,10 @@
-export function keys<T extends {}>(obj: T): Extract<keyof T, string>[] {
+export function keys<T extends object>(obj: T): Extract<keyof T, string>[] {
   const k: Extract<keyof T, string>[] = [];
-  for (const z in obj) k.push(z);
+  // eslint-disable-next-line no-restricted-syntax
+  for (const z in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, z)) {
+      k.push(z);
+    }
+  }
   return k;
 }

@@ -1,4 +1,4 @@
-import { route, stringParser } from 'typesafe-routes';
+import { route } from 'typesafe-routes';
 
 import { Mode } from '@/constants/modes';
 
@@ -9,12 +9,9 @@ import { rankings } from './rankings';
 export const faq = route('faq', {}, {});
 
 const modeParser = {
-  parse: (param: string): Mode => {
-    return Object.values<string>(Mode).includes(param) ? (param as Mode) : Mode.osu;
-  },
-  serialize: (mode: Mode) => {
-    return mode;
-  },
+  parse: (param: string): Mode =>
+    Object.values<string>(Mode).includes(param) ? (param as Mode) : Mode.osu,
+  serialize: (mode: Mode) => mode,
 };
 
 export const mode = route(

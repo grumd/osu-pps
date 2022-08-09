@@ -1,6 +1,6 @@
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
 
-import { colors, space, styled } from '@/styles';
+import { colors, styled } from '@/styles';
 
 const SCROLLBAR_SIZE = '0.5em';
 
@@ -24,9 +24,8 @@ const StyledScrollbar = styled(ScrollAreaPrimitive.Scrollbar, {
   // disable browser handling of all panning and zooming gestures on touch devices
   touchAction: 'none',
   padding: '0.1em',
-  background: colors.sand6,
   transition: 'background 160ms ease-out',
-  '&:hover': { background: colors.sand8 },
+  '&:hover': { background: colors.sand5 },
   '&[data-orientation="vertical"]': { width: SCROLLBAR_SIZE },
   '&[data-orientation="horizontal"]': {
     flexDirection: 'column',

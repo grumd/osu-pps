@@ -1,5 +1,5 @@
 import { CalcMode } from '@/constants/modes';
-import { BeatmapDiff } from '@/features/maps/types';
+import type { BeatmapDiff } from '@/features/maps/types';
 
 export const farmValueCalc: Record<CalcMode, (map: BeatmapDiff) => number> = {
   [CalcMode.Base]: (map) => map.farmValue,
@@ -7,6 +7,6 @@ export const farmValueCalc: Record<CalcMode, (map: BeatmapDiff) => number> = {
   [CalcMode.ByPasscount]: (map) => map.farmValue / map.passCount,
   [CalcMode.ByPopulationAndTime]: (map) =>
     (1000 * map.farmValue) /
-    Math.pow(map.adjusted || 1, 0.65) /
-    Math.pow(map.hoursSinceRanked || 1, 0.35),
+    (map.adjusted || 1)**0.65 /
+    (map.hoursSinceRanked || 1)**0.35,
 };

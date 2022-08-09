@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import create from 'zustand';
 
 import { QUERY_PERSISTENT_DATA_CONFIG } from '@/constants/api';
-import { CalcMode, Mode } from '@/constants/modes';
+import type { CalcMode, Mode } from '@/constants/modes';
 import { useMetadata } from '@/hooks/useMetadata';
 import { useMode } from '@/hooks/useMode';
 import { farmValueCalc } from '@/utils/farmValue';
@@ -10,7 +10,13 @@ import { fetchCsvWithProgress, fetchWithPersist } from '@/utils/fetch';
 import { keys } from '@/utils/object';
 import { getMapsDataStorageKey } from '@/utils/storage';
 
-import { Beatmap, BeatmapDiff, BeatmapDiffLegacy, BeatmapSet, BeatmapSetLegacy } from '../types';
+import type {
+  Beatmap,
+  BeatmapDiff,
+  BeatmapDiffLegacy,
+  BeatmapSet,
+  BeatmapSetLegacy,
+} from '../../types';
 import { normalizeBeatmap, normalizeMapset } from './normalizer';
 
 export const useLoadingProgress = create<{
@@ -24,22 +30,22 @@ export const useLoadingProgress = create<{
 export const useMaps = () => {
   const mode = useMode();
   const metadata = useMetadata();
-  const { setProgress } = useLoadingProgress();
+  const setProgress = useLoadingProgress((state) => state.setProgress);
 
-  const fetchData = async (mode: Mode): Promise<Beatmap[] | null> => {
+  const fetchData = async (modeToFetch: Mode): Promise<Beatmap[] | null> => {
     let diffsProgress = 0;
     let mapsetsProgress = 0;
 
     const [mapsetsInfo, diffsInfo] = await Promise.all([
       fetchCsvWithProgress<BeatmapSetLegacy | BeatmapSet>({
-        path: `data/maps/${mode}/mapsets.csv`,
+        path: `data/maps/${modeToFetch}/mapsets.csv`,
         setProgress: (progress) => {
           mapsetsProgress = progress;
           setProgress((mapsetsProgress + diffsProgress) / 2);
         },
       }),
       fetchCsvWithProgress<BeatmapDiffLegacy | BeatmapDiff>({
-        path: `data/maps/${mode}/diffs.csv`,
+        path: `data/maps/${modeToFetch}/diffs.csv`,
         setProgress: (progress) => {
           diffsProgress = progress;
           setProgress((mapsetsProgress + diffsProgress) / 2);
@@ -59,10 +65,10 @@ export const useMaps = () => {
       if (mapset) {
         acc.push({
           ...normItem,
-          ...mapsets.get(normItem.mapsetId)!, // Corresponding mapset always exists
-          farmValues: keys(farmValueCalc).reduce((acc, key) => {
-            acc[key] = farmValueCalc[key](normItem);
-            return acc;
+          ...mapset,
+          farmValues: keys(farmValueCalc).reduce((farmAcc, key) => {
+            farmAcc[key] = farmValueCalc[key](normItem);
+            return farmAcc;
           }, {} as Record<CalcMode, number>),
         });
       }

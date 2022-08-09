@@ -1,12 +1,8 @@
-import { BeatmapDiff, BeatmapDiffLegacy, BeatmapSet, BeatmapSetLegacy } from '../types';
+import type { BeatmapDiff, BeatmapDiffLegacy, BeatmapSet, BeatmapSetLegacy } from '../../types';
 
-export const isLegacyMapset = (map: BeatmapSet | BeatmapSetLegacy): map is BeatmapSetLegacy => {
-  return !!(map as BeatmapSetLegacy).s;
-};
+export const isLegacyMapset = (map: BeatmapSet | BeatmapSetLegacy): map is BeatmapSetLegacy => !!(map as BeatmapSetLegacy).s;
 
-export const isLegacyBeatmap = (map: BeatmapDiff | BeatmapDiffLegacy): map is BeatmapDiffLegacy => {
-  return !!(map as BeatmapDiffLegacy).b;
-};
+export const isLegacyBeatmap = (map: BeatmapDiff | BeatmapDiffLegacy): map is BeatmapDiffLegacy => !!(map as BeatmapDiffLegacy).b;
 
 export const normalizeMapset = (mapset: BeatmapSet | BeatmapSetLegacy): BeatmapSet => {
   if (isLegacyMapset(mapset)) {

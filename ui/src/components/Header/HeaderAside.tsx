@@ -35,7 +35,7 @@ const RowBlock = styled('div', {
   alignItems: 'center',
 
   '> svg': {
-    marginLeft: space[75],
+    marginLeft: space.sm,
   },
 
   '> a': {
@@ -43,7 +43,7 @@ const RowBlock = styled('div', {
   },
 
   '> * + *': {
-    paddingLeft: space[75],
+    paddingLeft: space.sm,
   },
 });
 
@@ -54,10 +54,10 @@ const Aside = styled('aside', {
 });
 
 const AsideSubBlock = styled('div', {
-  marginLeft: space[100],
+  marginLeft: space.md,
 });
 
-const LastUpdatedMessage = () => {
+function LastUpdatedMessage() {
   const { isLoading, error, data: metadata } = useMetadata();
 
   let message = 'unknown error';
@@ -71,9 +71,9 @@ const LastUpdatedMessage = () => {
   }
 
   return <div>{message}</div>;
-};
+}
 
-export const HeaderAside = ({ themeToggle }: { themeToggle: React.ReactNode }) => {
+export function HeaderAside({ themeToggle }: { themeToggle: React.ReactNode }) {
   return (
     <Aside>
       <AsideSubBlock css={{ fontSize: fonts[200], lineHeight: 0.5 }}>{themeToggle}</AsideSubBlock>
@@ -101,4 +101,4 @@ export const HeaderAside = ({ themeToggle }: { themeToggle: React.ReactNode }) =
       </AsideSubBlock>
     </Aside>
   );
-};
+}

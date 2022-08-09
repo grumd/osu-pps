@@ -1,4 +1,5 @@
-import { CalcMode } from '@/constants/modes';
+import type { CalcMode } from '@/constants/modes';
+import type { ModToggleState } from '@/features/maps/components/ModToggle';
 
 export interface BeatmapDiffLegacy {
   m: number;
@@ -54,4 +55,22 @@ export interface BeatmapSet {
 
 export interface Beatmap extends BeatmapDiff, BeatmapSet {
   farmValues: Record<CalcMode, number>;
+}
+
+export interface Filters {
+  songName?: string;
+  bpmMax?: number | null;
+  bpmMin?: number | null;
+  ppMax?: number | null;
+  ppMin?: number | null;
+  lengthMin?: number | null;
+  lengthMax?: number | null;
+  diffMin?: number | null;
+  diffMax?: number | null;
+  dt?: ModToggleState;
+  hd?: ModToggleState;
+  hr?: ModToggleState;
+  fl?: ModToggleState;
+  calcMode: CalcMode;
+  count: number;
 }

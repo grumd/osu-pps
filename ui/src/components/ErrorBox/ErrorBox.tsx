@@ -1,7 +1,7 @@
 import { colors, space, styled } from '@/styles';
 
 export const ErrorBox = styled('p', {
-  padding: space[150],
+  padding: space.lg,
   background: colors.bgError,
-  borderRadius: space[50],
+  borderRadius: space.xs,
 });

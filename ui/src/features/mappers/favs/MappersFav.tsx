@@ -1,3 +1,3 @@
-export const MappersFav = () => {
+export function MappersFav() {
   return <>MappersFav</>;
-};
+}

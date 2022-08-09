@@ -28,8 +28,8 @@ const StyledArrow = styled(HoverCardPrimitive.Arrow, {
 });
 
 const StyledContent = styled(HoverCardPrimitive.Content, {
-  borderRadius: space[75],
-  padding: space[150],
+  borderRadius: space.sm,
+  padding: space.lg,
   width: 'auto',
   backgroundColor: colors.sand6,
   color: colors.textPrimary,
@@ -47,10 +47,9 @@ const StyledContent = styled(HoverCardPrimitive.Content, {
   },
 });
 
-function Content({
-  children,
-  ...props
-}: { children: React.ReactNode } & React.ComponentPropsWithRef<typeof StyledContent>) {
+const StyledRoot = styled(HoverCardPrimitive.Root);
+
+function Content({ children, ...props }: React.ComponentPropsWithRef<typeof StyledContent>) {
   return (
     <HoverCardPrimitive.Portal>
       <StyledContent side="top" {...props}>
@@ -61,14 +60,11 @@ function Content({
   );
 }
 
-export function HoverCard({
-  children,
-  ...props
-}: React.ComponentPropsWithRef<typeof StyledContent>) {
+export function HoverCard({ children, ...props }: React.ComponentPropsWithRef<typeof StyledRoot>) {
   return (
-    <HoverCardPrimitive.Root openDelay={100} closeDelay={100} {...props}>
+    <StyledRoot openDelay={100} closeDelay={100} {...props}>
       {children}
-    </HoverCardPrimitive.Root>
+    </StyledRoot>
   );
 }
 

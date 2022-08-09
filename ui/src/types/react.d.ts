@@ -1,3 +1,5 @@
+// It's not unused, it's needed for correct module augmentation
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type * as React from 'react';
 
 declare module 'react' {

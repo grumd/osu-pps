@@ -1,7 +1,6 @@
 import storage from 'localforage';
 
-import { Mode } from '@/constants/modes';
-import { Beatmap } from '@/features/maps/types';
+import type { Mode } from '@/constants/modes';
 
 export const getMapsDataStorageKey = (mode: Mode) => `data-${mode}`;
 export const getRankingsStorageKey = (mode: Mode) => `rankings-${mode}`;
@@ -17,9 +16,8 @@ export const setLastUpdated = async (mode: Mode, date: Date): Promise<void> => {
   await storage.setItem(getLastUpdatedStorageKey(mode), date.getTime());
 };
 
-export const getStorageItem = async <T>(storageKey: string): Promise<T | null> => {
-  return storage.getItem<T>(storageKey);
-};
+export const getStorageItem = async <T>(storageKey: string): Promise<T | null> =>
+  storage.getItem<T>(storageKey);
 
 export const setStorageItem = async <T>(storageKey: string, data: T): Promise<void> => {
   await storage.setItem(storageKey, data);

@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import { colors, space, styled } from '@/styles';
 
 const faqs = [
@@ -72,11 +73,11 @@ const faqs = [
 
 const FaqList = styled('ul', {
   marginTop: 0,
-  paddingLeft: space[200],
+  paddingLeft: space.xl,
   borderTop: `1px solid ${colors.sand6}`,
 
   '& > li': {
-    paddingTop: space[150],
+    paddingTop: space.lg,
 
     '& + li': {
       borderTop: `1px solid ${colors.sand6}`,
@@ -88,17 +89,15 @@ const FaqList = styled('ul', {
   },
 });
 
-export const Faq = () => {
+export function Faq() {
   return (
     <FaqList>
-      {faqs.map((item, index) => {
-        return (
-          <li key={index}>
-            <div>{item.question}</div>
-            <p>{item.answer}</p>
-          </li>
-        );
-      })}
+      {faqs.map((item) => (
+        <li key={item.question}>
+          <div>{item.question}</div>
+          <p>{item.answer}</p>
+        </li>
+      ))}
     </FaqList>
   );
-};
+}

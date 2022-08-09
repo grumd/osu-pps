@@ -1,6 +1,6 @@
 import { Link } from './Link';
 
-export const ExternalLink = ({
+export function ExternalLink({
   url,
   children,
   className,
@@ -8,10 +8,10 @@ export const ExternalLink = ({
   url: string;
   children: React.ReactNode;
   className?: string;
-}): JSX.Element => {
+}): JSX.Element {
   return (
     <Link href={url} className={className} target="_blank" rel="noopener noreferrer">
       {children}
     </Link>
   );
-};
+}

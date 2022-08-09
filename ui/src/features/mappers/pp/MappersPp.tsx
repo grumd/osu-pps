@@ -1,3 +1,3 @@
-export const MappersPp = () => {
+export function MappersPp() {
   return <>MappersPp</>;
-};
+}

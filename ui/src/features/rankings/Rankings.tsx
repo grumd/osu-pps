@@ -1,3 +1,3 @@
-export const Rankings = () => {
+export function Rankings() {
   return <>Rankings</>;
-};
+}
