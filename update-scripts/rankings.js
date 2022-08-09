@@ -1,6 +1,15 @@
 const _ = require('lodash/fp');
+const Papa = require('papaparse');
 
-const { simplifyMods, trimModsForRankings, files, writeJson, readJson } = require('./utils');
+// const { modes } = require('./constants');
+const {
+  simplifyMods,
+  trimModsForRankings,
+  writeFileSync,
+  files,
+  writeJson,
+  readJson,
+} = require('./utils');
 
 module.exports = async (mode) => {
   console.log('3. CALCULATING RANKINGS');
@@ -86,20 +95,75 @@ module.exports = async (mode) => {
       });
       newScores = newScores.sort((a, b) => b.p2 - a.p2);
       const ppDiff = newScores.reduce((ppDiffSum, score) => ppDiffSum + score.p2 - score.p1, 0);
+
+      const ppNewTotal = newScores.reduce(
+        (ppDiffSum, score, index) => ppDiffSum + score.p2 * Math.pow(0.95, index),
+        0
+      );
       const minuteUpdated = updateDatePerUser[player.id];
       return {
         n: player.name,
         id: player.id,
+        // not trying to subtract totals, because old total is a total of ALL scores, not just top 100
         ppDiff,
+        pp: player.pp,
+        ppNew: ppNewTotal,
         minuteUpdated,
         s: newScores.slice(0, 50), // list of recalculated scores - only keep top 50 now!
+        allScores: newScores,
       };
     }
   };
 
   const rankings = players.map(getFarmValue).filter((a) => a && a.s && a.s.length); // filter out no scores players
+
+  console.log('Writing temp rankings data');
   await writeJson(files.dataRankings(mode), rankings);
-  console.log();
+
+  console.log('Compressing rankings');
+
+  let csvPlayerRankings = [];
+  for (const player of rankings) {
+    csvPlayerRankings.push({
+      id: player.id,
+      name: player.n,
+      ppOld: player.pp,
+      ppNew: player.ppNew.toFixed(2),
+      minuteUpdated: player.minuteUpdated,
+    });
+
+    const scores = player.allScores.map((score) => {
+      return {
+        title: score.n,
+        mods: score.m,
+        beatmapId: score.b,
+        ppOld: score.p1,
+        ppNew: score.p2,
+      };
+    });
+    await writeJson(files.rankingsPlayerScores(mode, player.id), scores);
+  }
+  csvPlayerRankings = csvPlayerRankings.sort((a, b) => b.ppNew - a.ppNew);
+  writeFileSync(files.rankingsCsv(mode), Papa.unparse(csvPlayerRankings));
+
+  // TODO: remove saving of dataRankingsCompressed and dataRankingsInfo
+  const diffInfoArray = [];
+  const compressedData = rankings.map((player) => {
+    const scores = player.s.map((score) => {
+      const text = `${score.b} ${score.n}`;
+      let index = diffInfoArray.indexOf(text);
+      if (index === -1) {
+        diffInfoArray.push(text);
+        index = diffInfoArray.length - 1;
+      }
+      return `${index}_${score.m}_${score.p1}_${score.p2}`;
+    });
+    return [player.n, player.minuteUpdated, player.ppDiff, scores];
+  });
+
+  await writeJson(files.dataRankingsCompressed(mode), compressedData);
+  await writeJson(files.dataRankingsInfo(mode), diffInfoArray);
+
   console.log('Finished calculating rankings!');
   /*
   return parallelRun({

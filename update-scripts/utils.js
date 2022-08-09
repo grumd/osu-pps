@@ -27,6 +27,9 @@ const files = {
     `./../data/mappers/${mode.text}/favored-mappers-maps/${mapperId}.json`,
   dataRankingsCompressed: (mode) => `./../data/ranking/${mode.text}/compressed.json`,
   dataRankingsInfo: (mode) => `./../data/ranking/${mode.text}/map-infos.json`,
+  rankingsCsv: (mode) => `./../data/ranking/${mode.text}/players.csv`,
+  rankingsPlayerScores: (mode, playerId) =>
+    `./../data/ranking/${mode.text}/player-scores/${playerId}.json`,
   metadata: (mode) => `./../data/metadata/${mode.text}/metadata.json`,
 };
 
