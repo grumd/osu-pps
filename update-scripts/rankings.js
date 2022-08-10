@@ -129,6 +129,7 @@ module.exports = async (mode) => {
       name: player.n,
       ppOld: player.pp,
       ppNew: player.ppNew.toFixed(2),
+      ppDiff: player.ppDiff,
       minuteUpdated: player.minuteUpdated,
     });
 
