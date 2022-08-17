@@ -20,7 +20,6 @@ export const fetchJson = async <T>({ url }: { url: string }): Promise<T> => {
     }
     throw Error(`HTTP Status ${response.status}`);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     return Promise.reject(error);
   }
@@ -93,7 +92,6 @@ export const fetchCsv = async <T>({ url }: { url: string }): Promise<T[]> => {
     }
     throw Error(`HTTP Status ${response.status}`);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     return Promise.reject(error);
   }

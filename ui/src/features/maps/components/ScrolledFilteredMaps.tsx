@@ -40,8 +40,6 @@ export function ScrolledFilteredMaps({ maps }: { maps: Beatmap[] | null | undefi
         <Virtuoso
           data={filteredMaps}
           endReached={loadMore}
-          // This is not a component function -_-
-          // eslint-disable-next-line react/no-unstable-nested-components
           itemContent={(index, map) => (
             <BeatmapCard key={`${map.beatmapId}_${map.mods}`} map={map} />
           )}

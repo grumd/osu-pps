@@ -51,10 +51,22 @@ const Aside = styled('aside', {
   display: 'flex',
   flexFlow: 'row nowrap',
   alignItems: 'center',
+  marginLeft: 'auto',
+  gap: space.md,
 });
 
-const AsideSubBlock = styled('div', {
-  marginLeft: space.md,
+const ThemeToggleBlock = styled('div', {
+  fontSize: fonts[200],
+  lineHeight: 0.5,
+});
+
+const AsideInfoBlock = styled('div', {
+  columnGap: space.lg,
+  '@wrappedHeader': {
+    display: 'flex',
+    flexFlow: 'row wrap',
+    alignItems: 'center',
+  },
 });
 
 function LastUpdatedMessage() {
@@ -76,8 +88,8 @@ function LastUpdatedMessage() {
 export function HeaderAside({ themeToggle }: { themeToggle: React.ReactNode }) {
   return (
     <Aside>
-      <AsideSubBlock css={{ fontSize: fonts[200], lineHeight: 0.5 }}>{themeToggle}</AsideSubBlock>
-      <AsideSubBlock css={{ display: 'flex', flexFlow: 'column nowrap', justifyContent: 'center' }}>
+      <ThemeToggleBlock>{themeToggle}</ThemeToggleBlock>
+      <AsideInfoBlock>
         <LastUpdatedMessage />
         <RowBlock>
           <span>contact</span>
@@ -98,7 +110,7 @@ export function HeaderAside({ themeToggle }: { themeToggle: React.ReactNode }) {
         <RowBlock>
           support me <IconDonate />
         </RowBlock>
-      </AsideSubBlock>
+      </AsideInfoBlock>
     </Aside>
   );
 }

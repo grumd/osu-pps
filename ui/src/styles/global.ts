@@ -28,8 +28,8 @@ export const globalStyles = globalCss({
 
     // font-size has to be in the :root element in order for rem units to work
     fontSize: fonts.base,
-    '@small': {
-      fontSize: '1.25vw',
+    '@minimum': {
+      fontSize: '2.95vw',
     },
   },
 });

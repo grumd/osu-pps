@@ -1,18 +1,10 @@
 import { ErrorBox } from '@/components/ErrorBox/ErrorBox';
+import { ProgressBar } from '@/components/ProgressBar/ProgressBar';
 import { space, styled } from '@/styles';
 
-import { useLoadingProgress, useMaps } from '../hooks/useMaps';
-import { Filters } from './Filters';
-import { ProgressBar } from './ProgressBar';
-import { ScrolledFilteredMaps } from './ScrolledFilteredMaps';
-
-function LoadingBar() {
-  const progress = useLoadingProgress((state) => state.progress);
-  if (progress === null) {
-    return null;
-  }
-  return <ProgressBar progress={progress} />;
-}
+import { Filters } from './components/Filters';
+import { ScrolledFilteredMaps } from './components/ScrolledFilteredMaps';
+import { useMaps } from './hooks/useMaps';
 
 const StyledMain = styled('main', {
   flex: '1 1 0px',
@@ -28,13 +20,13 @@ const StyledMain = styled('main', {
 });
 
 export function Maps() {
-  const { isLoading, error, data } = useMaps();
+  const { isLoading, error, data, progress } = useMaps();
 
   return (
     <StyledMain>
       {error instanceof Error && <ErrorBox>{error.message}</ErrorBox>}
       <header>
-        {isLoading && <LoadingBar />}
+        {isLoading && progress !== null && <ProgressBar progress={progress} />}
         {!isLoading && <Filters />}
       </header>
       {!isLoading && <ScrolledFilteredMaps maps={data} />}

@@ -20,5 +20,5 @@ export const useFiltersStore = create<{
 
 export const useFilters = () => useFiltersStore((state) => state.filters);
 
-export const {setFilter} = useFiltersStore.getState();
-export const {nextPage} = useFiltersStore.getState();
+export const { setFilter } = useFiltersStore.getState();
+export const { nextPage } = useFiltersStore.getState();

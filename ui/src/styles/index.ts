@@ -33,7 +33,8 @@ const colorAliases = {
 
 export const { styled, createTheme, globalCss, theme, config, keyframes } = createStitches({
   media: {
-    small: '(max-width: 1280px)',
+    minimum: '(max-width: 542px)',
+    wrappedHeader: '(max-width: 732px)',
     highDpi:
       'only screen and (-webkit-min-device-pixel-ratio: 1.3), only screen and (min-device-pixel-ratio: 1.3), only screen and (min-resolution: 120dpi)',
   },
@@ -52,18 +53,20 @@ export const { styled, createTheme, globalCss, theme, config, keyframes } = crea
       linkActive: '#a77d58',
       textGreen: 'green',
       textRed: '#ff4500',
+      fade10: 'rgba(255, 255, 255, 0.1)',
     },
     space: {
-      xs: '0.3rem',
-      sm: '0.45rem',
-      md: '0.6rem',
-      lg: '1rem',
-      xl: '1.5rem',
+      xs: '0.3em',
+      sm: '0.45em',
+      md: '0.6em',
+      lg: '1em',
+      xl: '1.5em',
       pageWidth: '80rem',
       beatmapHeight: '5em',
     },
     fonts: {
       base: '16px',
+      75: '75%',
       100: '100%',
       125: '125%',
       150: '150%',
@@ -94,6 +97,7 @@ export const lightTheme = createTheme({
     linkActive: '#b6a697',
     textGreen: 'green',
     textRed: '#ff4500',
+    fade10: 'rgba(0, 0, 0, 0.1)',
   },
 });
 

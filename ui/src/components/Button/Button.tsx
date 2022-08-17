@@ -14,29 +14,104 @@ export const Button = styled('button', {
   '&:focus': { boxShadow: `0 0 0 0.1em black` },
 
   variants: {
-    variant: {
+    color: {
+      sand: {
+        color: colors.sand11,
+        boxShadow: `0 0 0.6em -0.2em ${colors.sand3}`,
+        backgroundColor: colors.sand3,
+        border: `1px solid ${colors.sand7}`,
+
+        '&:hover': {
+          backgroundColor: colors.sand4,
+          border: `1px solid ${colors.sand8}`,
+        },
+      },
       green: {
-        backgroundColor: colors.grassA9,
-        color: colors.grassA12,
-        boxShadow: `0 0 0.6em -0.2em ${colors.grassA9}`,
-        '&:hover': { backgroundColor: colors.grassA10 },
+        color: colors.grassA11,
+        boxShadow: `0 0 0.6em -0.2em ${colors.grassA3}`,
+        backgroundColor: colors.grassA3,
+        border: `1px solid ${colors.grassA7}`,
+
+        '&:hover': {
+          backgroundColor: colors.grassA4,
+          border: `1px solid ${colors.grassA8}`,
+        },
       },
       red: {
-        backgroundColor: colors.redA9,
-        color: colors.redA12,
-        boxShadow: `0 0 0.6em -0.2em ${colors.redA9}`,
-        '&:hover': { backgroundColor: colors.redA10 },
+        color: colors.redA11,
+        boxShadow: `0 0 0.6em -0.2em ${colors.redA3}`,
+        backgroundColor: colors.redA3,
+        border: `1px solid ${colors.redA7}`,
+
+        '&:hover': {
+          backgroundColor: colors.redA4,
+          border: `1px solid ${colors.redA8}`,
+        },
       },
       indigo: {
-        backgroundColor: colors.indigoA9,
-        color: colors.indigoA12,
-        boxShadow: `0 0 0.6em -0.2em ${colors.indigoA9}`,
-        '&:hover': { backgroundColor: colors.indigoA10 },
+        color: colors.indigoA11,
+        boxShadow: `0 0 0.6em -0.2em ${colors.indigoA3}`,
+        backgroundColor: colors.indigoA3,
+        border: `1px solid ${colors.indigoA7}`,
+
+        '&:hover': {
+          backgroundColor: colors.indigoA4,
+          border: `1px solid ${colors.indigoA8}`,
+        },
+      },
+    },
+    iconButton: {
+      true: {
+        padding: space.md,
+        borderRadius: '50%',
+        border: 'none',
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+
+        '&:hover': {
+          border: 'none',
+          boxShadow: 'none',
+        },
       },
     },
   },
 
+  compoundVariants: [
+    {
+      iconButton: true,
+      color: 'sand',
+      css: {
+        color: colors.sand11,
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+        border: 'none',
+
+        '&:hover': {
+          backgroundColor: colors.sand4,
+          boxShadow: 'none',
+          border: 'none',
+        },
+      },
+    },
+    {
+      iconButton: true,
+      color: 'green',
+      css: {
+        color: colors.grassA11,
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+        border: 'none',
+
+        '&:hover': {
+          backgroundColor: colors.grassA4,
+          boxShadow: 'none',
+          border: 'none',
+        },
+      },
+    },
+  ],
+
   defaultVariants: {
-    variant: 'green',
+    color: 'sand',
   },
 });

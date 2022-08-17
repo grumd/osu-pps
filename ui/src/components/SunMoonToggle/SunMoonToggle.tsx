@@ -109,7 +109,6 @@ export function SunMoonToggle({
           const r = Math.random() * 2 + 1;
           return (
             <circle
-              // eslint-disable-next-line react/no-array-index-key
               key={index}
               r={r}
               strokeWidth={0}

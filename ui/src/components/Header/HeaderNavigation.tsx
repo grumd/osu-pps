@@ -26,7 +26,7 @@ const NavMenu = styled('nav', {
     listStyleType: 'none',
 
     '& > li > a': {
-      marginX: space.sm,
+      marginX: space.xs,
     },
     '& > li:first-child > a': {
       marginLeft: 0,
@@ -41,12 +41,13 @@ const NavMenu = styled('nav', {
 
 export function HeaderNavigation() {
   const params = useRouteParams(mode);
-  const modeMatch = useMatch(`${mode.template  }/*`);
+  const modeMatch = useMatch(`${mode.template}/*`);
 
   const modeParams = { mode: params.mode ?? Mode.osu };
 
-  const getOtherModeUrl = (newMode: Mode) => modeMatch
-      ? generatePath(`${mode.template  }/*`, { mode: newMode, '*': modeMatch.params['*'] })
+  const getOtherModeUrl = (newMode: Mode) =>
+    modeMatch
+      ? generatePath(`${mode.template}/*`, { mode: newMode, '*': modeMatch.params['*'] })
       : generatePath(mode.template, { mode: newMode });
 
   return (

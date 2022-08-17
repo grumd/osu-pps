@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import create from 'zustand';
+import _ from 'lodash/fp';
+import { useState } from 'react';
 
 import { QUERY_PERSISTENT_DATA_CONFIG } from '@/constants/api';
 import type { CalcMode, Mode } from '@/constants/modes';
@@ -19,37 +20,21 @@ import type {
 } from '../../types';
 import { normalizeBeatmap, normalizeMapset } from './normalizer';
 
-export const useLoadingProgress = create<{
-  progress: number | null;
-  setProgress: (progress: number | null) => void;
-}>()((set) => ({
-  progress: null,
-  setProgress: (progress: number | null) => set({ progress }),
-}));
-
 export const useMaps = () => {
   const mode = useMode();
   const metadata = useMetadata();
-  const setProgress = useLoadingProgress((state) => state.setProgress);
+  const [diffsProgress, setDiffsProgress] = useState<number | null>(null);
+  const [mapsetsProgress, setMapsetsProgress] = useState<number | null>(null);
 
   const fetchData = async (modeToFetch: Mode): Promise<Beatmap[] | null> => {
-    let diffsProgress = 0;
-    let mapsetsProgress = 0;
-
     const [mapsetsInfo, diffsInfo] = await Promise.all([
       fetchCsvWithProgress<BeatmapSetLegacy | BeatmapSet>({
         path: `data/maps/${modeToFetch}/mapsets.csv`,
-        setProgress: (progress) => {
-          mapsetsProgress = progress;
-          setProgress((mapsetsProgress + diffsProgress) / 2);
-        },
+        setProgress: setMapsetsProgress,
       }),
       fetchCsvWithProgress<BeatmapDiffLegacy | BeatmapDiff>({
         path: `data/maps/${modeToFetch}/diffs.csv`,
-        setProgress: (progress) => {
-          diffsProgress = progress;
-          setProgress((mapsetsProgress + diffsProgress) / 2);
-        },
+        setProgress: setDiffsProgress,
       }),
     ]);
 
@@ -83,7 +68,8 @@ export const useMaps = () => {
     () => {
       // Setting progress to null to hide the progress bar when data is taken from cache
       // We only want to show progress when the actual download is started
-      setProgress(null);
+      setMapsetsProgress(null);
+      setDiffsProgress(null);
 
       return fetchWithPersist({
         storageKey: getMapsDataStorageKey(mode),
@@ -98,5 +84,9 @@ export const useMaps = () => {
     isLoading: metadata.isLoading || isLoading,
     error: metadata.error || error,
     data,
+    progress:
+      _.isNumber(diffsProgress) && _.isNumber(mapsetsProgress)
+        ? (diffsProgress + mapsetsProgress) / 2
+        : null,
   };
 };

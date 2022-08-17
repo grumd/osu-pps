@@ -1,6 +1,7 @@
 import { color, interpolateRgb, scaleLinear } from 'd3';
+import _ from 'lodash/fp';
 
-import type { Beatmap } from '@/features/maps/types';
+import type { Beatmap } from '@/features/Maps/types';
 
 // https://github.com/ppy/osu-web/blob/master/resources/assets/lib/utils/beatmap-helper.ts
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the GNU Affero General Public License v3.0.
@@ -46,4 +47,20 @@ export function getMapNameLink(map: Beatmap): { link: string; name: string } {
   const link = `https://osu.ppy.sh/beatmapsets/${map.mapsetId}#osu/${map.beatmapId}`;
   const name = map.artist ? `${map.artist} - ${map.title} [${map.version}]` : link;
   return { link, name };
+}
+
+export function getMods(mods: string | number) {
+  const m = typeof mods === 'string' ? parseInt(mods, 10) : mods;
+  return {
+    dt: (m & 64) === 64,
+    hd: (m & 8) === 8,
+    hr: (m & 16) === 16,
+    fl: (m & 1024) === 1024,
+    ht: (m & 256) === 256,
+  };
+}
+
+export function getModsText(mods: string | number) {
+  const { dt, hd, hr, fl, ht } = getMods(mods);
+  return [ht && 'HT', dt && 'DT', hd && 'HD', hr && 'HR', fl && 'FL'].filter(Boolean).join('');
 }

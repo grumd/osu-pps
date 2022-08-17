@@ -8,8 +8,9 @@ import { HeaderNavigation } from './HeaderNavigation';
 const HeaderContainer = styled('header', {
   padding: `${space.sm} 0`,
   display: 'flex',
-  flexFlow: 'row nowrap',
+  flexFlow: 'row wrap',
   justifyContent: 'space-between',
+  rowGap: space.xs,
 });
 
 export function Header({ themeToggle }: { themeToggle: ReactNode }) {

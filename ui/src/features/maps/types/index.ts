@@ -1,5 +1,6 @@
 import type { CalcMode } from '@/constants/modes';
-import type { ModToggleState } from '@/features/maps/components/ModToggle';
+
+import type { ModToggleState } from '../components/ModToggle';
 
 export interface BeatmapDiffLegacy {
   m: number;

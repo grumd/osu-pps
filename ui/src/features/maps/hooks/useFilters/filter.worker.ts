@@ -56,7 +56,6 @@ function filter() {
     fl,
   } = filters;
 
-  // eslint-disable-next-line no-console
   console.time('filter worker task');
 
   const filterFns: ((map: Beatmap, mods: ReturnType<typeof getMods>) => boolean)[] = [];
@@ -119,7 +118,6 @@ function filter() {
 
   const truncated = sorted.slice(0, count ?? 20);
 
-  // eslint-disable-next-line no-console
   console.timeEnd('filter worker task');
 
   return truncated;

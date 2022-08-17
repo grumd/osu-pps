@@ -7,9 +7,13 @@ import { fetchJson } from '@/utils/fetch';
 
 import { useMode } from './useMode';
 
-const fetchMetadata = async (mode: Mode) => fetchJson<Metadata>({
-    url: `${API_PREFIX}/data/metadata/${mode}/metadata.json`,
-  });
+const fetchMetadata = async (mode: Mode) => {
+  if (mode) {
+    return fetchJson<Metadata>({
+      url: `${API_PREFIX}/data/metadata/${mode}/metadata.json`,
+    });
+  }
+};
 
 export const useMetadata = () => {
   const mode = useMode();

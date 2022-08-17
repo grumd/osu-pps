@@ -174,7 +174,7 @@ const getMods = ({ mods }: Beatmap) => ({
 
 function CoverImage({ url, mapsetId }: { url: string; mapsetId: number }) {
   return (
-    <MapCoverLink url={url}>
+    <MapCoverLink tabIndex={-1} url={url}>
       <MapCoverBackground
         style={{
           '--bg': `url("https://assets.ppy.sh/beatmaps/${mapsetId}/covers/list.jpg")`,
@@ -193,7 +193,6 @@ export function BeatmapCard({ map }: { map: Beatmap }) {
 
   const isMania = mode === Mode.mania;
   const { link: mapLink, name: linkText } = getMapNameLink(map);
-  // eslint-disable-next-line no-nested-ternary
   const bpmFactor = mods.dt ? 1.5 : mods.ht ? 0.75 : 1;
 
   const colorOpacity = 0.25;

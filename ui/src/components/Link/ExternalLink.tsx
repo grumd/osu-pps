@@ -3,14 +3,13 @@ import { Link } from './Link';
 export function ExternalLink({
   url,
   children,
-  className,
-}: {
+  ...rest
+}: React.ComponentProps<typeof Link> & {
   url: string;
   children: React.ReactNode;
-  className?: string;
 }): JSX.Element {
   return (
-    <Link href={url} className={className} target="_blank" rel="noopener noreferrer">
+    <Link {...rest} href={url} target="_blank" rel="noopener noreferrer">
       {children}
     </Link>
   );
