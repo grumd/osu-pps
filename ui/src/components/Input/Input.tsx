@@ -46,27 +46,28 @@ type InputTypes =
   | 'url'
   | 'week';
 
-type CustomProps<Type extends InputTypes> = Type extends 'number'
-  ? {
-      type: Type;
-      onChange: (value: number | null, event: ChangeEvent<HTMLInputElement>) => void;
-    }
-  : {
-      type: Type;
-      onChange: (value: string, event: ChangeEvent<HTMLInputElement>) => void;
-    };
+interface InputProps<Type>
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'type'> {
+  type: Type;
+  onChange: Type extends 'number'
+    ? (value: number | null, event: ChangeEvent<HTMLInputElement>) => void
+    : (value: string, event: ChangeEvent<HTMLInputElement>) => void;
+}
 
-export function Input<Type extends InputTypes>(
-  props: Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'type'> & CustomProps<Type>
-): JSX.Element {
+export function Input<Type extends InputTypes>(props: InputProps<Type>): JSX.Element {
   const { onChange, type, ...rest } = props;
 
   const _onChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       if (type === 'number') {
-        onChange(event.target.value !== '' ? parseFloat(event.target.value) : null, event);
+        // Typescript can't infer the type of onChange
+        // TODO: seems to be working fine in TS 4.9, remove type casting when upgrading
+        (onChange as InputProps<'number'>['onChange'])(
+          event.target.value !== '' ? parseFloat(event.target.value) : null,
+          event
+        );
       } else {
-        onChange(event.target.value, event);
+        (onChange as InputProps<'text'>['onChange'])(event.target.value, event);
       }
     },
     [type, onChange]

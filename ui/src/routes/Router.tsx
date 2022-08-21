@@ -1,17 +1,19 @@
+import { lazy } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import { Mode } from '@/constants/modes';
-import { Faq } from '@/features/Faq';
-import { Mappers } from '@/features/Mappers';
-import { MappersFav } from '@/features/Mappers/FavMappers';
 import { MappersPp } from '@/features/Mappers/PpMappers';
-import { Maps } from '@/features/Maps';
-import { Rankings } from '@/features/Rankings';
 import { RootLayout } from '@/features/RootLayout';
 import { faq, mode } from '@/routes';
 import { fav, mappers, pp } from '@/routes/mappers';
 import { maps } from '@/routes/maps';
 import { rankings } from '@/routes/rankings';
+
+const Faq = lazy(() => import('@/features/Faq'));
+const Mappers = lazy(() => import('@/features/Mappers'));
+const MappersFav = lazy(() => import('@/features/Mappers/FavMappers'));
+const Maps = lazy(() => import('@/features/Maps'));
+const Rankings = lazy(() => import('@/features/Rankings'));
 
 export const Router = () => {
   // Routes can be extracted to the features folder and nested as needed
