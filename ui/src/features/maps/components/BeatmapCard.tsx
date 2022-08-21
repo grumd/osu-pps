@@ -3,7 +3,14 @@ import { ExternalLink } from '@/components/Link/ExternalLink';
 import { Mode } from '@/constants/modes';
 import { useMode } from '@/hooks/useMode';
 import { colors, fonts, space, styled } from '@/styles';
-import { getBpmColour, getDiffColour, getLengthColour, getMapNameLink } from '@/utils/beatmap';
+import { secondsToFormatted, truncateFloat } from '@/utils';
+import {
+  getBpmColour,
+  getDiffColour,
+  getLengthColour,
+  getMapNameLink,
+  getMods,
+} from '@/utils/beatmap';
 
 import { ColorCodeStyle, useColorCodeStyle } from '../hooks/useColorCodeStyle';
 import { useFiltersStore } from '../hooks/useFilters';
@@ -159,19 +166,6 @@ function ColoredCell({
   );
 }
 
-const truncateFloat = (number: number) => Math.round(number * 100) / 100;
-
-const secondsToFormatted = (seconds: number) =>
-  `${Math.floor(seconds / 60)}:${`0${seconds % 60}`.slice(-2)}`;
-
-const getMods = ({ mods }: Beatmap) => ({
-  dt: (mods & 64) === 64,
-  hd: (mods & 8) === 8,
-  hr: (mods & 16) === 16,
-  fl: (mods & 1024) === 1024,
-  ht: (mods & 256) === 256,
-});
-
 function CoverImage({ url, mapsetId }: { url: string; mapsetId: number }) {
   return (
     <MapCoverLink tabIndex={-1} url={url}>
@@ -186,7 +180,7 @@ function CoverImage({ url, mapsetId }: { url: string; mapsetId: number }) {
 }
 
 export function BeatmapCard({ map }: { map: Beatmap }) {
-  const mods = getMods(map);
+  const mods = getMods(map.mods);
   const calcMode = useFiltersStore((state) => state.filters.calcMode);
   const mode = useMode();
   const colorCodeStyle = useColorCodeStyle();

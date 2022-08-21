@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import { Mode } from '@/constants/modes';
 import { Faq } from '@/features/Faq';
+import { Mappers } from '@/features/Mappers';
 import { MappersFav } from '@/features/Mappers/FavMappers';
 import { MappersPp } from '@/features/Mappers/PpMappers';
 import { Maps } from '@/features/Maps';
@@ -25,10 +26,10 @@ export const Router = () => {
             <Route index element={<Navigate to={`./${maps({}).$}`} replace />} />
             <Route path={maps.template} element={<Maps />} />
             <Route path={rankings.template} element={<Rankings />} />
-            <Route path={mappers.template}>
+            <Route path={mappers.template} element={<Mappers />}>
+              <Route index element={<Navigate to={`./${pp({}).$}`} replace />} />
               <Route path={pp.template} element={<MappersPp />} />
               <Route path={fav.template} element={<MappersFav />} />
-              <Route index element={<Navigate to={`./${pp({}).$}`} replace />} />
             </Route>
           </Route>
         </Route>

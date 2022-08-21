@@ -19,7 +19,7 @@ const TableWrapper = styled('div', {
 });
 
 const Table = styled('table', {
-  maxWidth: '60rem',
+  maxWidth: space.tableMaxWidth,
   width: '100%',
   borderSpacing: `0 ${space.xs}`,
   borderCollapse: 'separate',

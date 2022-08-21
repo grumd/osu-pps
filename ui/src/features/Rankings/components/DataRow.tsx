@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { FaChevronDown } from 'react-icons/fa';
 
 import { Button } from '@/components/Button/Button';
-import { Link } from '@/components/Link/Link';
+import { ExternalLink } from '@/components/Link/ExternalLink';
 import { colors, fonts, space, styled } from '@/styles';
 
 import type { DataItem } from '../types';
@@ -52,7 +52,7 @@ export const DataRow = ({ item }: { item: DataItem }) => {
           <RankChange delta={item.placeOld - item.place} />
         </Td>
         <Td css={{ width: '55%' }}>
-          <Link href={`https://osu.ppy.sh/users/${item.id}`}>{item.name}</Link>
+          <ExternalLink url={`https://osu.ppy.sh/users/${item.id}`}>{item.name}</ExternalLink>
         </Td>
         <Td css={{ textAlign: 'center', fontWeight: 'bold' }}>{Math.round(item.ppNew)}</Td>
         <Td

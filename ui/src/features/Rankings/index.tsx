@@ -27,7 +27,7 @@ const StyledMain = styled('main', {
 
 export function Rankings() {
   const { isLoading, error, data, progress } = useRankings();
-  console.log(data, isLoading);
+
   return (
     <StyledMain>
       {error instanceof Error && <ErrorBox>{error.message}</ErrorBox>}

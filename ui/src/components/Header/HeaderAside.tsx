@@ -4,6 +4,7 @@ import { SiOsu } from 'react-icons/si';
 import { TbBrandReddit } from 'react-icons/tb';
 
 import { useMetadata } from '@/hooks/useMetadata';
+import { useMode } from '@/hooks/useMode';
 import { colors, fonts, space, styled } from '@/styles';
 
 const IconOsu = styled(SiOsu, {
@@ -70,11 +71,14 @@ const AsideInfoBlock = styled('div', {
 });
 
 function LastUpdatedMessage() {
+  const mode = useMode();
   const { isLoading, error, data: metadata } = useMetadata();
 
   let message = 'unknown error';
 
-  if (isLoading) {
+  if (!mode) {
+    return null;
+  } else if (isLoading) {
     message = 'loading...';
   } else if (metadata) {
     message = `last updated: ${new Date(metadata.lastUpdated).toLocaleDateString()}`;

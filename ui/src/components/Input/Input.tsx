@@ -9,7 +9,7 @@ const StyledInput = styled('input', {
   background: colors.sand1,
   color: colors.sand12,
   borderRadius: space.sm,
-  border: `thin solid ${colors.sand8}`,
+  border: `${space.borderWidth} solid ${colors.sand8}`,
 
   /* Chrome, Safari, Edge, Opera */
   '&::-webkit-outer-spin-button,&::-webkit-inner-spin-button': {

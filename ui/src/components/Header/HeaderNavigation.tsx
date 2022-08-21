@@ -4,40 +4,8 @@ import { useRouteParams } from 'typesafe-routes';
 import MenuLink from '@/components/MenuLink/MenuLink';
 import { Mode } from '@/constants/modes';
 import { faq, mode } from '@/routes';
-import { colors, fonts, space, styled } from '@/styles';
 
-const FakeListItem = styled('li', {
-  fontSize: fonts[175],
-  fontWeight: 600,
-  color: colors.textPrimary,
-  cursor: 'default',
-});
-
-const NavMenu = styled('nav', {
-  display: 'flex',
-  flexFlow: 'row wrap',
-
-  '& > ul': {
-    padding: 0,
-    margin: 0,
-    display: 'flex',
-    flexFlow: 'row wrap',
-    alignItems: 'center',
-    listStyleType: 'none',
-
-    '& > li > a': {
-      marginX: space.xs,
-    },
-    '& > li:first-child > a': {
-      marginLeft: 0,
-    },
-    [`& > li:not(${FakeListItem}) + li::before`]: {
-      fontSize: fonts[175],
-      color: colors.textInactive,
-      content: '•',
-    },
-  },
-});
+import { FakeListItem, NavMenu } from './NavMenu';
 
 export function HeaderNavigation() {
   const params = useRouteParams(mode);
@@ -59,7 +27,7 @@ export function HeaderNavigation() {
             <MenuLink to={mode(modeParams).maps({}).$}>maps</MenuLink>
           </li>
           <li>
-            <MenuLink to={mode(modeParams).mappers({}).pp({}).$}>mappers</MenuLink>
+            <MenuLink to={mode(modeParams).mappers({}).$}>mappers</MenuLink>
           </li>
           <li>
             <MenuLink to={mode(modeParams).rankings({}).$}>rankings</MenuLink>

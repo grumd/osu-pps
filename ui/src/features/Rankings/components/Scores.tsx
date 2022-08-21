@@ -1,7 +1,7 @@
 import TimeAgo from 'react-timeago';
 
 import { ErrorBox } from '@/components/ErrorBox/ErrorBox';
-import { Link } from '@/components/Link/Link';
+import { ExternalLink } from '@/components/Link/ExternalLink';
 import Loader from '@/components/Loader/Loader';
 import { Text } from '@/components/Text/Text';
 import { styled } from '@/styles';
@@ -49,7 +49,9 @@ export const Scores = ({ item }: { item: DataItem }) => {
               return (
                 <tr key={`${score.beatmapId}_${score.mods}`}>
                   <td>
-                    <Link href={`http://osu.ppy.sh/b/${score.beatmapId}`}>{score.title}</Link>
+                    <ExternalLink url={`http://osu.ppy.sh/b/${score.beatmapId}`}>
+                      {score.title}
+                    </ExternalLink>
                     {modsText && ' +' + modsText}
                   </td>
                   <td>

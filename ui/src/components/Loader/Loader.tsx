@@ -1,3 +1,4 @@
+import type { CSS } from '@/styles';
 import { styled } from '@/styles';
 
 const LoaderDiv = styled('div', {
@@ -7,9 +8,9 @@ const LoaderDiv = styled('div', {
   justifyContent: 'center',
 });
 
-export default function Loader() {
+export default function Loader({ className, css }: { className?: string; css?: CSS }) {
   return (
-    <LoaderDiv>
+    <LoaderDiv css={css} className={className}>
       <svg
         width="40"
         height="12"

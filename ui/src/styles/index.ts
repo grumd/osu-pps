@@ -29,6 +29,7 @@ const colorAliases = {
   textInactiveSecondary: '$sand10',
   textBlue: '$indigo11',
   textRed: '$redA11',
+  border: '$sand6',
 };
 
 export const { styled, createTheme, globalCss, theme, config, keyframes } = createStitches({
@@ -54,15 +55,19 @@ export const { styled, createTheme, globalCss, theme, config, keyframes } = crea
       textGreen: 'green',
       textRed: '#ff4500',
       fade10: 'rgba(255, 255, 255, 0.1)',
+      bronze: 'rgb(205, 127, 50)',
     },
     space: {
+      xxs: '0.2em',
       xs: '0.3em',
       sm: '0.45em',
       md: '0.6em',
       lg: '1em',
       xl: '1.5em',
       pageWidth: '80rem',
+      tableMaxWidth: '60rem',
       beatmapHeight: '5em',
+      borderWidth: '0.5px', // workaround for inconsistent border width in Chrome when display scaling is more than 100%
     },
     fonts: {
       base: '16px',
@@ -98,6 +103,7 @@ export const lightTheme = createTheme({
     textGreen: 'green',
     textRed: '#ff4500',
     fade10: 'rgba(0, 0, 0, 0.1)',
+    bronze: 'rgb(205, 127, 50)',
   },
 });
 
