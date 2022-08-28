@@ -30,7 +30,7 @@ export const Scores = ({ item }: { item: DataItem }) => {
           <thead>
             <tr>
               <td>
-                last updated <TimeAgo date={new Date(item.minuteUpdated * 60 * 1000)} />
+                updated <TimeAgo date={new Date(item.minuteUpdated * 60 * 1000)} />
               </td>
               <td>
                 <Text nowrap>original pp</Text>

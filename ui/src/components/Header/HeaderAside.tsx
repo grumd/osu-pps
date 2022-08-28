@@ -81,7 +81,7 @@ function LastUpdatedMessage() {
   } else if (isLoading) {
     message = 'loading...';
   } else if (metadata) {
-    message = `last updated: ${new Date(metadata.lastUpdated).toLocaleDateString()}`;
+    message = `updated: ${new Date(metadata.lastUpdated).toLocaleDateString()}`;
   } else if (error instanceof Error) {
     message = error.message;
   }

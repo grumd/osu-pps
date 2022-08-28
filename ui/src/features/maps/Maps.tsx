@@ -17,6 +17,12 @@ const StyledMain = styled('main', {
     justifyContent: 'center',
     padding: space.sm,
   },
+
+  '@beatmapCardSm': {
+    maxWidth: '40em',
+    width: '100%',
+    alignSelf: 'center',
+  },
 });
 
 export function Maps() {

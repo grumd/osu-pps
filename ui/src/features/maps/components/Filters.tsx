@@ -7,10 +7,17 @@ import { TimeInput } from '@/components/TimeInput/TimeInput';
 import { fonts, space, styled } from '@/styles';
 
 import { setFilter, useFilters } from '../hooks/useFilters';
+import { CardGridLayout } from './CardGridLayout';
 import { ModToggle } from './ModToggle';
 
 const FarmerIcon = styled(GiFarmer, {
   fontSize: fonts[200],
+});
+
+const ModsContainer = styled('div', {
+  display: 'flex',
+  alignItems: 'center',
+  gap: space.sm,
 });
 
 const ModBlock = styled('div', {
@@ -18,7 +25,6 @@ const ModBlock = styled('div', {
 });
 
 const MinMaxBlock = styled('div', {
-  flex: '1 1 0px',
   display: 'flex',
   flexFlow: 'column nowrap',
   alignItems: 'center',
@@ -42,20 +48,18 @@ const MinMaxBlock = styled('div', {
 });
 
 const SongNameFilter = styled('div', {
-  flex: '3 1 0px',
-
+  display: 'flex',
+  alignItems: 'flex-end',
+  height: '100%',
   '& > input': {
-    width: '97%',
+    flex: '1 1 5em',
+    minWidth: '5em',
+    maxWidth: '25em',
   },
 });
 
 const FiltersContainer = styled('div', {
-  display: 'flex',
-  flexFlow: 'row nowrap',
-  alignItems: 'flex-end',
-  gap: space.md,
   paddingBottom: space.sm,
-  paddingLeft: `calc(${space.beatmapHeight} + ${space.md})`,
 });
 
 export const Filters = memo(function Filters() {
@@ -63,119 +67,124 @@ export const Filters = memo(function Filters() {
 
   return (
     <FiltersContainer>
-      <SongNameFilter>
-        <Input
-          type="text"
-          placeholder="song name..."
-          value={filters.songName ?? ''}
-          onChange={(value) => setFilter('songName', value)}
-        />
-      </SongNameFilter>
-      <MinMaxBlock>
-        <span>pp</span>
-        <div>
+      <CardGridLayout filter>
+        <div></div>
+        <SongNameFilter>
           <Input
-            type="number"
-            min={0}
-            max={filters.ppMax ?? undefined}
-            placeholder="min"
-            value={filters.ppMin ?? ''}
-            onChange={(value) => setFilter('ppMin', value)}
+            type="text"
+            placeholder="song name..."
+            value={filters.songName ?? ''}
+            onChange={(value) => setFilter('songName', value)}
           />
-          <Input
-            type="number"
-            min={filters.ppMin ?? undefined}
-            placeholder="max"
-            value={filters.ppMax ?? ''}
-            onChange={(value) => setFilter('ppMax', value)}
-          />
-        </div>
-      </MinMaxBlock>
-      <ModBlock>
-        <ModToggle
-          state={filters.dt ?? 'any'}
-          withOther
-          otherLabel="HT"
-          onChange={(value) => setFilter('dt', value)}
-        >
-          DT
-        </ModToggle>
-      </ModBlock>
-      <ModBlock>
-        <ModToggle state={filters.hd ?? 'any'} onChange={(value) => setFilter('hd', value)}>
-          HD
-        </ModToggle>
-      </ModBlock>
-      <ModBlock>
-        <ModToggle state={filters.hr ?? 'any'} onChange={(value) => setFilter('hr', value)}>
-          HR
-        </ModToggle>
-      </ModBlock>
-      <ModBlock>
-        <ModToggle state={filters.fl ?? 'any'} onChange={(value) => setFilter('fl', value)}>
-          FL
-        </ModToggle>
-      </ModBlock>
-      <MinMaxBlock>
-        <FaRegClock />
-        <div>
-          <TimeInput
-            placeholder="0:00"
-            seconds={filters.lengthMin ?? null}
-            onChange={(value) => setFilter('lengthMin', value)}
-          />
-          <TimeInput
-            placeholder="0:00"
-            seconds={filters.lengthMax ?? null}
-            onChange={(value) => setFilter('lengthMax', value)}
-          />
-        </div>
-      </MinMaxBlock>
-      <MinMaxBlock>
-        <span>bpm</span>
-        <div>
-          <Input
-            type="number"
-            min={0}
-            max={filters.bpmMax ?? undefined}
-            placeholder="min"
-            value={filters.bpmMin ?? ''}
-            onChange={(value) => setFilter('bpmMin', value)}
-          />
-          <Input
-            type="number"
-            min={filters.bpmMin ?? undefined}
-            placeholder="max"
-            value={filters.bpmMax ?? ''}
-            onChange={(value) => setFilter('bpmMax', value)}
-          />
-        </div>
-      </MinMaxBlock>
-      <MinMaxBlock>
-        <FaStar />
-        <div>
-          <Input
-            type="number"
-            min={0}
-            max={filters.diffMax ?? undefined}
-            placeholder="min"
-            value={filters.diffMin ?? ''}
-            onChange={(value) => setFilter('diffMin', value)}
-          />
-          <Input
-            type="number"
-            min={filters.diffMin ?? undefined}
-            placeholder="max"
-            value={filters.diffMax ?? ''}
-            onChange={(value) => setFilter('diffMax', value)}
-          />
-        </div>
-      </MinMaxBlock>
-      <MinMaxBlock>
-        <span>
-          <FarmerIcon />
-        </span>
-      </MinMaxBlock>
+        </SongNameFilter>
+        <MinMaxBlock>
+          <span>pp</span>
+          <div>
+            <Input
+              type="number"
+              min={0}
+              max={filters.ppMax ?? undefined}
+              placeholder="min"
+              value={filters.ppMin ?? ''}
+              onChange={(value) => setFilter('ppMin', value)}
+            />
+            <Input
+              type="number"
+              min={filters.ppMin ?? undefined}
+              placeholder="max"
+              value={filters.ppMax ?? ''}
+              onChange={(value) => setFilter('ppMax', value)}
+            />
+          </div>
+        </MinMaxBlock>
+        <ModsContainer>
+          <ModBlock>
+            <ModToggle
+              state={filters.dt ?? 'any'}
+              withOther
+              otherLabel="HT"
+              onChange={(value) => setFilter('dt', value)}
+            >
+              DT
+            </ModToggle>
+          </ModBlock>
+          <ModBlock>
+            <ModToggle state={filters.hd ?? 'any'} onChange={(value) => setFilter('hd', value)}>
+              HD
+            </ModToggle>
+          </ModBlock>
+          <ModBlock>
+            <ModToggle state={filters.hr ?? 'any'} onChange={(value) => setFilter('hr', value)}>
+              HR
+            </ModToggle>
+          </ModBlock>
+          <ModBlock>
+            <ModToggle state={filters.fl ?? 'any'} onChange={(value) => setFilter('fl', value)}>
+              FL
+            </ModToggle>
+          </ModBlock>
+        </ModsContainer>
+        <MinMaxBlock>
+          <FaRegClock />
+          <div>
+            <TimeInput
+              placeholder="0:00"
+              seconds={filters.lengthMin ?? null}
+              onChange={(value) => setFilter('lengthMin', value)}
+            />
+            <TimeInput
+              placeholder="0:00"
+              seconds={filters.lengthMax ?? null}
+              onChange={(value) => setFilter('lengthMax', value)}
+            />
+          </div>
+        </MinMaxBlock>
+        <MinMaxBlock>
+          <span>bpm</span>
+          <div>
+            <Input
+              type="number"
+              min={0}
+              max={filters.bpmMax ?? undefined}
+              placeholder="min"
+              value={filters.bpmMin ?? ''}
+              onChange={(value) => setFilter('bpmMin', value)}
+            />
+            <Input
+              type="number"
+              min={filters.bpmMin ?? undefined}
+              placeholder="max"
+              value={filters.bpmMax ?? ''}
+              onChange={(value) => setFilter('bpmMax', value)}
+            />
+          </div>
+        </MinMaxBlock>
+        <MinMaxBlock>
+          <FaStar />
+          <div>
+            <Input
+              type="number"
+              min={0}
+              max={filters.diffMax ?? undefined}
+              placeholder="min"
+              value={filters.diffMin ?? ''}
+              onChange={(value) => setFilter('diffMin', value)}
+            />
+            <Input
+              type="number"
+              min={filters.diffMin ?? undefined}
+              placeholder="max"
+              value={filters.diffMax ?? ''}
+              onChange={(value) => setFilter('diffMax', value)}
+            />
+          </div>
+        </MinMaxBlock>
+        <MinMaxBlock>
+          <span>
+            <FarmerIcon />
+          </span>
+        </MinMaxBlock>
+      </CardGridLayout>
     </FiltersContainer>
   );
 });

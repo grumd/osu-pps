@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 
 import { colors, fonts, styled } from '@/styles';
 
-export default styled(NavLink, {
+export const MenuLink = styled(NavLink, {
   fontSize: fonts[175],
   color: colors.textInactive,
   textDecoration: 'none',

@@ -15,22 +15,19 @@ import {
 import { ColorCodeStyle, useColorCodeStyle } from '../hooks/useColorCodeStyle';
 import { useFiltersStore } from '../hooks/useFilters';
 import type { Beatmap } from '../types';
+import { CardGridLayout } from './CardGridLayout';
 
-const Article = styled('article', {
-  display: 'flex',
-  alignItems: 'center',
+const BeatmapCardDiv = styled('div', {
   color: colors.textWhite,
   borderRadius: space.md,
-  background: colors.bgElement,
-  gap: space.md,
-  height: space.beatmapHeight,
+  backgroundColor: colors.bgElement,
   marginBottom: space.sm,
 });
 
 const MapCoverLink = styled(ExternalLink, {
   borderRadius: space.md,
   overflow: 'hidden',
-  height: '100%',
+  height: space.beatmapHeight,
   width: space.beatmapHeight,
 });
 
@@ -46,11 +43,10 @@ const MapCoverBackground = styled('div', {
 });
 
 const MapLink = styled(ExternalLink, {
-  flex: '3 1 0',
+  padding: `${space.xs} 0`,
 });
 
 const PpNumber = styled('span', {
-  flex: '1 1 0',
   textAlign: 'center',
 
   '& > span:first-child': {
@@ -61,6 +57,12 @@ const PpNumber = styled('span', {
   '& > span:last-child': {
     color: colors.textInactiveSecondary,
   },
+});
+
+const ModsContainer = styled('div', {
+  display: 'flex',
+  alignItems: 'center',
+  gap: space.sm,
 });
 
 const ModBlock = styled('div', {
@@ -90,12 +92,10 @@ const ModBlock = styled('div', {
 
 const TextCell = styled('span', {
   fontSize: fonts[125],
-  flex: '1 1 0',
   textAlign: 'center',
 });
 
 const ColoredCellContainer = styled('span', {
-  flex: '1 1 0',
   fontWeight: 'bold',
   display: 'flex',
   flexFlow: 'row nowrap',
@@ -104,7 +104,7 @@ const ColoredCellContainer = styled('span', {
 });
 
 const ColoredCellSpan = styled('span', {
-  fontSize: fonts['125'],
+  fontSize: fonts[125],
   textAlign: 'center',
   padding: `${space.xs} ${space.md}`,
 
@@ -192,44 +192,50 @@ export function BeatmapCard({ map }: { map: Beatmap }) {
   const colorOpacity = 0.25;
 
   return (
-    <Article>
-      <CoverImage url={mapLink} mapsetId={map.mapsetId} />
-      <MapLink url={mapLink}>{linkText}</MapLink>
-      <PpNumber>
-        <span>{map.pp.toFixed(0)}</span>
-        <span>pp</span>
-      </PpNumber>
-      {isMania && (
-        <ModBlock active={!!map.maniaKeys}>{map.maniaKeys ? `${map.maniaKeys}K` : '?'}</ModBlock>
-      )}
-      <ModBlock active={mods.dt} inverted={mods.ht}>
-        {mods.ht ? 'HT' : 'DT'}
-      </ModBlock>
-      <ModBlock active={mods.hd}>HD</ModBlock>
-      <ModBlock active={mods.hr}>HR</ModBlock>
-      <ModBlock active={mods.fl}>FL</ModBlock>
-      <ColoredCell kind={colorCodeStyle} color={getLengthColour(map.length, colorOpacity)}>
-        {secondsToFormatted(map.length)}
-      </ColoredCell>
-      <ColoredCell kind={colorCodeStyle} color={getBpmColour(map.bpm * bpmFactor, colorOpacity)}>
-        {mods.dt || mods.ht ? (
-          <HoverCard css={{ flex: '1 1 0' }}>
-            <HoverCardTrigger>{truncateFloat(map.bpm * bpmFactor)}*</HoverCardTrigger>
-            <HoverCardContent>
-              <div>Original BPM: {truncateFloat(map.bpm)}</div>
-              <div>
-                With {mods.dt ? 'DT' : 'HT'}: {truncateFloat(map.bpm * bpmFactor)}
-              </div>
-            </HoverCardContent>
-          </HoverCard>
-        ) : (
-          truncateFloat(map.bpm)
-        )}
-      </ColoredCell>
-      <ColoredCell kind={colorCodeStyle} color={getDiffColour(map.difficulty, colorOpacity)}>
-        {map.difficulty.toFixed(2)}
-      </ColoredCell>
-      <TextCell>{map.farmValues[calcMode].toFixed(0)}</TextCell>
-    </Article>
+    <BeatmapCardDiv>
+      <CardGridLayout>
+        <CoverImage url={mapLink} mapsetId={map.mapsetId} />
+        <MapLink url={mapLink}>{linkText}</MapLink>
+        <PpNumber>
+          <span>{map.pp.toFixed(0)}</span>
+          <span>pp</span>
+        </PpNumber>
+        <ModsContainer>
+          {isMania && (
+            <ModBlock active={!!map.maniaKeys}>
+              {map.maniaKeys ? `${map.maniaKeys}K` : '?'}
+            </ModBlock>
+          )}
+          <ModBlock active={mods.dt} inverted={mods.ht}>
+            {mods.ht ? 'HT' : 'DT'}
+          </ModBlock>
+          <ModBlock active={mods.hd}>HD</ModBlock>
+          <ModBlock active={mods.hr}>HR</ModBlock>
+          <ModBlock active={mods.fl}>FL</ModBlock>
+        </ModsContainer>
+        <ColoredCell kind={colorCodeStyle} color={getLengthColour(map.length, colorOpacity)}>
+          {secondsToFormatted(map.length)}
+        </ColoredCell>
+        <ColoredCell kind={colorCodeStyle} color={getBpmColour(map.bpm * bpmFactor, colorOpacity)}>
+          {mods.dt || mods.ht ? (
+            <HoverCard css={{ flex: '1 1 0' }}>
+              <HoverCardTrigger>{truncateFloat(map.bpm * bpmFactor)}*</HoverCardTrigger>
+              <HoverCardContent>
+                <div>Original BPM: {truncateFloat(map.bpm)}</div>
+                <div>
+                  With {mods.dt ? 'DT' : 'HT'}: {truncateFloat(map.bpm * bpmFactor)}
+                </div>
+              </HoverCardContent>
+            </HoverCard>
+          ) : (
+            truncateFloat(map.bpm)
+          )}
+        </ColoredCell>
+        <ColoredCell kind={colorCodeStyle} color={getDiffColour(map.difficulty, colorOpacity)}>
+          {map.difficulty.toFixed(2)}
+        </ColoredCell>
+        <TextCell>{map.farmValues[calcMode].toFixed(0)}</TextCell>
+      </CardGridLayout>
+    </BeatmapCardDiv>
   );
 }

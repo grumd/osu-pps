@@ -1,7 +1,7 @@
 import { generatePath, useMatch } from 'react-router-dom';
 import { useRouteParams } from 'typesafe-routes';
 
-import MenuLink from '@/components/MenuLink/MenuLink';
+import { MenuLink } from '@/components/MenuLink/MenuLink';
 import { Mode } from '@/constants/modes';
 import { faq, mode } from '@/routes';
 

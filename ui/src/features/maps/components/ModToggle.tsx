@@ -21,7 +21,7 @@ const StyledToggleButton = styled('button', {
   variants: {
     selected: {
       true: {
-        border: '${space.borderWidth} solid white',
+        border: `${space.borderWidth} solid white`,
         boxShadow: '0 0 0.5em -0.2em white',
       },
     },

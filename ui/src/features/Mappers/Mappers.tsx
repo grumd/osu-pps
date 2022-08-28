@@ -1,7 +1,9 @@
+import { FiHelpCircle } from 'react-icons/fi';
 import { Outlet } from 'react-router-dom';
 
 import { NavMenu } from '@/components/Header/NavMenu';
-import MenuLink from '@/components/MenuLink/MenuLink';
+import { MenuLink } from '@/components/MenuLink/MenuLink';
+import { faq } from '@/routes';
 import { fav, pp } from '@/routes/mappers';
 import { colors, fonts, space, styled } from '@/styles';
 
@@ -12,9 +14,19 @@ const MappersContainer = styled('div', {
 });
 
 const SmallNavMenu = styled(NavMenu, {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'flex-end',
   fontSize: fonts[75],
   paddingBottom: space.md,
   borderBottom: `${space.borderWidth} solid ${colors.border}`,
+});
+
+const FaqLink = styled(MenuLink, {
+  fontSize: fonts[125],
+  display: 'flex',
+  alignItems: 'center',
+  gap: space.xs,
 });
 
 export const Mappers = () => {
@@ -29,6 +41,9 @@ export const Mappers = () => {
             <MenuLink to={fav({}).$}>quality mappers</MenuLink>
           </li>
         </ul>
+        <FaqLink to={`/${faq({}).$}`}>
+          <FiHelpCircle /> how does this work?
+        </FaqLink>
       </SmallNavMenu>
       <Outlet />
     </MappersContainer>

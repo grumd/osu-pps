@@ -13,6 +13,7 @@ const RootContainer = styled('div', {
   color: colors.textPrimary,
   width: '100%',
   minHeight: '100%',
+  oveflow: 'hidden',
 
   variants: {
     theme: {
