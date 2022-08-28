@@ -1,5 +1,5 @@
 import { matchSorter } from 'match-sorter';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 import { Button } from '@/components/Button/Button';
@@ -68,6 +68,11 @@ export const RankingsTable = ({ rankings }: { rankings: Ranking[] }) => {
     };
   }, [mappedRankings, page, filter]);
 
+  const onChangeFilter = useCallback((text: string) => {
+    setFilter(text);
+    setPage(1);
+  }, []);
+
   return (
     <TableWrapper>
       <Table>
@@ -93,7 +98,11 @@ export const RankingsTable = ({ rankings }: { rankings: Ranking[] }) => {
               </PagesControls>
             </Th>
             <Th css={{ textAlign: 'left' }}>
-              <NameFilterInput placeholder="search names..." type="text" onChange={setFilter} />
+              <NameFilterInput
+                placeholder="search names..."
+                type="text"
+                onChange={onChangeFilter}
+              />
             </Th>
             <Th>pp</Th>
             <Th></Th>
