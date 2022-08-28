@@ -1,3 +1,3 @@
-export function MappersPp() {
-  return <>MappersPp</>;
-}
+import { MappersPp } from './MappersPp';
+
+export default MappersPp;

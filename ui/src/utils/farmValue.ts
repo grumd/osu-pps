@@ -1,7 +1,14 @@
 import { CalcMode } from '@/constants/modes';
-import type { BeatmapDiff } from '@/features/Maps/types';
 
-export const farmValueCalc: Record<CalcMode, (map: BeatmapDiff) => number> = {
+export const farmValueCalc: Record<
+  CalcMode,
+  (map: {
+    farmValue: number;
+    hoursSinceRanked: number;
+    passCount: number;
+    adjusted: number;
+  }) => number
+> = {
   [CalcMode.Base]: (map) => map.farmValue,
   [CalcMode.ByAge]: (map) => map.farmValue / map.hoursSinceRanked,
   [CalcMode.ByPasscount]: (map) => map.farmValue / map.passCount,

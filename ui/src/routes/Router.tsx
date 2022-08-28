@@ -2,7 +2,6 @@ import { lazy } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import { Mode } from '@/constants/modes';
-import { MappersPp } from '@/features/Mappers/PpMappers';
 import { RootLayout } from '@/features/RootLayout';
 import { faq, mode } from '@/routes';
 import { fav, mappers, pp } from '@/routes/mappers';
@@ -12,6 +11,7 @@ import { rankings } from '@/routes/rankings';
 const Faq = lazy(() => import('@/features/Faq'));
 const Mappers = lazy(() => import('@/features/Mappers'));
 const MappersFav = lazy(() => import('@/features/Mappers/FavMappers'));
+const MappersPp = lazy(() => import('@/features/Mappers/PpMappers'));
 const Maps = lazy(() => import('@/features/Maps'));
 const Rankings = lazy(() => import('@/features/Rankings'));
 

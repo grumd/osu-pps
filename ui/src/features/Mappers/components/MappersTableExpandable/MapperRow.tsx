@@ -5,7 +5,7 @@ import { ExternalLink } from '@/components/Link/ExternalLink';
 import { ProgressBar } from '@/components/ProgressBar/ProgressBar';
 import { colors, fonts, space, styled } from '@/styles';
 
-import type { FavMapper } from '../types';
+import type { MapperItem } from './types';
 
 const AriaButton = styled('button', {
   all: 'unset',
@@ -33,6 +33,7 @@ const CountContainer = styled('div', {
   display: 'flex',
   flexFlow: 'row nowrap',
   alignItems: 'center',
+  justifyContent: 'flex-end',
   gap: space.md,
 });
 
@@ -85,25 +86,10 @@ const CountBar = styled(ProgressBar, {
 });
 
 const Count = styled('div', {
-  minWidth: '2em',
+  // Constant width to keep every row aligned, and allow for up to 5 digits to fit
+  minWidth: '3em',
+  textAlign: 'center',
 });
-
-export const Row = styled('tr', {
-  width: '100%',
-  borderBottom: `${space.borderWidth} solid ${colors.border}`,
-});
-
-const MapperNames = ({ names }: { names: string[] }) => {
-  return (
-    <>
-      {names.map((name, index) => (
-        <MapperName key={index} first={index === 0}>
-          {name}
-        </MapperName>
-      ))}
-    </>
-  );
-};
 
 const getProgressColor = (place: number) => {
   return (
@@ -115,32 +101,42 @@ const getProgressColor = (place: number) => {
   );
 };
 
+const MapperNames = ({ names }: { names: React.ReactNode[] }) => {
+  return (
+    <>
+      {names.map((name, index) => (
+        <MapperName key={index} first={index === 0}>
+          {name}
+        </MapperName>
+      ))}
+    </>
+  );
+};
+
 export const Cells = memo(function _Cells({
   mapper,
-  place,
-  maxCount,
+  maxValue,
   isExpanded,
   onToggleMapper,
 }: {
-  mapper: FavMapper;
-  place: number;
-  maxCount: number;
-  onToggleMapper: (mapperId: number) => void;
+  mapper: MapperItem;
+  maxValue: number;
+  onToggleMapper: (id: number) => void;
   isExpanded: boolean;
 }): JSX.Element {
   return (
     <>
-      <TdIndex>{place}.</TdIndex>
+      <TdIndex>{mapper.place}.</TdIndex>
       <TdMapperName>
-        <ExternalLink url={`https://osu.ppy.sh/users/${mapper.mapperId}`}>
+        <ExternalLink url={`https://osu.ppy.sh/users/${mapper.id}`}>
           <MapperNames names={mapper.names} />
         </ExternalLink>
       </TdMapperName>
       <TdCount>
-        <AriaButton expanded={isExpanded} onClick={() => onToggleMapper(mapper.mapperId)}>
+        <AriaButton expanded={isExpanded} onClick={() => onToggleMapper(mapper.id)}>
           <CountContainer>
-            <Count>{Math.round(mapper.count)}</Count>
-            <CountBar progress={mapper.count / maxCount} color={getProgressColor(place)} />
+            <Count>{Math.round(mapper.value)}</Count>
+            <CountBar progress={mapper.value / maxValue} color={getProgressColor(mapper.place)} />
             <ArrowIcon flipped={isExpanded} />
           </CountContainer>
         </AriaButton>

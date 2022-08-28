@@ -1,6 +1,5 @@
 import { matchSorter } from 'match-sorter';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { TableVirtuoso } from 'react-virtuoso';
 
 import { ErrorBox } from '@/components/ErrorBox/ErrorBox';
 import { Input } from '@/components/Input/Input';
@@ -12,10 +11,11 @@ import {
   ScrollAreaThumb,
   ScrollAreaViewport,
 } from '@/components/Scroll/Scroll';
+import { MappersTableExpandable } from '@/features/Mappers/components/MappersTableExpandable/MappersTableExpandable';
+import type { MapperItem } from '@/features/Mappers/components/MappersTableExpandable/types';
 import { space, styled } from '@/styles';
 
-import { MapperMaps } from './components/MapperMaps';
-import { Cells, Row } from './components/MapperRow';
+import { FavMapperExpandableRow } from './components/FavMapperExpandableRow';
 import { useFavMappers } from './hooks/useFavMappers';
 
 const StyledMain = styled('main', {
@@ -30,12 +30,6 @@ const FilterContainer = styled('div', {
   width: '100%',
 });
 
-const Table = styled('table', {
-  borderCollapse: 'collapse',
-  width: '100%',
-  maxWidth: space.tableMaxWidth,
-});
-
 const initialCount = 50;
 
 export function MappersFav() {
@@ -43,13 +37,8 @@ export function MappersFav() {
   const [showCount, setShowCount] = useState(1);
   const [filter, setFilter] = useState('');
   const [scrollParent, setScrollParent] = useState<HTMLDivElement | null>(null);
-  const [expanded, setExpanded] = useState<Record<number, boolean>>({});
 
-  const maxCount = data ? data[0].count : 0;
-
-  const onToggleMapper = useCallback((mapperId: number) => {
-    setExpanded((exp) => ({ ...exp, [mapperId]: !exp[mapperId] }));
-  }, []);
+  const maxValue = data ? data[0].value : 0;
 
   const filteredMappers = useMemo(() => {
     let filtered = data || [];
@@ -62,6 +51,10 @@ export function MappersFav() {
     return filtered;
   }, [data, filter]);
 
+  const renderExpandedRow = useCallback(({ mapper }: { mapper: MapperItem }) => {
+    return <FavMapperExpandableRow mapper={mapper} />;
+  }, []);
+
   const loadMore = useCallback(() => {
     if (filteredMappers.length > showCount) setShowCount((c) => c + initialCount);
   }, [filteredMappers, showCount]);
@@ -69,19 +62,6 @@ export function MappersFav() {
   const visibleMappers = useMemo(() => {
     return filteredMappers?.slice(0, showCount);
   }, [showCount, filteredMappers]);
-
-  const mappersWithMaps = useMemo(() => {
-    return visibleMappers?.reduce(
-      (acc: ({ isMapsRow?: boolean } & typeof filteredMappers[number])[], mapper) => {
-        acc.push(mapper);
-        if (expanded[mapper.mapperId]) {
-          acc.push({ ...mapper, isMapsRow: true });
-        }
-        return acc;
-      },
-      []
-    );
-  }, [visibleMappers, expanded]);
 
   useEffect(() => {
     // Reset page when data changes or filtering changes
@@ -92,7 +72,7 @@ export function MappersFav() {
     <StyledMain>
       {error instanceof Error && <ErrorBox>{error.message}</ErrorBox>}
       {isLoading && <Loader css={{ padding: `${space.md} 0` }} />}
-      {mappersWithMaps && (
+      {visibleMappers && (
         <>
           <ScrollArea css={{ flex: '1 1 0px', width: '100%', maxWidth: space.tableMaxWidth }}>
             <FilterContainer>
@@ -104,29 +84,12 @@ export function MappersFav() {
               />
             </FilterContainer>
             <ScrollAreaViewport ref={setScrollParent}>
-              <TableVirtuoso
-                style={{ width: '100%' }}
-                data={mappersWithMaps}
-                endReached={loadMore}
-                overscan={1000}
-                components={{ TableRow: Row, Table }}
-                itemContent={(i, mapper) =>
-                  mapper.isMapsRow ? (
-                    <td colSpan={3}>
-                      <MapperMaps mapper={mapper} />
-                    </td>
-                  ) : (
-                    <Cells
-                      isExpanded={expanded[mapper.mapperId]}
-                      key={mapper.mapperId}
-                      onToggleMapper={onToggleMapper}
-                      mapper={mapper}
-                      place={mapper.place}
-                      maxCount={maxCount}
-                    />
-                  )
-                }
-                customScrollParent={scrollParent ?? undefined}
+              <MappersTableExpandable
+                mappers={visibleMappers}
+                scrollParent={scrollParent ?? undefined}
+                loadMore={loadMore}
+                maxValue={maxValue}
+                renderExpandedRow={renderExpandedRow}
               />
             </ScrollAreaViewport>
             <ScrollAreaScrollbar orientation="vertical">

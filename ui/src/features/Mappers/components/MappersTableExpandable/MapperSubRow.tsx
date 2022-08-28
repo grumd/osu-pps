@@ -1,6 +1,4 @@
-import { ErrorBox } from '@/components/ErrorBox/ErrorBox';
 import { ExternalLink } from '@/components/Link/ExternalLink';
-import Loader from '@/components/Loader/Loader';
 import { ProgressBar } from '@/components/ProgressBar/ProgressBar';
 import {
   ScrollArea,
@@ -13,12 +11,7 @@ import { Text } from '@/components/Text/Text';
 import { colors, space, styled } from '@/styles';
 import { truncateFloat } from '@/utils';
 
-import { useMapperMaps } from '../hooks/useMapperMaps';
-import type { FavMapper } from '../types';
-
-interface MapperMapsProps {
-  mapper: FavMapper;
-}
+import type { MapperItem, MapperMapItem } from './types';
 
 const Container = styled('div', {
   fontSize: '1rem',
@@ -37,6 +30,7 @@ const Container = styled('div', {
 
   '& table': {
     borderCollapse: 'collapse',
+    width: '100%',
   },
 });
 
@@ -47,27 +41,33 @@ const MapCountBar = styled(ProgressBar, {
   lineHeight: 1.4,
 });
 
-export const MapperMaps = ({ mapper }: MapperMapsProps) => {
-  const { data, isLoading, error } = useMapperMaps(mapper.mapperId);
-  const averagePoints = data ? data.reduce((sum, map) => sum + map.count, 0) / data.length : 0;
-  const maxPoints = data ? data[0].count : 0;
+interface MapperMapsProps {
+  data: MapperMapItem[] | undefined;
+  children?: React.ReactNode;
+  customHeaderRow?: React.ReactNode;
+}
+
+export const MapperSubRow = ({ data, children, customHeaderRow }: MapperMapsProps) => {
+  const averagePoints = data ? data.reduce((sum, map) => sum + map.value, 0) / data.length : 0;
+  const maxValue = data ? data[0].value : 0;
 
   return (
     <Container>
-      {error instanceof Error && <ErrorBox>{error.message}</ErrorBox>}
-      {isLoading && <Loader css={{ padding: `${space.md} 0` }} />}
+      {children}
       {data && (
         <ScrollArea>
           <ScrollAreaViewport css={{ maxHeight: '20em', height: 'auto' }}>
             <table>
               <thead>
-                <tr>
-                  <td></td>
-                  <td>
-                    <Text bold>{data.length}</Text> maps; average points per map:{' '}
-                    <Text bold>{truncateFloat(averagePoints)}</Text>
-                  </td>
-                </tr>
+                {customHeaderRow ?? (
+                  <tr>
+                    <td></td>
+                    <td>
+                      <Text bold>{data.length}</Text> maps; average points per map:{' '}
+                      <Text bold>{truncateFloat(averagePoints)}</Text>
+                    </td>
+                  </tr>
+                )}
               </thead>
               <tbody>
                 {data.map((map) => {
@@ -75,13 +75,13 @@ export const MapperMaps = ({ mapper }: MapperMapsProps) => {
                     <tr key={map.id}>
                       <td>
                         <ExternalLink url={`https://osu.ppy.sh/beatmapsets/${map.id}`}>
-                          {map.artist} - {map.title}
+                          {map.text}
                         </ExternalLink>
                       </td>
                       <td>
-                        <MapCountBar progress={map.count / maxPoints}>
+                        <MapCountBar progress={map.value / maxValue}>
                           <div style={{ position: 'absolute', top: 0, left: '0.4em' }}>
-                            {truncateFloat(map.count, 10)}
+                            {truncateFloat(map.value, 10)}
                           </div>
                         </MapCountBar>
                       </td>
