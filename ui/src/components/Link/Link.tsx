@@ -13,3 +13,5 @@ export const Link = styled('a', {
     color: colors.linkActive,
   },
 });
+
+Link.displayName = 'Link';

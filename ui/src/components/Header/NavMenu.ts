@@ -7,6 +7,8 @@ export const FakeListItem = styled('li', {
   cursor: 'default',
 });
 
+FakeListItem.displayName = 'FakeListItem';
+
 export const NavMenu = styled('nav', {
   display: 'flex',
   flexFlow: 'row wrap',
@@ -32,3 +34,5 @@ export const NavMenu = styled('nav', {
     },
   },
 });
+
+NavMenu.displayName = 'NavMenu';

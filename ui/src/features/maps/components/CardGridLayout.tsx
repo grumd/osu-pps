@@ -12,6 +12,33 @@ const GridContainer = styled('div', {
     filter: {
       true: {
         alignItems: 'end',
+
+        '@beatmapCardSm': {
+          paddingTop: 0,
+          paddingBottom: 0,
+        },
+        '@beatmapCardMd': {
+          paddingTop: 0,
+          paddingBottom: 0,
+        },
+      },
+    },
+    hidden: {
+      true: {
+        '@beatmapCardMd': {
+          display: 'block',
+          padding: 0,
+          '& > *:not(:first-child)': {
+            display: 'none',
+          },
+        },
+        '@beatmapCardSm': {
+          display: 'block',
+          padding: 0,
+          '& > *:not(:first-child)': {
+            display: 'none',
+          },
+        },
       },
     },
   },
@@ -116,9 +143,15 @@ const GridContainer = styled('div', {
 export const CardGridLayout = ({
   children,
   filter,
+  hidden,
 }: {
   filter?: boolean;
+  hidden?: boolean;
   children: React.ReactNode;
 }): JSX.Element => {
-  return <GridContainer filter={filter}>{children}</GridContainer>;
+  return (
+    <GridContainer filter={filter} hidden={hidden}>
+      {children}
+    </GridContainer>
+  );
 };

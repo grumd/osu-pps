@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { FaChevronDown } from 'react-icons/fa';
 
 import { Button } from '@/components/Button/Button';
+import { FlipArrowIcon } from '@/components/FlipArrowIcon/FlipArrowIcon';
 import { ExternalLink } from '@/components/Link/ExternalLink';
 import { colors, fonts, space, styled } from '@/styles';
 
@@ -9,16 +9,8 @@ import type { DataItem } from '../types';
 import { RankChange } from './RankChange';
 import { Scores } from './Scores';
 
-const HideShowScoresArrow = styled(FaChevronDown, {
+const HideShowScoresArrow = styled(FlipArrowIcon, {
   marginRight: space.sm,
-  transition: 'transform 150ms ease-in-out',
-  variants: {
-    flipped: {
-      true: {
-        transform: 'scaleY(-1)',
-      },
-    },
-  },
 });
 
 const Tr = styled('tr', {

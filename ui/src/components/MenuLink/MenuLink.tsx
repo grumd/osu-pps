@@ -18,3 +18,5 @@ export const MenuLink = styled(NavLink, {
     textDecoration: 'underline',
   },
 });
+
+MenuLink.displayName = 'MenuLink';

@@ -38,6 +38,11 @@ const LayoutContainer = styled('div', {
   '& > header': {
     flex: '0 0 auto',
   },
+
+  '@beatmapCardSm': {
+    paddingLeft: space.sm,
+    paddingRight: space.sm,
+  },
 });
 
 export function RootLayout() {

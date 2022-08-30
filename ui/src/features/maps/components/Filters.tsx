@@ -1,7 +1,9 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { FaRegClock, FaStar } from 'react-icons/fa';
 import { GiFarmer } from 'react-icons/gi';
 
+import { Button } from '@/components/Button/Button';
+import { FlipArrowIcon } from '@/components/FlipArrowIcon/FlipArrowIcon';
 import { Input } from '@/components/Input/Input';
 import { TimeInput } from '@/components/TimeInput/TimeInput';
 import { fonts, space, styled } from '@/styles';
@@ -62,13 +64,63 @@ const FiltersContainer = styled('div', {
   paddingBottom: space.sm,
 });
 
+const FilterButtons = styled('div', {
+  display: 'flex',
+  flexFlow: 'column nowrap',
+  alignItems: 'stretch',
+  justifyContent: 'center',
+  fontSize: fonts[75],
+});
+
+const HideButton = styled(Button, {
+  '@beatmapCardLg': {
+    display: 'none',
+  },
+
+  variants: {
+    hidden: {
+      true: {
+        width: 'max-content',
+      },
+      false: {
+        marginBottom: space.lg,
+      },
+    },
+  },
+});
+
+const MoreButton = styled(Button, {
+  variants: {
+    hidden: {
+      true: {
+        '@beatmapCardMd': {
+          display: 'none',
+        },
+        '@beatmapCardSm': {
+          display: 'none',
+        },
+      },
+    },
+  },
+});
+
 export const Filters = memo(function Filters() {
   const filters = useFilters();
+  const [hidden, setHidden] = useState(false);
 
   return (
     <FiltersContainer>
-      <CardGridLayout filter>
-        <div></div>
+      <CardGridLayout filter hidden={hidden}>
+        <FilterButtons>
+          <HideButton hidden={hidden} onClick={() => setHidden((v) => !v)} color="indigo">
+            <FlipArrowIcon flipped={!hidden} css={{ marginRight: space.sm }} />
+            {hidden ? 'show filters' : 'hide'}
+          </HideButton>
+          <MoreButton hidden={hidden} color="green">
+            <FlipArrowIcon css={{ marginRight: space.sm }} />
+            more
+          </MoreButton>
+        </FilterButtons>
         <SongNameFilter>
           <Input
             type="text"

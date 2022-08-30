@@ -5,3 +5,5 @@ export const ErrorBox = styled('p', {
   background: colors.bgError,
   borderRadius: space.xs,
 });
+
+ErrorBox.displayName = 'ErrorBox';

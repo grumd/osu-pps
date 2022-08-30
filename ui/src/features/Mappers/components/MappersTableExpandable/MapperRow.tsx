@@ -1,6 +1,6 @@
 import { memo } from 'react';
-import { FaChevronDown } from 'react-icons/fa';
 
+import { FlipArrowIcon } from '@/components/FlipArrowIcon/FlipArrowIcon';
 import { ExternalLink } from '@/components/Link/ExternalLink';
 import { ProgressBar } from '@/components/ProgressBar/ProgressBar';
 import { colors, fonts, space, styled } from '@/styles';
@@ -67,17 +67,6 @@ const MapperName = styled('div', {
   },
 });
 
-const ArrowIcon = styled(FaChevronDown, {
-  transition: 'transform 150ms ease-in-out',
-  variants: {
-    flipped: {
-      true: {
-        transform: 'scaleY(-1)',
-      },
-    },
-  },
-});
-
 const CountBar = styled(ProgressBar, {
   flex: '1 1 auto',
   borderRadius: space.xs,
@@ -137,7 +126,7 @@ export const Cells = memo(function _Cells({
           <CountContainer>
             <Count>{Math.round(mapper.value)}</Count>
             <CountBar progress={mapper.value / maxValue} color={getProgressColor(mapper.place)} />
-            <ArrowIcon flipped={isExpanded} />
+            <FlipArrowIcon flipped={isExpanded} />
           </CountContainer>
         </AriaButton>
       </TdCount>

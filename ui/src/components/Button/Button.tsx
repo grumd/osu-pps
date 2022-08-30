@@ -115,3 +115,5 @@ export const Button = styled('button', {
     color: 'sand',
   },
 });
+
+Button.displayName = 'Button';

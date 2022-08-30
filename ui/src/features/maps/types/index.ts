@@ -74,4 +74,5 @@ export interface Filters {
   fl?: ModToggleState;
   calcMode: CalcMode;
   count: number;
+  isShowingMore: boolean;
 }

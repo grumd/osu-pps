@@ -30,3 +30,5 @@ export const Text = styled('span', {
     },
   },
 });
+
+Text.displayName = 'Text';
