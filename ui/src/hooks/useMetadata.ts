@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { API_PREFIX, QUERY_PERSISTENT_DATA_CONFIG } from '@/constants/api';
+import { API_PREFIX } from '@/constants/api';
 import type { Mode } from '@/constants/modes';
 import type { Metadata } from '@/types/metadata';
 import { fetchJson } from '@/utils/fetch';
@@ -17,11 +17,10 @@ const fetchMetadata = async (mode: Mode) => {
 
 export const useMetadata = () => {
   const mode = useMode();
-  const { isLoading, error, data } = useQuery(
-    ['metadata', mode],
-    () => fetchMetadata(mode),
-    QUERY_PERSISTENT_DATA_CONFIG
-  );
+
+  const { isLoading, error, data } = useQuery(['metadata', mode], () => fetchMetadata(mode), {
+    enabled: !!mode,
+  });
 
   return { isLoading, error, data };
 };

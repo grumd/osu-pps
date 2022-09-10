@@ -1,4 +1,5 @@
 import create from 'zustand';
+import { persist } from 'zustand/middleware';
 
 import { CalcMode } from '@/constants/modes';
 
@@ -14,12 +15,20 @@ export const useFiltersStore = create<{
   filters: Filters;
   readonly setFilter: <K extends keyof Filters>(key: K, value: Filters[K]) => void;
   readonly nextPage: () => void;
-}>()((set) => ({
-  filters: initialFilters,
-  setFilter: (key, value) => set((state) => ({ filters: { ...state.filters, [key]: value } })),
-  nextPage: () =>
-    set((state) => ({ filters: { ...state.filters, count: state.filters.count + 20 } })),
-}));
+}>()(
+  persist(
+    (set) => ({
+      filters: initialFilters,
+      setFilter: (key, value) => set((state) => ({ filters: { ...state.filters, [key]: value } })),
+      nextPage: () =>
+        set((state) => ({ filters: { ...state.filters, count: state.filters.count + 20 } })),
+    }),
+    {
+      name: 'filter-storage',
+      partialize: (state) => ({ filters: state.filters }),
+    }
+  )
+);
 
 export const useFilters = () => useFiltersStore((state) => state.filters);
 

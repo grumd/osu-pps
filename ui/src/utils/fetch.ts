@@ -2,9 +2,6 @@ import axios from 'axios';
 import Papa from 'papaparse';
 
 import { DEBUG_FETCH } from '@/constants/api';
-import type { Mode } from '@/constants/modes';
-import type { Metadata } from '@/types/metadata';
-import { getLastUpdated, getStorageItem, setLastUpdated, setStorageItem } from '@/utils/storage';
 
 interface GithubFileApiResponse {
   size: number;
@@ -16,6 +13,7 @@ export const fetchJson = async <T>({ url }: { url: string }): Promise<T> => {
     const response = await fetch(url);
     if (response.status >= 200 && response.status < 300) {
       const data = (await response.json()) as T;
+      await new Promise((res) => setTimeout(res, 2000));
       return data;
     }
     throw Error(`HTTP Status ${response.status}`);
@@ -96,40 +94,3 @@ export const fetchCsv = async <T>({ url }: { url: string }): Promise<T[]> => {
     return Promise.reject(error);
   }
 };
-
-export const fetchWithPersist =
-  <T, Args extends [Mode, ...unknown[]]>({
-    storageKey,
-    metadata,
-    action,
-  }: {
-    storageKey: string;
-    metadata: Metadata | undefined;
-    action: (...args: Args) => Promise<T | null>;
-  }): ((...args: Args) => Promise<T | null>) =>
-  async (...args: Args): Promise<T | null> => {
-    if (!metadata) {
-      return null;
-    }
-
-    const [mode] = args;
-    const lastUpdatedFromMetadata = new Date(metadata.lastUpdated);
-    const lastUpdatedFromStorage = await getLastUpdated(mode);
-
-    if (lastUpdatedFromStorage && lastUpdatedFromStorage >= lastUpdatedFromMetadata) {
-      // Storage data is fresh
-      const data = await getStorageItem<T>(storageKey);
-      if (data && !DEBUG_FETCH) {
-        return data;
-      }
-    }
-
-    const data = await action(...args);
-
-    if (!DEBUG_FETCH) {
-      void setLastUpdated(mode, lastUpdatedFromMetadata);
-      void setStorageItem(storageKey, data);
-    }
-
-    return data;
-  };

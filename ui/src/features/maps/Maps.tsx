@@ -33,6 +33,9 @@ export function Maps() {
       {error instanceof Error && <ErrorBox>{error.message}</ErrorBox>}
       <header>
         {isLoading && progress !== null && <ProgressBar progress={progress} />}
+        {isLoading && progress !== null && (
+          <p>{`This is going to take a minute, but we'll save the data in your browser`}</p>
+        )}
         {!isLoading && <Filters />}
       </header>
       {!isLoading && <ScrolledFilteredMaps maps={data} />}

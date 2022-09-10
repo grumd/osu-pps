@@ -1,15 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash/fp';
 import { useState } from 'react';
 
-import { QUERY_PERSISTENT_DATA_CONFIG } from '@/constants/api';
 import type { CalcMode, Mode } from '@/constants/modes';
-import { useMetadata } from '@/hooks/useMetadata';
 import { useMode } from '@/hooks/useMode';
+import { usePersistQuery } from '@/hooks/usePersistQuery';
 import { farmValueCalc } from '@/utils/farmValue';
-import { fetchCsvWithProgress, fetchWithPersist } from '@/utils/fetch';
+import { fetchCsvWithProgress } from '@/utils/fetch';
 import { keys } from '@/utils/object';
-import { getMapsDataStorageKey } from '@/utils/storage';
 
 import type {
   Beatmap,
@@ -22,7 +19,7 @@ import { normalizeBeatmap, normalizeMapset } from './normalizer';
 
 export const useMaps = () => {
   const mode = useMode();
-  const metadata = useMetadata();
+
   const [diffsProgress, setDiffsProgress] = useState<number | null>(null);
   const [mapsetsProgress, setMapsetsProgress] = useState<number | null>(null);
 
@@ -63,26 +60,23 @@ export const useMaps = () => {
     return beatmaps;
   };
 
-  const { isLoading, error, data } = useQuery(
-    ['maps', mode, metadata.data?.lastUpdated],
+  const { isLoading, error, data } = usePersistQuery(
+    ['maps', mode],
     () => {
       // Setting progress to null to hide the progress bar when data is taken from cache
       // We only want to show progress when the actual download is started
       setMapsetsProgress(null);
       setDiffsProgress(null);
-
-      return fetchWithPersist({
-        storageKey: getMapsDataStorageKey(mode),
-        metadata: metadata.data,
-        action: fetchData,
-      })(mode);
+      return fetchData(mode);
     },
-    QUERY_PERSISTENT_DATA_CONFIG
+    {
+      setProgress: setMapsetsProgress,
+    }
   );
 
   return {
-    isLoading: metadata.isLoading || isLoading,
-    error: metadata.error || error,
+    isLoading,
+    error,
     data,
     progress:
       _.isNumber(diffsProgress) && _.isNumber(mapsetsProgress)

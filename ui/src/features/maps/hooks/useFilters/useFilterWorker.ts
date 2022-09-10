@@ -5,7 +5,7 @@ import type { Beatmap, Filters } from '../../types';
 const filterWorker = new Worker(new URL('./filter.worker.ts', import.meta.url));
 
 const useWorkerResult = (worker: Worker) => {
-  const [result, setResult] = useState<Beatmap[]>([]);
+  const [result, setResult] = useState<Beatmap[] | null>(null);
 
   useEffect(() => {
     const listener = (res: MessageEvent<Beatmap[]>) => {
@@ -23,7 +23,7 @@ const useWorkerResult = (worker: Worker) => {
 export const useFilterWorker = (
   data: Beatmap[] | null | undefined,
   filters: Filters
-): Beatmap[] => {
+): Beatmap[] | null => {
   const filteredData = useWorkerResult(filterWorker);
 
   useEffect(() => {

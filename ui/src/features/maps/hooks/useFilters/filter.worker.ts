@@ -54,6 +54,9 @@ function filter() {
     hd,
     hr,
     fl,
+    languages,
+    genres,
+    ranked,
   } = filters;
 
   console.time('filter worker task');
@@ -81,7 +84,7 @@ function filter() {
   }
 
   if (ppMax || ppMin) {
-    filterFns.push((map) => matchesMaxMin(ppMin, ppMax, map.pp));
+    filterFns.push((map) => !!map.pp && matchesMaxMin(ppMin, ppMax, map.pp));
   }
 
   if (lengthMax || lengthMin) {
@@ -103,6 +106,19 @@ function filter() {
   }
   if (fl && fl !== 'any') {
     filterFns.push((map, mods) => modAllowed(fl, mods.fl));
+  }
+
+  if (languages && languages.length) {
+    filterFns.push((map) => languages.some((v) => v.value === map.language));
+  }
+  if (genres && genres.length) {
+    filterFns.push((map) => genres.some((v) => v.value === map.genre));
+  }
+  if (ranked && ranked.value > 0) {
+    const hoursNow = Date.now() / 1000 / 60 / 60;
+    filterFns.push((map) => {
+      return (hoursNow - map.approvedHoursTimestamp) / 24 < ranked.value;
+    });
   }
 
   const filtered = filterFns.length

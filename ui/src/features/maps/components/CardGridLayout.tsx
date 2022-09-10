@@ -120,6 +120,7 @@ const GridContainer = styled('div', {
     },
     '& > *:nth-child(2)': {
       gridArea: 'title',
+      paddingBottom: 0,
     },
     '& > *:nth-child(3)': {
       gridArea: 'pp',

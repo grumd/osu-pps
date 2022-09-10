@@ -34,7 +34,7 @@ export interface BeatmapDiff {
   mapsetId: number;
   farmValue: number;
   mods: number;
-  pp: number;
+  pp: number | null;
   adjusted: number; // deprecate?
   version: string;
   length: number;
@@ -75,6 +75,7 @@ export interface Filters {
   calcMode: CalcMode;
   count: number;
   isShowingMore: boolean;
-  languages?: string[];
-  genres?: string[];
+  languages?: { value: number; label: string }[] | null;
+  genres?: { value: number; label: string }[] | null;
+  ranked?: { value: number; label: string } | null;
 }

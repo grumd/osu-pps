@@ -69,8 +69,10 @@ export function MappersPp() {
   const { data, isLoading, error } = usePpMappers();
   const [scrollParent, setScrollParent] = useState<HTMLDivElement | null>(null);
 
+  const top20 = data?.top20adj;
+
   const mappedData = useMemo(() => {
-    return data?.map(
+    return top20?.map(
       (item, index): PpMapperItem => ({
         id: item.id,
         names: [getMapperName(item.name, index)],
@@ -83,7 +85,7 @@ export function MappersPp() {
         })),
       })
     );
-  }, [data]);
+  }, [top20]);
 
   const maxValue = mappedData ? mappedData[0].value : 0;
 

@@ -72,7 +72,7 @@ export function MappersFav() {
     <StyledMain>
       {error instanceof Error && <ErrorBox>{error.message}</ErrorBox>}
       {isLoading && <Loader css={{ padding: `${space.md} 0` }} />}
-      {visibleMappers && (
+      {visibleMappers && !!visibleMappers.length && (
         <>
           <ScrollArea css={{ flex: '1 1 0px', width: '100%', maxWidth: space.tableMaxWidth }}>
             <FilterContainer>

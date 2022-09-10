@@ -1,17 +1,14 @@
-import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import type { Mode } from '@/constants/modes';
-import { useMetadata } from '@/hooks/useMetadata';
 import { useMode } from '@/hooks/useMode';
-import { fetchCsvWithProgress, fetchWithPersist } from '@/utils/fetch';
-import { getRankingsStorageKey } from '@/utils/storage';
+import { usePersistQuery } from '@/hooks/usePersistQuery';
+import { fetchCsvWithProgress } from '@/utils/fetch';
 
 import type { Ranking } from '../types';
 
 export const useRankings = () => {
   const mode = useMode();
-  const metadata = useMetadata();
   const [progress, setProgress] = useState<number | null>(null);
 
   const fetchData = async (modeToFetch: Mode): Promise<Ranking[] | null> => {
@@ -22,24 +19,16 @@ export const useRankings = () => {
     return rankings;
   };
 
-  const { isLoading, error, data } = useQuery(
-    ['rankings', mode, metadata.data?.lastUpdated],
-    () => {
-      // Setting progress to null to hide the progress bar when data is taken from cache
-      // We only want to show progress when the actual download is started
-      setProgress(null);
-
-      return fetchWithPersist({
-        storageKey: getRankingsStorageKey(mode),
-        metadata: metadata.data,
-        action: fetchData,
-      })(mode);
-    }
-  );
+  const { isLoading, error, data } = usePersistQuery(['rankings', mode], () => {
+    // Setting progress to null to hide the progress bar when data is taken from cache
+    // We only want to show progress when the actual download is started
+    setProgress(null);
+    return fetchData(mode);
+  });
 
   return {
-    isLoading: metadata.isLoading || isLoading,
-    error: metadata.error || error,
+    isLoading,
+    error,
     data,
     progress,
   };

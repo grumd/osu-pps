@@ -20,7 +20,7 @@ export function ScrolledFilteredMaps({ maps }: { maps: Beatmap[] | null | undefi
 
   const filteredMaps = useFilterWorker(maps, filters);
 
-  const hasNextPage = filters.count <= filteredMaps.length;
+  const hasNextPage = !!filteredMaps && filters.count <= filteredMaps.length;
   const loadMore = () => {
     if (hasNextPage) {
       nextPage();
@@ -37,14 +37,18 @@ export function ScrolledFilteredMaps({ maps }: { maps: Beatmap[] | null | undefi
       }}
     >
       <ScrollAreaViewport ref={setScrollParent}>
-        <Virtuoso
-          data={filteredMaps}
-          endReached={loadMore}
-          itemContent={(index, map) => (
-            <BeatmapCard key={`${map.beatmapId}_${map.mods}`} map={map} />
-          )}
-          customScrollParent={scrollParent ?? undefined}
-        />
+        {!filteredMaps ? null : filteredMaps.length === 0 ? (
+          <p>{"Didn't find anything :("}</p>
+        ) : (
+          <Virtuoso
+            data={filteredMaps}
+            endReached={loadMore}
+            itemContent={(index, map) => (
+              <BeatmapCard key={`${map.beatmapId}_${map.mods}`} map={map} />
+            )}
+            customScrollParent={scrollParent ?? undefined}
+          />
+        )}
       </ScrollAreaViewport>
       <ScrollAreaScrollbar orientation="vertical">
         <ScrollAreaThumb />

@@ -67,6 +67,7 @@ export const { styled, createTheme, globalCss, theme, config, keyframes } = crea
       md: '0.6em',
       lg: '1em',
       xl: '1.5em',
+      modBlock: '2.5em',
       pageWidth: '80rem',
       tableMaxWidth: '60rem',
       beatmapHeight: '5em',

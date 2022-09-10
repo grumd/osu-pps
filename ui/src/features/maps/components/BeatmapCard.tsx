@@ -1,6 +1,10 @@
+import { memo, useMemo } from 'react';
+import TimeAgo from 'react-timeago';
+
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/HoverCard/HoverCard';
 import { ExternalLink } from '@/components/Link/ExternalLink';
 import { Mode } from '@/constants/modes';
+import { genreMap, languageMap } from '@/constants/options';
 import { useMode } from '@/hooks/useMode';
 import { colors, fonts, space, styled } from '@/styles';
 import { secondsToFormatted, truncateFloat } from '@/utils';
@@ -42,8 +46,26 @@ const MapCoverBackground = styled('div', {
   },
 });
 
-const MapLink = styled(ExternalLink, {
+const MapLinkContainer = styled('div', {
   padding: `${space.xs} 0`,
+});
+
+const ExtraInfo = styled('dl', {
+  fontSize: fonts[75],
+  margin: `${space.sm} 0 0 0`,
+  '& > *': {
+    display: 'inline',
+  },
+  '& > dt': {
+    color: colors.sand10,
+  },
+  '& > dd': {
+    margin: 0,
+  },
+});
+
+const MapLink = styled(ExternalLink, {
+  wordBreak: 'break-word',
 });
 
 const PpNumber = styled('span', {
@@ -71,6 +93,8 @@ const ModBlock = styled('div', {
   borderRadius: space.sm,
   background: colors.sand6,
   color: colors.textInactiveSecondary,
+  width: space.modBlock,
+  textAlign: 'center',
 
   variants: {
     active: {
@@ -179,9 +203,10 @@ function CoverImage({ url, mapsetId }: { url: string; mapsetId: number }) {
   );
 }
 
-export function BeatmapCard({ map }: { map: Beatmap }) {
+export const BeatmapCard = memo(function _BeatmapCard({ map }: { map: Beatmap }) {
   const mods = getMods(map.mods);
   const calcMode = useFiltersStore((state) => state.filters.calcMode);
+  const isShowingMore = useFiltersStore((state) => state.filters.isShowingMore);
   const mode = useMode();
   const colorCodeStyle = useColorCodeStyle();
 
@@ -191,13 +216,41 @@ export function BeatmapCard({ map }: { map: Beatmap }) {
 
   const colorOpacity = 0.25;
 
+  const rankedDate = useMemo(() => {
+    return new Date(map.approvedHoursTimestamp * 60 * 60 * 1000);
+  }, [map.approvedHoursTimestamp]);
+
   return (
     <BeatmapCardDiv>
       <CardGridLayout>
         <CoverImage url={mapLink} mapsetId={map.mapsetId} />
-        <MapLink url={mapLink}>{linkText}</MapLink>
+        <MapLinkContainer>
+          <MapLink url={mapLink}>{linkText}</MapLink>
+          {isShowingMore && (
+            <ExtraInfo>
+              <dt>ranked:</dt>
+              <dd>
+                {' '}
+                <TimeAgo date={rankedDate} />
+                {', '}
+              </dd>
+              {map.language && (
+                <>
+                  <dt>language:</dt>
+                  <dd> {languageMap[map.language]}, </dd>
+                </>
+              )}
+              {map.genre && (
+                <>
+                  <dt>genre:</dt>
+                  <dd> {genreMap[map.genre]}</dd>
+                </>
+              )}
+            </ExtraInfo>
+          )}
+        </MapLinkContainer>
         <PpNumber>
-          <span>{map.pp.toFixed(0)}</span>
+          <span>{map.pp?.toFixed(0) ?? '?'}</span>
           <span>pp</span>
         </PpNumber>
         <ModsContainer>
@@ -238,4 +291,4 @@ export function BeatmapCard({ map }: { map: Beatmap }) {
       </CardGridLayout>
     </BeatmapCardDiv>
   );
-}
+});

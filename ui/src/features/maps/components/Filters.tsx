@@ -5,9 +5,9 @@ import { GiFarmer } from 'react-icons/gi';
 import { Button } from '@/components/Button/Button';
 import { FlipArrowIcon } from '@/components/FlipArrowIcon/FlipArrowIcon';
 import { Input } from '@/components/Input/Input';
-import { MultiSelect } from '@/components/MultiSelect/MultiSelect';
-import { Select, SelectOption } from '@/components/Select/Select';
+import { Select } from '@/components/Select/Select';
 import { TimeInput } from '@/components/TimeInput/TimeInput';
+import { genreOptions, languageOptions, rankedDateOptions } from '@/constants/options';
 import { fonts, space, styled } from '@/styles';
 
 import { setFilter, useFilters } from '../hooks/useFilters';
@@ -25,7 +25,7 @@ const ModsContainer = styled('div', {
 });
 
 const ModBlock = styled('div', {
-  flex: '0 0 auto',
+  flex: `0 0 ${space.modBlock}`,
 });
 
 const MinMaxBlock = styled('div', {
@@ -107,7 +107,12 @@ const MoreButton = styled(Button, {
 });
 
 const AdditionalFilters = styled('div', {
+  display: 'flex',
+  gap: space.md,
   marginTop: space.sm,
+  '& > *': {
+    flex: '1 1 0',
+  },
 });
 
 export const Filters = memo(function Filters() {
@@ -248,25 +253,31 @@ export const Filters = memo(function Filters() {
           </span>
         </MinMaxBlock>
       </CardGridLayout>
-      {filters.isShowingMore && (
+      {filters.isShowingMore && !hidden && (
         <AdditionalFilters>
           <Select
-            ariaLabel="language"
-            placeholder="language (empty = any language)"
-            value={'1'}
-            onChange={(v) => console.log(v)}
-          >
-            <SelectOption value={'1'} label="english" />
-            <SelectOption value={'2'} label="other" />
-          </Select>
-          <MultiSelect
-            placeholder="language (empty = any language)"
+            placeholder="when song was ranked"
+            value={filters.ranked}
+            isMulti={false}
+            isClearable
+            onChange={(selected) => setFilter('ranked', selected)}
+            options={rankedDateOptions}
+          />
+          <Select
+            placeholder="language (empty = any)"
             value={filters.languages || []}
-            onChange={(selected) => setFilter('languages', selected)}
-            options={[
-              { value: '1', label: 'english' },
-              { value: '2', label: 'other' },
-            ]}
+            isMulti
+            isClearable
+            onChange={(selected) => setFilter('languages', [...selected])}
+            options={languageOptions}
+          />
+          <Select
+            placeholder="genre (empty = any)"
+            value={filters.genres || []}
+            isMulti
+            isClearable
+            onChange={(selected) => setFilter('genres', [...selected])}
+            options={genreOptions}
           />
         </AdditionalFilters>
       )}
