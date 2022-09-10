@@ -5,8 +5,8 @@ import type { StoreApi, UseBoundStore } from 'zustand';
 // Subscribes to a zustand state with a debounce function.
 export const useDebouncedStateSnapshot = <T extends object>(
   useStore: UseBoundStore<StoreApi<T>>
-): T | undefined => {
-  const [snapshot, setSnapshot] = useState<T | undefined>(undefined);
+): T => {
+  const [snapshot, setSnapshot] = useState<T>(useStore.getState());
 
   const setSnapshotDebounced = useMemo(() => _.debounce(100, setSnapshot), [setSnapshot]);
 

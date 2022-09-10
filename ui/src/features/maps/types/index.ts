@@ -75,4 +75,6 @@ export interface Filters {
   calcMode: CalcMode;
   count: number;
   isShowingMore: boolean;
+  languages?: string[];
+  genres?: string[];
 }

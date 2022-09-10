@@ -5,6 +5,8 @@ import { GiFarmer } from 'react-icons/gi';
 import { Button } from '@/components/Button/Button';
 import { FlipArrowIcon } from '@/components/FlipArrowIcon/FlipArrowIcon';
 import { Input } from '@/components/Input/Input';
+import { MultiSelect } from '@/components/MultiSelect/MultiSelect';
+import { Select, SelectOption } from '@/components/Select/Select';
 import { TimeInput } from '@/components/TimeInput/TimeInput';
 import { fonts, space, styled } from '@/styles';
 
@@ -104,21 +106,30 @@ const MoreButton = styled(Button, {
   },
 });
 
+const AdditionalFilters = styled('div', {
+  marginTop: space.sm,
+});
+
 export const Filters = memo(function Filters() {
   const filters = useFilters();
   const [hidden, setHidden] = useState(false);
+
+  const onClickHide = () => setHidden((v) => !v);
+  const onClickMore = () => {
+    setFilter('isShowingMore', !filters.isShowingMore);
+  };
 
   return (
     <FiltersContainer>
       <CardGridLayout filter hidden={hidden}>
         <FilterButtons>
-          <HideButton hidden={hidden} onClick={() => setHidden((v) => !v)} color="indigo">
+          <HideButton hidden={hidden} onClick={onClickHide} color="indigo">
             <FlipArrowIcon flipped={!hidden} css={{ marginRight: space.sm }} />
             {hidden ? 'show filters' : 'hide'}
           </HideButton>
-          <MoreButton hidden={hidden} color="green">
-            <FlipArrowIcon css={{ marginRight: space.sm }} />
-            more
+          <MoreButton hidden={hidden} onClick={onClickMore} color="green">
+            <FlipArrowIcon flipped={filters.isShowingMore} css={{ marginRight: space.sm }} />
+            {filters.isShowingMore ? 'less' : 'more'}
           </MoreButton>
         </FilterButtons>
         <SongNameFilter>
@@ -237,6 +248,28 @@ export const Filters = memo(function Filters() {
           </span>
         </MinMaxBlock>
       </CardGridLayout>
+      {filters.isShowingMore && (
+        <AdditionalFilters>
+          <Select
+            ariaLabel="language"
+            placeholder="language (empty = any language)"
+            value={'1'}
+            onChange={(v) => console.log(v)}
+          >
+            <SelectOption value={'1'} label="english" />
+            <SelectOption value={'2'} label="other" />
+          </Select>
+          <MultiSelect
+            placeholder="language (empty = any language)"
+            value={filters.languages || []}
+            onChange={(selected) => setFilter('languages', selected)}
+            options={[
+              { value: '1', label: 'english' },
+              { value: '2', label: 'other' },
+            ]}
+          />
+        </AdditionalFilters>
+      )}
     </FiltersContainer>
   );
 });

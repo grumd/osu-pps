@@ -98,7 +98,7 @@ export const fetchCsv = async <T>({ url }: { url: string }): Promise<T[]> => {
 };
 
 export const fetchWithPersist =
-  <T extends unknown[], Args extends [Mode, ...unknown[]]>({
+  <T, Args extends [Mode, ...unknown[]]>({
     storageKey,
     metadata,
     action,
@@ -119,7 +119,7 @@ export const fetchWithPersist =
     if (lastUpdatedFromStorage && lastUpdatedFromStorage >= lastUpdatedFromMetadata) {
       // Storage data is fresh
       const data = await getStorageItem<T>(storageKey);
-      if (data && data.length && !DEBUG_FETCH) {
+      if (data && !DEBUG_FETCH) {
         return data;
       }
     }

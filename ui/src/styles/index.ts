@@ -39,7 +39,7 @@ export const { styled, createTheme, globalCss, theme, config, keyframes } = crea
     highDpi:
       'only screen and (-webkit-min-device-pixel-ratio: 1.3), only screen and (min-device-pixel-ratio: 1.3), only screen and (min-resolution: 120dpi)',
     beatmapCardLg: '(min-width: 1081px)',
-    beatmapCardMd: '(max-width: 1080px)',
+    beatmapCardMd: '(max-width: 1080px) and (min-width: 851px)',
     beatmapCardSm: '(max-width: 850px)',
   },
   theme: {

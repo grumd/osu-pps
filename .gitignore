@@ -1,15 +1,10 @@
-# config
 config.json
 
-# temp files
 update-scripts/temp
 react-app/public/data
 
-# Dependency directories
 node_modules
 
-# Optional npm cache directory
 .npm
-
-# Shortcuts lol
 .lnk
+.vscode

@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import { QUERY_PERSISTENT_DATA_CONFIG } from '@/constants/api';
 import type { Mode } from '@/constants/modes';
 import { useMetadata } from '@/hooks/useMetadata';
 import { useMode } from '@/hooks/useMode';
@@ -35,8 +34,7 @@ export const useRankings = () => {
         metadata: metadata.data,
         action: fetchData,
       })(mode);
-    },
-    QUERY_PERSISTENT_DATA_CONFIG
+    }
   );
 
   return {

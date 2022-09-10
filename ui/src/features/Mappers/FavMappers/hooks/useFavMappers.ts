@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
-import { API_PREFIX, QUERY_PERSISTENT_DATA_CONFIG } from '@/constants/api';
+import { API_PREFIX } from '@/constants/api';
 import { useMetadata } from '@/hooks/useMetadata';
 import { useMode } from '@/hooks/useMode';
 import { fetchJson } from '@/utils/fetch';
@@ -18,8 +18,7 @@ export const useFavMappers = () => {
       return fetchJson<FavMapper[]>({
         url: `${API_PREFIX}/data/mappers/${mode}/favored-mappers.json`,
       });
-    },
-    QUERY_PERSISTENT_DATA_CONFIG
+    }
   );
 
   return {

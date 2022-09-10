@@ -22,6 +22,19 @@ const GridContainer = styled('div', {
           paddingBottom: 0,
         },
       },
+      false: {
+        '@beatmapCardMd': {
+          '& > *': {
+            paddingBottom: space.md,
+          },
+          '& > *:nth-child(1), & > *:nth-child(2)': {
+            paddingBottom: 0,
+          },
+          '& > *:nth-child(2)': {
+            paddingTop: space.md,
+          },
+        },
+      },
     },
     hidden: {
       true: {
@@ -60,33 +73,26 @@ const GridContainer = styled('div', {
       width: '100%',
     },
     '& > *:nth-child(2)': {
-      paddingTop: space.md,
-      paddingLeft: space.sm,
       gridArea: 'title',
+      paddingLeft: space.sm,
     },
     '& > *:nth-child(3)': {
-      paddingBottom: space.md,
       gridArea: 'pp',
     },
     '& > *:nth-child(4)': {
-      paddingBottom: space.md,
-      paddingLeft: space.sm,
       gridArea: 'mods',
+      paddingLeft: space.sm,
     },
     '& > *:nth-child(5)': {
-      paddingBottom: space.md,
       gridArea: 'time',
     },
     '& > *:nth-child(6)': {
-      paddingBottom: space.md,
       gridArea: 'bpm',
     },
     '& > *:nth-child(7)': {
-      paddingBottom: space.md,
       gridArea: 'diff',
     },
     '& > *:nth-child(8)': {
-      paddingBottom: space.md,
       gridArea: 'ow',
     },
   },
@@ -108,33 +114,29 @@ const GridContainer = styled('div', {
     '& > *:nth-child(1)': {
       gridArea: 'image',
       alignSelf: 'start',
+      textAlign: 'left',
+      height: '100%',
+      width: '100%',
     },
     '& > *:nth-child(2)': {
-      padding: 0,
       gridArea: 'title',
     },
     '& > *:nth-child(3)': {
-      padding: 0,
       gridArea: 'pp',
     },
     '& > *:nth-child(4)': {
-      padding: 0,
       gridArea: 'mods',
     },
     '& > *:nth-child(5)': {
-      padding: 0,
       gridArea: 'time',
     },
     '& > *:nth-child(6)': {
-      padding: 0,
       gridArea: 'bpm',
     },
     '& > *:nth-child(7)': {
-      padding: 0,
       gridArea: 'diff',
     },
     '& > *:nth-child(8)': {
-      padding: 0,
       gridArea: 'ow',
     },
   },
@@ -142,8 +144,8 @@ const GridContainer = styled('div', {
 
 export const CardGridLayout = ({
   children,
-  filter,
-  hidden,
+  filter = false,
+  hidden = false,
 }: {
   filter?: boolean;
   hidden?: boolean;
