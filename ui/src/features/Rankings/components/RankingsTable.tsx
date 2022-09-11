@@ -84,6 +84,7 @@ export const RankingsTable = ({ rankings }: { rankings: Ranking[] }) => {
                   <FaChevronLeft />
                 </Button>
                 <Input
+                  withHighlight={false}
                   type="number"
                   value={page}
                   onChange={(value) => setPage(Math.min(pagesCount, Math.max(1, value ?? 1)))}
@@ -102,6 +103,7 @@ export const RankingsTable = ({ rankings }: { rankings: Ranking[] }) => {
                 placeholder="search names..."
                 type="text"
                 onChange={onChangeFilter}
+                value={filter}
               />
             </Th>
             <Th>pp</Th>

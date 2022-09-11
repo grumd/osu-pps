@@ -15,6 +15,7 @@ import { useMode } from '@/hooks/useMode';
 import { fonts, space, styled } from '@/styles';
 
 import { resetFilter, setFilter, useFilters } from '../hooks/useFilters';
+import { useFiltersCount } from '../hooks/useFiltersCount';
 import { CardGridLayout } from './CardGridLayout';
 import { ManiaKeysToggle, ModToggle } from './ModToggle';
 
@@ -72,8 +73,8 @@ const FiltersContainer = styled('div', {
 
 const FilterButtons = styled('div', {
   justifySelf: 'center',
-  width: '6.5em',
-  maxWidth: '6.5em',
+  width: '7em',
+  maxWidth: '7em',
   display: 'flex',
   flexFlow: 'column nowrap',
   alignItems: 'stretch',
@@ -100,8 +101,7 @@ const HideButton = styled(Button, {
 });
 
 const FilterButton = styled(Button, {
-  paddingTop: space.sm,
-  paddingBottom: space.sm,
+  padding: `${space.sm} 0`,
 
   '& svg': {
     marginRight: space.sm,
@@ -134,6 +134,7 @@ export const Filters = memo(function Filters() {
   const mode = useMode();
   const filters = useFilters();
   const [hidden, setHidden] = useState(false);
+  const { moreCount, filtersCount } = useFiltersCount(mode, filters);
 
   const onClickHide = () => setHidden((v) => !v);
   const onClickMore = () => {
@@ -149,14 +150,14 @@ export const Filters = memo(function Filters() {
         <FilterButtons>
           <HideButton hidden={hidden} onClick={onClickHide} color="indigo">
             <FlipArrowIcon flipped={!hidden} css={{ marginRight: space.sm }} />
-            {hidden ? 'show filters' : 'hide'}
+            {hidden ? ['show filters', filtersCount ? `(${filtersCount})` : ''].join(' ') : 'hide'}
           </HideButton>
           <FilterButton hidden={hidden} onClick={onClickReset} color="red">
             <FaUndoAlt /> reset
           </FilterButton>
           <FilterButton hidden={hidden} onClick={onClickMore} color="green">
             <FlipArrowIcon flipped={filters.isShowingMore} />
-            {filters.isShowingMore ? 'less' : 'more'}
+            {filters.isShowingMore ? 'less' : ['more', moreCount ? `(${moreCount})` : ''].join(' ')}
           </FilterButton>
         </FilterButtons>
         <SongNameFilter>
@@ -289,7 +290,7 @@ export const Filters = memo(function Filters() {
         <AdditionalFilters>
           <Select
             placeholder="when song was ranked"
-            value={filters.ranked}
+            value={filters.ranked ?? null}
             isMulti={false}
             isClearable
             onChange={(selected) => setFilter('ranked', selected)}
@@ -297,7 +298,7 @@ export const Filters = memo(function Filters() {
           />
           <Select
             placeholder="language (empty = any)"
-            value={filters.languages || []}
+            value={filters.languages ?? []}
             isMulti
             isClearable
             onChange={(selected) => setFilter('languages', [...selected])}
@@ -305,7 +306,7 @@ export const Filters = memo(function Filters() {
           />
           <Select
             placeholder="genre (empty = any)"
-            value={filters.genres || []}
+            value={filters.genres ?? []}
             isMulti
             isClearable
             onChange={(selected) => setFilter('genres', [...selected])}

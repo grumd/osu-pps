@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { FocusEvent } from 'react';
 
 import { Input } from '@/components/Input/Input';
@@ -43,6 +43,12 @@ type TimeInputProps = {
 
 export function TimeInput({ seconds, onChange, ...rest }: TimeInputProps) {
   const [textValue, setTextValue] = useState(toMMSS(seconds));
+
+  useEffect(() => {
+    if (seconds === null) {
+      setTextValue('');
+    }
+  }, [seconds]);
 
   const _onChange = (value: string) => {
     setTextValue(value);

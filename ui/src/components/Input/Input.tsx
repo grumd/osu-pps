@@ -24,6 +24,14 @@ const StyledInput = styled('input', {
   '&[type=number]': {
     '-moz-appearance': 'textfield',
   },
+
+  variants: {
+    highlighted: {
+      true: {
+        borderColor: colors.amberA8,
+      },
+    },
+  },
 });
 
 type InputTypes =
@@ -56,10 +64,11 @@ interface InputProps<Type>
   onChange: Type extends 'number'
     ? (value: number | null, event: ChangeEvent<HTMLInputElement>) => void
     : (value: string, event: ChangeEvent<HTMLInputElement>) => void;
+  withHighlight?: boolean;
 }
 
 export function Input<Type extends InputTypes>(props: InputProps<Type>): JSX.Element {
-  const { onChange, type, ...rest } = props;
+  const { onChange, type, withHighlight = true, ...rest } = props;
 
   const _onChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -77,5 +86,12 @@ export function Input<Type extends InputTypes>(props: InputProps<Type>): JSX.Ele
     [type, onChange]
   );
 
-  return <StyledInput {...rest} type={type} onChange={_onChange} />;
+  return (
+    <StyledInput
+      {...rest}
+      type={type}
+      onChange={_onChange}
+      highlighted={withHighlight && !!rest.value}
+    />
+  );
 }
