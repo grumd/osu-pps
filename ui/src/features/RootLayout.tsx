@@ -39,9 +39,14 @@ const LayoutContainer = styled('div', {
     flex: '0 0 auto',
   },
 
-  '@beatmapCardSm': {
+  '@beatmapCardMd': {
     paddingLeft: space.sm,
     paddingRight: space.sm,
+  },
+
+  '@beatmapCardSm': {
+    paddingLeft: space.xs,
+    paddingRight: space.xs,
   },
 });
 

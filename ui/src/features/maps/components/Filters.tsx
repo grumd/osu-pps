@@ -1,3 +1,4 @@
+import _ from 'lodash/fp';
 import { memo, useState } from 'react';
 import { FaRegClock, FaStar } from 'react-icons/fa';
 import { GiFarmer } from 'react-icons/gi';
@@ -7,12 +8,14 @@ import { FlipArrowIcon } from '@/components/FlipArrowIcon/FlipArrowIcon';
 import { Input } from '@/components/Input/Input';
 import { Select } from '@/components/Select/Select';
 import { TimeInput } from '@/components/TimeInput/TimeInput';
+import { Mode } from '@/constants/modes';
 import { genreOptions, languageOptions, rankedDateOptions } from '@/constants/options';
+import { useMode } from '@/hooks/useMode';
 import { fonts, space, styled } from '@/styles';
 
 import { setFilter, useFilters } from '../hooks/useFilters';
 import { CardGridLayout } from './CardGridLayout';
-import { ModToggle } from './ModToggle';
+import { ManiaKeysToggle, ModToggle } from './ModToggle';
 
 const FarmerIcon = styled(GiFarmer, {
   fontSize: fonts[200],
@@ -25,7 +28,7 @@ const ModsContainer = styled('div', {
 });
 
 const ModBlock = styled('div', {
-  flex: `0 0 ${space.modBlock}`,
+  flex: `0 0 auto`,
 });
 
 const MinMaxBlock = styled('div', {
@@ -116,6 +119,7 @@ const AdditionalFilters = styled('div', {
 });
 
 export const Filters = memo(function Filters() {
+  const mode = useMode();
   const filters = useFilters();
   const [hidden, setHidden] = useState(false);
 
@@ -166,6 +170,16 @@ export const Filters = memo(function Filters() {
           </div>
         </MinMaxBlock>
         <ModsContainer>
+          {mode === Mode.mania && (
+            <ModBlock>
+              <ManiaKeysToggle
+                state={filters.maniaKeys === undefined ? 'any' : filters.maniaKeys}
+                onChange={(value) => setFilter('maniaKeys', value)}
+              >
+                {_.isNumber(filters.maniaKeys) ? `${filters.maniaKeys}K` : '?K'}
+              </ManiaKeysToggle>
+            </ModBlock>
+          )}
           <ModBlock>
             <ModToggle
               state={filters.dt ?? 'any'}

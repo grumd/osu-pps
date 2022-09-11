@@ -32,9 +32,11 @@ export function Maps() {
     <StyledMain>
       {error instanceof Error && <ErrorBox>{error.message}</ErrorBox>}
       <header>
-        {isLoading && progress !== null && <ProgressBar progress={progress} />}
         {isLoading && progress !== null && (
-          <p>{`This is going to take a minute, but we'll save the data in your browser`}</p>
+          <>
+            <ProgressBar progress={progress} />
+            <p>{`Loading all the maps is going to take a minute, but we'll save the data in your browser so it's faster next time`}</p>
+          </>
         )}
         {!isLoading && <Filters />}
       </header>

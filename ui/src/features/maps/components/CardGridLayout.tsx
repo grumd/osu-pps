@@ -57,7 +57,7 @@ const GridContainer = styled('div', {
   },
 
   '@beatmapCardMd': {
-    gridTemplateColumns: `5.5em max-content repeat(4, minmax(6.25em, 1fr)) minmax(4.5em, 1fr)`,
+    gridTemplateColumns: `5.5em max-content repeat(4, minmax(6.25em, 1fr)) minmax(3.5em, 1fr)`,
     gridTemplateRows: 'max-content max-content',
     gridTemplateAreas: `
       'image title title title title title title'

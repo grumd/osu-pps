@@ -1,11 +1,13 @@
-import { FaHandHoldingHeart } from 'react-icons/fa';
 import { FiTwitter } from 'react-icons/fi';
 import { SiOsu } from 'react-icons/si';
 import { TbBrandReddit } from 'react-icons/tb';
 
 import { useMetadata } from '@/hooks/useMetadata';
 import { useMode } from '@/hooks/useMode';
-import { colors, fonts, space, styled } from '@/styles';
+import { colors, space, styled } from '@/styles';
+
+import { Settings } from './Settings';
+import { SupportButton } from './SupportButton';
 
 const IconOsu = styled(SiOsu, {
   width: '1.25em',
@@ -23,11 +25,6 @@ const IconReddit = styled(TbBrandReddit, {
   height: '1.4em',
   color: colors.textPrimary,
   strokeWidth: '1.3px',
-});
-const IconDonate = styled(FaHandHoldingHeart, {
-  width: '1.25em',
-  height: '1.25em',
-  color: '#f15270',
 });
 
 const RowBlock = styled('div', {
@@ -54,11 +51,9 @@ const Aside = styled('aside', {
   alignItems: 'center',
   marginLeft: 'auto',
   gap: space.md,
-});
-
-const ThemeToggleBlock = styled('div', {
-  fontSize: fonts[200],
-  lineHeight: 0.5,
+  '@wrappedHeader': {
+    marginRight: 'auto',
+  },
 });
 
 const AsideInfoBlock = styled('div', {
@@ -92,7 +87,7 @@ function LastUpdatedMessage() {
 export function HeaderAside({ themeToggle }: { themeToggle: React.ReactNode }) {
   return (
     <Aside>
-      <ThemeToggleBlock>{themeToggle}</ThemeToggleBlock>
+      <Settings themeToggle={themeToggle} />
       <AsideInfoBlock>
         <LastUpdatedMessage />
         <RowBlock>
@@ -112,7 +107,7 @@ export function HeaderAside({ themeToggle }: { themeToggle: React.ReactNode }) {
           </a>
         </RowBlock>
         <RowBlock>
-          support me <IconDonate />
+          <SupportButton />
         </RowBlock>
       </AsideInfoBlock>
     </Aside>

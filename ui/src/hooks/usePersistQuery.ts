@@ -27,14 +27,12 @@ const savePersistData = async <TData>(key: readonly unknown[], data: TData, upda
 
 export const usePersistQuery = <TKey extends readonly unknown[], TData>(
   key: TKey,
-  fetchFn: () => Promise<TData | null>,
-  { setProgress }: { setProgress?: (progress: number) => void } = {}
+  fetchFn: () => Promise<TData | null>
 ) => {
   const meta = useMetadata();
 
   // Persisted IndexedDB query
   const { data: cachedStore, isLoading: isLoadingCache } = useQuery([...key, 'cached'], () => {
-    setProgress?.(0.05);
     return getPersistData<TData>(key);
   });
   const { data: cachedData, updatedOn: cachedOn } = cachedStore ?? {};
@@ -43,7 +41,6 @@ export const usePersistQuery = <TKey extends readonly unknown[], TData>(
   const { isLoading, error, ...rest } = useQuery(
     [...key, meta.data?.lastUpdated, cachedOn],
     async () => {
-      setProgress?.(0.1);
       if (meta.data && (!cachedOn || cachedOn < meta.data?.lastUpdated)) {
         const freshData = await fetchFn();
         void savePersistData(key, freshData, meta.data?.lastUpdated ?? '');

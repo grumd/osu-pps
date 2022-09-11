@@ -1,3 +1,4 @@
+import _ from 'lodash/fp';
 import create from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -11,11 +12,13 @@ const initialFilters: Filters = {
   isShowingMore: false,
 };
 
-export const useFiltersStore = create<{
+interface FiltersStore {
   filters: Filters;
   readonly setFilter: <K extends keyof Filters>(key: K, value: Filters[K]) => void;
   readonly nextPage: () => void;
-}>()(
+}
+
+export const useFiltersStore = create<FiltersStore>()(
   persist(
     (set) => ({
       filters: initialFilters,
@@ -25,7 +28,19 @@ export const useFiltersStore = create<{
     }),
     {
       name: 'filter-storage',
-      partialize: (state) => ({ filters: state.filters }),
+      // Do not persist `count` property of the filters
+      partialize: (state) => ({ filters: _.omit('count', state.filters) }),
+      merge: (persistedState, currentState) => {
+        return {
+          ...currentState,
+          filters: {
+            ...currentState.filters,
+            ...(persistedState as FiltersStore).filters,
+            count: currentState.filters.count,
+          },
+        };
+      },
+      version: 1,
     }
   )
 );

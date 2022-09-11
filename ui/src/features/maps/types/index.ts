@@ -1,6 +1,6 @@
 import type { CalcMode } from '@/constants/modes';
 
-import type { ModToggleState } from '../components/ModToggle';
+import type { ManiaKeysToggleState, ModToggleState } from '../components/ModToggle';
 
 export interface BeatmapDiffLegacy {
   m: number;
@@ -72,6 +72,7 @@ export interface Filters {
   hd?: ModToggleState;
   hr?: ModToggleState;
   fl?: ModToggleState;
+  maniaKeys?: ManiaKeysToggleState;
   calcMode: CalcMode;
   count: number;
   isShowingMore: boolean;

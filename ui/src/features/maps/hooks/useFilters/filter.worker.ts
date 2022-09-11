@@ -1,13 +1,34 @@
 /* eslint-disable no-restricted-globals */
+import type { Mode } from '@/constants/modes';
+
 import type { ModToggleState } from '../../components/ModToggle';
 import type { Beatmap, Filters } from '../../types';
 
-const state: {
-  maps: Beatmap[];
-  filters?: Filters;
-} = {
-  maps: [],
+// Specialized equality function for performance
+const isEqualMaps = (x: Beatmap[], y: Beatmap[]): boolean => {
+  return (
+    x.length === y.length &&
+    x.every((it, i) => {
+      return x[i].beatmapId === y[i].beatmapId;
+    })
+  );
 };
+
+// Normal deep equals
+const deepEqual = (x: unknown, y: unknown): boolean => {
+  return x && y && typeof x === 'object' && typeof y === 'object'
+    ? Object.keys(x).length === Object.keys(y).length &&
+        Object.keys(x).every((key) =>
+          deepEqual((x as Record<string, unknown>)[key], (y as Record<string, unknown>)[key])
+        )
+    : x === y;
+};
+
+const state: {
+  maps?: Beatmap[];
+  mode?: Mode;
+  filters?: Filters;
+} = {};
 
 const getMods = (map: Beatmap) => ({
   dt: (map.mods & 64) === 64,
@@ -32,10 +53,11 @@ function modAllowed(selectValue: ModToggleState, hasMod: boolean) {
 }
 
 function filter() {
-  const { maps, filters } = state;
+  const { maps, filters, mode } = state;
 
-  if (!filters) {
-    return maps;
+  if (!maps || !filters || !mode) {
+    console.log('skip filtering');
+    return [];
   }
 
   const {
@@ -57,6 +79,7 @@ function filter() {
     languages,
     genres,
     ranked,
+    maniaKeys,
   } = filters;
 
   console.time('filter worker task');
@@ -95,6 +118,9 @@ function filter() {
     filterFns.push((map) => matchesMaxMin(diffMin, diffMax, map.difficulty));
   }
 
+  if (mode === 'mania' && maniaKeys && maniaKeys !== 'any') {
+    filterFns.push((map) => maniaKeys === map.maniaKeys);
+  }
   if (dt && dt !== 'any') {
     filterFns.push((map, mods) => modAllowed(dt, mods.dt) && (dt !== 'invert' || mods.ht));
   }
@@ -126,7 +152,7 @@ function filter() {
         const mods = getMods(map);
         return filterFns.every((fn) => fn(map, mods));
       })
-    : maps;
+    : maps.slice(); // Make a copy to prevent sorting array in-place
 
   const sorted = calcMode
     ? filtered.sort((a, b) => b.farmValues[calcMode] - a.farmValues[calcMode])
@@ -139,14 +165,26 @@ function filter() {
   return truncated;
 }
 
-self.onmessage = (e: MessageEvent<['maps', Beatmap[]]> | MessageEvent<['filters', Filters]>) => {
+self.onmessage = (
+  e:
+    | MessageEvent<['maps', Beatmap[]]>
+    | MessageEvent<['filters', Filters]>
+    | MessageEvent<['mode', Mode]>
+) => {
   const [type, data] = e.data;
 
-  if (type === 'maps') {
-    state.maps = data;
-  } else if (type === 'filters') {
-    state.filters = data;
+  if (type === 'mode') {
+    state.mode = data;
+    return; // Do not filter data here, just update the state
   }
 
-  self.postMessage(filter());
+  if (type === 'maps' && !isEqualMaps(state.maps || [], data)) {
+    console.log('maps are new');
+    state.maps = data;
+    self.postMessage(filter());
+  } else if (type === 'filters' && !deepEqual(state.filters, data)) {
+    console.log('filters are new');
+    state.filters = data;
+    self.postMessage(filter());
+  }
 };

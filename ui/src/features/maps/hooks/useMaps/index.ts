@@ -60,19 +60,11 @@ export const useMaps = () => {
     return beatmaps;
   };
 
-  const { isLoading, error, data } = usePersistQuery(
-    ['maps', mode],
-    () => {
-      // Setting progress to null to hide the progress bar when data is taken from cache
-      // We only want to show progress when the actual download is started
-      setMapsetsProgress(null);
-      setDiffsProgress(null);
-      return fetchData(mode);
-    },
-    {
-      setProgress: setMapsetsProgress,
-    }
-  );
+  const { isLoading, error, data } = usePersistQuery(['maps', mode], () => {
+    setMapsetsProgress(null);
+    setDiffsProgress(null);
+    return fetchData(mode);
+  });
 
   return {
     isLoading,

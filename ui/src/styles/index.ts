@@ -38,9 +38,9 @@ export const { styled, createTheme, globalCss, theme, config, keyframes } = crea
     wrappedHeader: '(max-width: 732px)',
     highDpi:
       'only screen and (-webkit-min-device-pixel-ratio: 1.3), only screen and (min-device-pixel-ratio: 1.3), only screen and (min-resolution: 120dpi)',
-    beatmapCardLg: '(min-width: 1081px)',
-    beatmapCardMd: '(max-width: 1080px) and (min-width: 851px)',
-    beatmapCardSm: '(max-width: 850px)',
+    beatmapCardLg: '(min-width: 1141px)',
+    beatmapCardMd: '(max-width: 1140px) and (min-width: 891px)',
+    beatmapCardSm: '(max-width: 890px)',
   },
   theme: {
     colors: {
