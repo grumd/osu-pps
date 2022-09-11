@@ -78,7 +78,7 @@ const PpNumber = styled('span', {
   },
 
   '& > span:last-child': {
-    color: colors.textInactiveSecondary,
+    color: colors.textInactive,
   },
 });
 
@@ -93,7 +93,7 @@ const ModBlock = styled('div', {
   padding: `${space.sm} ${space.md}`,
   borderRadius: space.sm,
   background: colors.sand6,
-  color: colors.textInactiveSecondary,
+  color: colors.textInactive,
   width: space.modBlock,
   textAlign: 'center',
 
@@ -122,7 +122,8 @@ const TextCell = styled('span', {
 
 function CoverImage({ url, mapsetId }: { url: string; mapsetId: number }) {
   return (
-    <MapCoverLink tabIndex={-1} url={url}>
+    // Hidden for screen readers because we have a text link next to it
+    <MapCoverLink aria-hidden="true" tabIndex={-1} url={url}>
       <MapCoverBackground
         style={{
           '--bg': `url("https://assets.ppy.sh/beatmaps/${mapsetId}/covers/list.jpg")`,
@@ -182,23 +183,34 @@ export const BeatmapCard = memo(function _BeatmapCard({ map }: { map: Beatmap })
           <span>{map.pp?.toFixed(0) ?? '?'}</span>
           <span>pp</span>
         </PpNumber>
-        <ModsContainer>
+        <ModsContainer aria-label="Selected mods">
           {isMania && (
             <ModBlock active={!!map.maniaKeys}>
               {map.maniaKeys ? `${map.maniaKeys}K` : '?'}
             </ModBlock>
           )}
-          <ModBlock active={mods.dt} inverted={mods.ht}>
+          <ModBlock active={mods.dt} inverted={mods.ht} aria-hidden={!mods.dt && !mods.ht}>
             {mods.ht ? 'HT' : 'DT'}
           </ModBlock>
-          <ModBlock active={mods.hd}>HD</ModBlock>
-          <ModBlock active={mods.hr}>HR</ModBlock>
-          <ModBlock active={mods.fl}>FL</ModBlock>
+          <ModBlock active={mods.hd} aria-hidden={!mods.hd}>
+            HD
+          </ModBlock>
+          <ModBlock active={mods.hr} aria-hidden={!mods.hr}>
+            HR
+          </ModBlock>
+          <ModBlock active={mods.fl} aria-hidden={!mods.fl}>
+            FL
+          </ModBlock>
         </ModsContainer>
-        <ColorCodedCell kind={colorCodeStyle} color={getLengthColour(map.length, colorOpacity)}>
+        <ColorCodedCell
+          aria-label="length"
+          kind={colorCodeStyle}
+          color={getLengthColour(map.length, colorOpacity)}
+        >
           {secondsToFormatted(map.length)}
         </ColorCodedCell>
         <ColorCodedCell
+          aria-label="bpm"
           kind={colorCodeStyle}
           color={getBpmColour(map.bpm * bpmFactor, colorOpacity)}
         >
@@ -216,10 +228,14 @@ export const BeatmapCard = memo(function _BeatmapCard({ map }: { map: Beatmap })
             truncateFloat(map.bpm)
           )}
         </ColorCodedCell>
-        <ColorCodedCell kind={colorCodeStyle} color={getDiffColour(map.difficulty, colorOpacity)}>
+        <ColorCodedCell
+          aria-label="difficulty"
+          kind={colorCodeStyle}
+          color={getDiffColour(map.difficulty, colorOpacity)}
+        >
           {map.difficulty.toFixed(2)}
         </ColorCodedCell>
-        <TextCell>{map.farmValues[calcMode].toFixed(0)}</TextCell>
+        <TextCell aria-label="overweightness">{map.farmValues[calcMode].toFixed(0)}</TextCell>
       </CardGridLayout>
     </BeatmapCardDiv>
   );

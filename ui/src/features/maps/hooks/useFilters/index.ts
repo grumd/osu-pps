@@ -15,6 +15,7 @@ const initialFilters: Filters = {
 interface FiltersStore {
   filters: Filters;
   readonly setFilter: <K extends keyof Filters>(key: K, value: Filters[K]) => void;
+  readonly resetFilter: () => void;
   readonly nextPage: () => void;
 }
 
@@ -22,6 +23,10 @@ export const useFiltersStore = create<FiltersStore>()(
   persist(
     (set) => ({
       filters: initialFilters,
+      resetFilter: () =>
+        set((state) => ({
+          filters: { ...initialFilters, ..._.pick(['calcMode', 'isShowingMore'], state.filters) },
+        })),
       setFilter: (key, value) => set((state) => ({ filters: { ...state.filters, [key]: value } })),
       nextPage: () =>
         set((state) => ({ filters: { ...state.filters, count: state.filters.count + 20 } })),
@@ -47,5 +52,4 @@ export const useFiltersStore = create<FiltersStore>()(
 
 export const useFilters = () => useFiltersStore((state) => state.filters);
 
-export const { setFilter } = useFiltersStore.getState();
-export const { nextPage } = useFiltersStore.getState();
+export const { setFilter, resetFilter, nextPage } = useFiltersStore.getState();

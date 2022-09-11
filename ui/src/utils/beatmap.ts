@@ -1,10 +1,11 @@
 import { color, interpolateRgb, scaleLinear } from 'd3';
-import _ from 'lodash/fp';
 
 import type { Beatmap } from '@/features/Maps/types';
 
+// Array of colors taken from this code:
 // https://github.com/ppy/osu-web/blob/master/resources/assets/lib/utils/beatmap-helper.ts
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the GNU Affero General Public License v3.0.
+// https://github.com/ppy/osu-web/blob/master/LICENCE
 const colors = [
   '#4290FB',
   '#4FC0FF',
@@ -17,6 +18,7 @@ const colors = [
   '#6563DE',
   '#18158E',
 ];
+
 const colorSpectrum = scaleLinear<string>()
   .domain([0.011, 0.138, 0.222, 0.277, 0.366, 0.466, 0.544, 0.644, 0.744, 0.855])
   .clamp(true)

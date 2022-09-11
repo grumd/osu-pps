@@ -1,4 +1,4 @@
-import { colors, fonts, styled } from '@/styles';
+import { colors, styled } from '@/styles';
 
 interface RankChangeProps {
   delta: number;

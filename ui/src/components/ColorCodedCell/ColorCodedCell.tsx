@@ -55,16 +55,18 @@ interface ColorCodedCellProps {
   color?: string;
   children: React.ReactNode;
   kind: ColorCodeStyle;
+  'aria-label'?: string;
 }
 
 export const ColorCodedCell = ({
   color,
   children,
   kind = ColorCodeStyle.Background,
+  'aria-label': ariaLabel,
 }: ColorCodedCellProps) => {
   return (
     <ColoredCellContainer>
-      <ColoredCellSpan kind={kind} style={{ '--color': color || 'white' }}>
+      <ColoredCellSpan aria-label={ariaLabel} kind={kind} style={{ '--color': color || 'white' }}>
         {children}
       </ColoredCellSpan>
     </ColoredCellContainer>

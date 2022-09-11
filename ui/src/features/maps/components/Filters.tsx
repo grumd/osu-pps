@@ -1,6 +1,7 @@
 import _ from 'lodash/fp';
 import { memo, useState } from 'react';
 import { FaRegClock, FaStar } from 'react-icons/fa';
+import { FaUndoAlt } from 'react-icons/fa';
 import { GiFarmer } from 'react-icons/gi';
 
 import { Button } from '@/components/Button/Button';
@@ -13,7 +14,7 @@ import { genreOptions, languageOptions, rankedDateOptions } from '@/constants/op
 import { useMode } from '@/hooks/useMode';
 import { fonts, space, styled } from '@/styles';
 
-import { setFilter, useFilters } from '../hooks/useFilters';
+import { resetFilter, setFilter, useFilters } from '../hooks/useFilters';
 import { CardGridLayout } from './CardGridLayout';
 import { ManiaKeysToggle, ModToggle } from './ModToggle';
 
@@ -70,14 +71,21 @@ const FiltersContainer = styled('div', {
 });
 
 const FilterButtons = styled('div', {
+  justifySelf: 'center',
+  width: '6.5em',
+  maxWidth: '6.5em',
   display: 'flex',
   flexFlow: 'column nowrap',
   alignItems: 'stretch',
   justifyContent: 'center',
+  gap: space.sm,
   fontSize: fonts[75],
 });
 
 const HideButton = styled(Button, {
+  paddingTop: space.sm,
+  paddingBottom: space.sm,
+
   '@beatmapCardLg': {
     display: 'none',
   },
@@ -87,14 +95,18 @@ const HideButton = styled(Button, {
       true: {
         width: 'max-content',
       },
-      false: {
-        marginBottom: space.lg,
-      },
     },
   },
 });
 
-const MoreButton = styled(Button, {
+const FilterButton = styled(Button, {
+  paddingTop: space.sm,
+  paddingBottom: space.sm,
+
+  '& svg': {
+    marginRight: space.sm,
+  },
+
   variants: {
     hidden: {
       true: {
@@ -127,6 +139,9 @@ export const Filters = memo(function Filters() {
   const onClickMore = () => {
     setFilter('isShowingMore', !filters.isShowingMore);
   };
+  const onClickReset = () => {
+    if (window.confirm('Reset all filters?')) resetFilter();
+  };
 
   return (
     <FiltersContainer>
@@ -136,10 +151,13 @@ export const Filters = memo(function Filters() {
             <FlipArrowIcon flipped={!hidden} css={{ marginRight: space.sm }} />
             {hidden ? 'show filters' : 'hide'}
           </HideButton>
-          <MoreButton hidden={hidden} onClick={onClickMore} color="green">
-            <FlipArrowIcon flipped={filters.isShowingMore} css={{ marginRight: space.sm }} />
+          <FilterButton hidden={hidden} onClick={onClickReset} color="red">
+            <FaUndoAlt /> reset
+          </FilterButton>
+          <FilterButton hidden={hidden} onClick={onClickMore} color="green">
+            <FlipArrowIcon flipped={filters.isShowingMore} />
             {filters.isShowingMore ? 'less' : 'more'}
-          </MoreButton>
+          </FilterButton>
         </FilterButtons>
         <SongNameFilter>
           <Input

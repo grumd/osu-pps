@@ -11,7 +11,7 @@ import { Text } from '@/components/Text/Text';
 import { colors, space, styled } from '@/styles';
 import { truncateFloat } from '@/utils';
 
-import type { MapperItem, MapperMapItem } from './types';
+import type { MapperMapItem } from './types';
 
 const Container = styled('div', {
   fontSize: '1rem',

@@ -3,7 +3,7 @@
 import type * as React from 'react';
 
 declare module 'react' {
-  // Allow custom css variables in "style" prop
+  // Allow custom css variables in "style" prop via interface merging
   interface CSSProperties {
     '--bg'?: string;
     '--bg2x'?: string;

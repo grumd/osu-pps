@@ -11,6 +11,10 @@ const StyledInput = styled('input', {
   borderRadius: space.sm,
   border: `${space.borderWidth} solid ${colors.sand8}`,
 
+  '&::placeholder': {
+    color: colors.textInactive,
+  },
+
   /* Chrome, Safari, Edge, Opera */
   '&::-webkit-outer-spin-button,&::-webkit-inner-spin-button': {
     display: 'none',

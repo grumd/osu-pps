@@ -29,7 +29,10 @@ const StyledToggleButton = styled('button', {
       },
     },
     state: {
-      any: {},
+      any: {
+        background: `linear-gradient(135deg, ${colors.sand6} 0%, ${colors.sand6} 50%, ${colors.bgOrange} 50%, ${colors.bgOrange} 100%);`,
+        color: colors.textInactive,
+      },
       yes: {
         background: colors.bgOrange,
         fontWeight: 'bold',
@@ -37,7 +40,7 @@ const StyledToggleButton = styled('button', {
       },
       no: {
         background: colors.sand6,
-        color: colors.textInactiveSecondary,
+        color: colors.textInactive,
       },
       invert: {
         background: colors.bgBlue,
@@ -45,29 +48,7 @@ const StyledToggleButton = styled('button', {
         color: colors.textPrimary,
       },
     },
-    withOther: {
-      true: {},
-    },
   },
-
-  compoundVariants: [
-    {
-      state: 'any',
-      withOther: true,
-      css: {
-        background: `linear-gradient(135deg, ${colors.sand6} 0%, ${colors.sand6} 33%, ${colors.bgOrange} 33%, ${colors.bgOrange} 66%, ${colors.bgBlue} 66%, ${colors.bgBlue} 100%);`,
-        color: colors.textInactiveSecondary,
-      },
-    },
-    {
-      state: 'any',
-      withOther: false,
-      css: {
-        background: `linear-gradient(135deg, ${colors.sand6} 0%, ${colors.sand6} 50%, ${colors.bgOrange} 50%, ${colors.bgOrange} 100%);`,
-        color: colors.textInactiveSecondary,
-      },
-    },
-  ],
 });
 
 export function ModToggle({
@@ -97,7 +78,6 @@ export function ModToggle({
       type="button"
       selected={state === option}
       state={option}
-      withOther={withOther}
       onClick={() => onChange(option)}
     >
       {option === 'invert' ? otherLabel : children}
@@ -107,7 +87,7 @@ export function ModToggle({
   return (
     <HoverCard openDelay={0} closeDelay={150}>
       <HoverCardTrigger>
-        <StyledToggleButton type="button" state={state} withOther={withOther} onClick={onClick}>
+        <StyledToggleButton type="button" state={state} onClick={onClick}>
           {state === 'invert' ? otherLabel : children}
         </StyledToggleButton>
       </HoverCardTrigger>
@@ -142,7 +122,6 @@ export function ManiaKeysToggle({
   const getHoverOption = (option: ManiaKeysToggleState, label: string) => (
     <StyledToggleButton
       type="button"
-      withOther={false}
       selected={state === option}
       state={option === 'any' ? 'any' : 'yes'}
       onClick={() => onChange(option)}
@@ -154,12 +133,7 @@ export function ManiaKeysToggle({
   return (
     <HoverCard openDelay={0} closeDelay={150}>
       <HoverCardTrigger>
-        <StyledToggleButton
-          type="button"
-          withOther={false}
-          state={state === 'any' ? 'any' : 'yes'}
-          onClick={onClick}
-        >
+        <StyledToggleButton type="button" state={state === 'any' ? 'any' : 'yes'} onClick={onClick}>
           {children}
         </StyledToggleButton>
       </HoverCardTrigger>

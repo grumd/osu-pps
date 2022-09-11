@@ -70,7 +70,7 @@ export const Settings = ({ themeToggle }: { themeToggle: React.ReactNode }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button iconButton color="sand">
+        <Button iconButton color="sand" aria-label="settings">
           <SettingsIcon />
         </Button>
       </DialogTrigger>
@@ -78,7 +78,7 @@ export const Settings = ({ themeToggle }: { themeToggle: React.ReactNode }) => {
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
           <DialogClose asChild>
-            <Button iconButton color="sand">
+            <Button iconButton color="sand" aria-label="close">
               <IoClose />
             </Button>
           </DialogClose>
@@ -101,6 +101,7 @@ export const Settings = ({ themeToggle }: { themeToggle: React.ReactNode }) => {
                 key={style}
                 onClick={() => setStyle(style)}
                 pressed={colorCodeStyle === style}
+                aria-label={labelByStyle[style]}
               >
                 {labelByStyle[style]}
                 <ColorCodedCell color={getLengthColour(90, opacityByStyle[style])} kind={style}>
