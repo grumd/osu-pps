@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { FiHelpCircle } from 'react-icons/fi';
 import { Outlet } from 'react-router-dom';
 
@@ -45,7 +46,9 @@ export const Mappers = () => {
           <FiHelpCircle /> how does this work?
         </FaqLink>
       </SmallNavMenu>
-      <Outlet />
+      <Suspense>
+        <Outlet />
+      </Suspense>
     </MappersContainer>
   );
 };

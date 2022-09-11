@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { startTransition, useEffect, useState } from 'react';
 
 import { useMode } from '@/hooks/useMode';
 
@@ -11,7 +11,7 @@ const useWorkerResult = (worker: Worker) => {
 
   useEffect(() => {
     const listener = (res: MessageEvent<Beatmap[]>) => {
-      console.log('worker sends new data', res.data.length);
+      console.log('worker sends new data', res.data?.length);
       setResult(res.data);
     };
     worker.addEventListener('message', listener);
@@ -26,24 +26,31 @@ const useWorkerResult = (worker: Worker) => {
 export const useFilterWorker = (
   data: Beatmap[] | null | undefined,
   filters: Filters
-): Beatmap[] | null => {
+): Beatmap[] | null | undefined => {
   const mode = useMode();
+
   const filteredData = useWorkerResult(filterWorker);
 
   useEffect(() => {
-    console.log('posting mode change', mode);
     filterWorker.postMessage(['mode', mode]);
   }, [mode]);
 
   useEffect(() => {
-    console.log('posting maps change', data?.length);
-    filterWorker.postMessage(['maps', data || []]);
-  }, [data]);
-
-  useEffect(() => {
-    console.log('posting filters change');
     filterWorker.postMessage(['filters', filters]);
   }, [filters]);
+
+  useEffect(() => {
+    startTransition(() => {
+      // HACK: Takes more than 200ms to serialize, so this effect runs last to not block previous effects from running
+      filterWorker.postMessage(['maps-mode', { data, mode }]);
+    });
+  }, [data, mode]);
+
+  useEffect(() => {
+    return () => {
+      filterWorker.postMessage(['mode', null]);
+    };
+  }, []);
 
   return filteredData;
 };

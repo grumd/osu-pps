@@ -1,16 +1,24 @@
-/* eslint-disable no-restricted-globals */
 import type { Mode } from '@/constants/modes';
 
 import type { ModToggleState } from '../../components/ModToggle';
 import type { Beatmap, Filters } from '../../types';
 
+interface FilterWorkerState {
+  mode?: Mode | null;
+  filters?: Filters;
+  mapsPerMode: Partial<Record<Mode, Beatmap[] | null>>;
+}
+
 // Specialized equality function for performance
-const isEqualMaps = (x: Beatmap[], y: Beatmap[]): boolean => {
+const isEqualMaps = (x: Beatmap[] | null | undefined, y: Beatmap[] | null | undefined): boolean => {
   return (
-    x.length === y.length &&
-    x.every((it, i) => {
-      return x[i].beatmapId === y[i].beatmapId;
-    })
+    x === y ||
+    (!!x &&
+      !!y &&
+      x.length === y.length &&
+      x.every((it, i) => {
+        return it.beatmapId === y[i].beatmapId;
+      }))
   );
 };
 
@@ -24,11 +32,9 @@ const deepEqual = (x: unknown, y: unknown): boolean => {
     : x === y;
 };
 
-const state: {
-  maps?: Beatmap[];
-  mode?: Mode;
-  filters?: Filters;
-} = {};
+const state: FilterWorkerState = {
+  mapsPerMode: {},
+};
 
 const getMods = (map: Beatmap) => ({
   dt: (map.mods & 64) === 64,
@@ -52,12 +58,10 @@ function modAllowed(selectValue: ModToggleState, hasMod: boolean) {
   );
 }
 
-function filter() {
-  const { maps, filters, mode } = state;
-
+function filter({ filters, mode, mapsPerMode }: FilterWorkerState) {
+  const maps = mode && mapsPerMode[mode];
   if (!maps || !filters || !mode) {
-    console.log('skip filtering');
-    return [];
+    return null;
   }
 
   const {
@@ -167,24 +171,26 @@ function filter() {
 
 self.onmessage = (
   e:
-    | MessageEvent<['maps', Beatmap[]]>
+    | MessageEvent<['maps-mode', { data: Beatmap[] | null; mode: Mode }]>
     | MessageEvent<['filters', Filters]>
-    | MessageEvent<['mode', Mode]>
+    | MessageEvent<['mode', Mode | null]>
 ) => {
-  const [type, data] = e.data;
+  const [type, payload] = e.data;
 
-  if (type === 'mode') {
-    state.mode = data;
-    return; // Do not filter data here, just update the state
+  if (type === 'mode' && state.mode !== payload) {
+    state.mode = payload;
+    self.postMessage(filter(state));
   }
 
-  if (type === 'maps' && !isEqualMaps(state.maps || [], data)) {
-    console.log('maps are new');
-    state.maps = data;
-    self.postMessage(filter());
-  } else if (type === 'filters' && !deepEqual(state.filters, data)) {
-    console.log('filters are new');
-    state.filters = data;
-    self.postMessage(filter());
+  if (type === 'maps-mode') {
+    if (!isEqualMaps(state.mapsPerMode[payload.mode], payload.data)) {
+      state.mapsPerMode[payload.mode] = payload.data;
+      self.postMessage(filter(state));
+    }
+  }
+
+  if (type === 'filters' && !deepEqual(state.filters, payload)) {
+    state.filters = payload;
+    self.postMessage(filter(state));
   }
 };
