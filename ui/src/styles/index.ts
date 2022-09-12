@@ -87,6 +87,10 @@ export const { styled, createTheme, globalCss, theme, config, keyframes } = crea
       marginLeft: value,
       marginRight: value,
     }),
+    paddingX: (value: Stitches.ScaleValue<'space'>) => ({
+      paddingLeft: value,
+      paddingRight: value,
+    }),
   },
 });
 

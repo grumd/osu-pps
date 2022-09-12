@@ -11,6 +11,14 @@ const HeaderContainer = styled('header', {
   flexFlow: 'row wrap',
   justifyContent: 'space-between',
   rowGap: space.xs,
+
+  '@beatmapCardMd': {
+    paddingX: space.sm,
+  },
+
+  '@beatmapCardSm': {
+    paddingX: space.md,
+  },
 });
 
 export function Header({ themeToggle }: { themeToggle: ReactNode }) {
