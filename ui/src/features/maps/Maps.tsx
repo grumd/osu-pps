@@ -1,4 +1,5 @@
 import { ErrorBox } from '@/components/ErrorBox/ErrorBox';
+import Loader from '@/components/Loader/Loader';
 import { ProgressBar } from '@/components/ProgressBar/ProgressBar';
 import { space, styled } from '@/styles';
 
@@ -32,6 +33,7 @@ export function Maps() {
     <StyledMain>
       {error instanceof Error && <ErrorBox>{error.message}</ErrorBox>}
       <header>
+        {isLoading && progress === null && <Loader />}
         {isLoading && progress !== null && (
           <>
             <ProgressBar progress={progress} />

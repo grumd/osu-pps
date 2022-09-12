@@ -17,8 +17,8 @@ interface PersistDataStore<TData> {
   updatedOn: string;
 }
 
-const getPersistData = async <TData>(key: readonly unknown[]) => {
-  return await get<PersistDataStore<TData>>(key.toString());
+const getPersistData = <TData>(key: readonly unknown[]) => {
+  return get<PersistDataStore<TData>>(key.toString());
 };
 
 const savePersistData = async <TData>(key: readonly unknown[], data: TData, updatedOn: string) => {
@@ -32,9 +32,12 @@ export const usePersistQuery = <TKey extends readonly unknown[], TData>(
   const meta = useMetadata();
 
   // Persisted IndexedDB query
-  const { data: cachedStore, isLoading: isLoadingCache } = useQuery([...key, 'cached'], () => {
-    return getPersistData<TData>(key);
-  });
+  const { data: cachedStore, isLoading: isLoadingCache } = useQuery(
+    [...key, 'cached'],
+    async () => {
+      return (await getPersistData<TData>(key)) ?? null;
+    }
+  );
   const { data: cachedData, updatedOn: cachedOn } = cachedStore ?? {};
 
   // Server state query
@@ -58,7 +61,7 @@ export const usePersistQuery = <TKey extends readonly unknown[], TData>(
   return {
     ...rest,
     data: rest.data ?? cachedData,
-    isLoading: !rest.data && !cachedData && (meta.isLoading || isLoading),
+    isLoading: !rest.data && !cachedData && (meta.isLoading || isLoading || isLoadingCache),
     error: meta.error || error,
   };
 };

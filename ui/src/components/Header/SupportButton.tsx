@@ -1,8 +1,10 @@
 import { FaHandHoldingHeart } from 'react-icons/fa';
-import { IoLogoPaypal } from 'react-icons/io5';
+import { IoClose, IoLogoPaypal } from 'react-icons/io5';
 
+import { Button } from '@/components/Button/Button';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -99,6 +101,11 @@ export const SupportButton = () => {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Donate</DialogTitle>
+          <DialogClose asChild>
+            <Button iconButton color="sand" aria-label="close">
+              <IoClose />
+            </Button>
+          </DialogClose>
         </DialogHeader>
         <p>
           {`I've been developing this website since May 2019.

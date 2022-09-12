@@ -42,17 +42,17 @@ export const fetchCsvWithProgress = async <T>({
   const contentSize = apiResponse.data.size;
   const downloadUrl = apiResponse.data.download_url;
 
-  setProgress(0.05);
+  setProgress(0.1);
 
   const response = await axios.get<string>(downloadUrl, {
     responseType: 'text',
     onDownloadProgress: (progressEvent: { loaded: number }) => {
       // Math.min for the sanity check, just in case downloaded content is bigger than contentSize
-      setProgress(Math.min(0.95, (progressEvent.loaded / contentSize) * 0.9 + 0.05));
+      setProgress(Math.min(0.9, (progressEvent.loaded / contentSize) * 0.8 + 0.1));
     },
   });
 
-  setProgress(0.95);
+  setProgress(0.9);
 
   const parsed = await new Promise<T[]>((resolve) => {
     Papa.parse<T>(response.data, {

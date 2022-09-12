@@ -57,12 +57,13 @@ export const useMaps = () => {
       return acc;
     }, []);
 
+    setMapsetsProgress(null);
+    setDiffsProgress(null);
+
     return beatmaps;
   };
 
   const { isLoading, error, data } = usePersistQuery(['maps', mode], () => {
-    setMapsetsProgress(null);
-    setDiffsProgress(null);
     return fetchData(mode);
   });
 
