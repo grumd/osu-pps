@@ -1,7 +1,7 @@
 # osu-pps - osu! farm maps
 
-A [website made by grumd](http://grumd.github.io/osu-pps) with a list of most farmy maps in osu.  
-Supports osu!standard, taiko, mania, fruits.
+A [website made by grumd](https://osu-pps.com) with a list of most farmy maps in osu!.  
+Supports osu!std, taiko, mania, fruits.
 
 # Setup
 
@@ -16,11 +16,11 @@ To run update scripts, you also need to create a `/update-scripts/config.json` f
 ```
 
 ### Front-end
-Open `/react-app` and run `npm start`.
+Open `/ui` and run `npm start`.
 
-For debugging, you can change `DEBUG_FETCH` variable in `/react-app/src/constants/common.js` - front-end will search for json data files in `/react-app/public` instead of fething from github.
+For debugging, you can change `VITE_LOCAL_FETCH` env variable in `/ui/.env` - front-end will search for json data files in `/react-app/public` instead of fething json from github.
 
-### Back-end (database update scripts)
+### Back-end (json update scripts)
 Open `/update-scripts` and run `node scheduler.js`.
 
 For debugging, you can change `DEBUG` variable in `/update-scripts/constants.js` - limits update process to just a few users/maps for debugging and testing purposes.

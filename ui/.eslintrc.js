@@ -49,6 +49,6 @@ module.exports = {
   },
   rules: {
     '@typescript-eslint/restrict-template-expressions': 'off', // we're using stitches a lot, this interferes with template literals
-    '@typescript-eslint/consistent-type-imports': 'error',
+    '@typescript-eslint/consistent-type-imports': 'error', // force "import type" syntax for type-only imports
   },
 };
