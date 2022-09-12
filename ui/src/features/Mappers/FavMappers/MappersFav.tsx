@@ -72,7 +72,7 @@ export function MappersFav() {
     <StyledMain>
       {error instanceof Error && <ErrorBox>{error.message}</ErrorBox>}
       {isLoading && <Loader css={{ padding: `${space.md} 0` }} />}
-      {visibleMappers && !!visibleMappers.length && (
+      {visibleMappers && (
         <>
           <ScrollArea css={{ flex: '1 1 0px', width: '100%', maxWidth: space.tableMaxWidth }}>
             <FilterContainer>
@@ -84,13 +84,17 @@ export function MappersFav() {
               />
             </FilterContainer>
             <ScrollAreaViewport ref={setScrollParent}>
-              <MappersTableExpandable
-                mappers={visibleMappers}
-                scrollParent={scrollParent ?? undefined}
-                loadMore={loadMore}
-                maxValue={maxValue}
-                renderExpandedRow={renderExpandedRow}
-              />
+              {visibleMappers.length ? (
+                <MappersTableExpandable
+                  mappers={visibleMappers}
+                  scrollParent={scrollParent ?? undefined}
+                  loadMore={loadMore}
+                  maxValue={maxValue}
+                  renderExpandedRow={renderExpandedRow}
+                />
+              ) : (
+                `Didn't find a mapper with this name :(`
+              )}
             </ScrollAreaViewport>
             <ScrollAreaScrollbar orientation="vertical">
               <ScrollAreaThumb />

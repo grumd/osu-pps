@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "description": "pp research community website",
   "license": "MIT",
+  "homepage": ".",
   "author": {
     "name": "Anton Kalmanovych (grumd)",
     "email": "grumd0@gmail.com",
