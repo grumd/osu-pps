@@ -1,0 +1,1 @@
+import{C as e}from"./index.4e4740cf.js";const s={[e.Base]:a=>a.farmValue,[e.ByAge]:a=>a.farmValue/a.hoursSinceRanked,[e.ByPasscount]:a=>a.farmValue/a.passCount,[e.ByPopulationAndTime]:a=>1e3*a.farmValue/(a.adjusted||1)**.65/(a.hoursSinceRanked||1)**.35};export{s as f};
