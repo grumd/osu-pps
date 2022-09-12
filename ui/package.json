@@ -22,7 +22,7 @@
     "test": "jest",
     "host": "serve -l 3000 -s ./dist",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "cross-env NODE_DEBUG=gh-pages gh-pages -d dist"
   },
   "dependencies": {
     "@radix-ui/colors": "^0.1.8",
@@ -83,6 +83,7 @@
     "@typescript-eslint/eslint-plugin": "^5.30.7",
     "@typescript-eslint/parser": "^5.30.7",
     "@vitejs/plugin-react": "^2.0.0",
+    "cross-env": "^7.0.3",
     "eslint": "^8.2.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-import-resolver-typescript": "^3.3.0",

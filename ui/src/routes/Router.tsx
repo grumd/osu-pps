@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import { Mode } from '@/constants/modes';
 import { RootLayout } from '@/features/RootLayout';
@@ -19,7 +19,7 @@ export const Router = () => {
   // Routes can be extracted to the features folder and nested as needed
   // Our app is not big enough for that, it's better to keep the routes all in one place
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/" element={<RootLayout />}>
           <Route index element={<Navigate to={mode({ mode: Mode.osu }).$} replace />} />
@@ -36,6 +36,6 @@ export const Router = () => {
           </Route>
         </Route>
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 };
