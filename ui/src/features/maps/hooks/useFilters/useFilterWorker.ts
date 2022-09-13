@@ -1,4 +1,4 @@
-import { startTransition, useEffect, useState } from 'react';
+import { startTransition, useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
 
 import { useMode } from '@/hooks/useMode';
 
@@ -7,20 +7,24 @@ import type { Beatmap, Filters } from '../../types';
 const filterWorker = new Worker(new URL('./filter.worker.ts', import.meta.url));
 
 const useWorkerResult = (worker: Worker) => {
-  const [result, setResult] = useState<Beatmap[] | null>(null);
+  const data = useRef<Beatmap[] | null>(null);
 
-  useEffect(() => {
-    const listener = (res: MessageEvent<Beatmap[]>) => {
-      console.log('worker sends new data', res.data?.length);
-      setResult(res.data);
-    };
-    worker.addEventListener('message', listener);
-    return () => {
-      worker.removeEventListener('message', listener);
-    };
-  }, [worker]);
-
-  return result;
+  return useSyncExternalStore(
+    useCallback(
+      (notify) => {
+        const onMessage = (res: MessageEvent<Beatmap[]>) => {
+          data.current = res.data;
+          notify();
+        };
+        worker.addEventListener('message', onMessage);
+        return () => {
+          worker.removeEventListener('message', onMessage);
+        };
+      },
+      [worker]
+    ),
+    () => data.current
+  );
 };
 
 export const useFilterWorker = (
@@ -40,8 +44,8 @@ export const useFilterWorker = (
   }, [filters]);
 
   useEffect(() => {
+    // HACK: Takes more than 200ms to serialize, so this effect runs last to not block previous effects from running
     startTransition(() => {
-      // HACK: Takes more than 200ms to serialize, so this effect runs last to not block previous effects from running
       filterWorker.postMessage(['maps-mode', { data, mode }]);
     });
   }, [data, mode]);

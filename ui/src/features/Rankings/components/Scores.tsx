@@ -6,6 +6,7 @@ import Loader from '@/components/Loader/Loader';
 import { Text } from '@/components/Text/Text';
 import { styled } from '@/styles';
 import { getModsText } from '@/utils/beatmap';
+import { getBeatmapUrl } from '@/utils/externalLinks';
 
 import { useScores } from '../hooks/useScores';
 import type { DataItem } from '../types';
@@ -49,9 +50,7 @@ export const Scores = ({ item }: { item: DataItem }) => {
               return (
                 <tr key={`${score.beatmapId}_${score.mods}`}>
                   <td>
-                    <ExternalLink url={`http://osu.ppy.sh/b/${score.beatmapId}`}>
-                      {score.title}
-                    </ExternalLink>
+                    <ExternalLink url={getBeatmapUrl(score.beatmapId)}>{score.title}</ExternalLink>
                     {modsText && ' +' + modsText}
                   </td>
                   <td>

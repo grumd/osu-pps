@@ -45,10 +45,11 @@ export function TimeInput({ seconds, onChange, ...rest }: TimeInputProps) {
   const [textValue, setTextValue] = useState(toMMSS(seconds));
 
   useEffect(() => {
-    if (seconds === null) {
-      setTextValue('');
+    // Control the value from outside if it changes externally, but don't override pending input
+    if (seconds !== toTotalSeconds(textValue)) {
+      setTextValue(toMMSS(seconds));
     }
-  }, [seconds]);
+  }, [seconds, textValue]);
 
   const _onChange = (value: string) => {
     setTextValue(value);

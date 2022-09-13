@@ -2,6 +2,8 @@ import { color, interpolateRgb, scaleLinear } from 'd3';
 
 import type { Beatmap } from '@/features/Maps/types';
 
+import { getBeatmapUrl } from './externalLinks';
+
 // Array of colors taken from this code:
 // https://github.com/ppy/osu-web/blob/master/resources/assets/lib/utils/beatmap-helper.ts
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the GNU Affero General Public License v3.0.
@@ -46,7 +48,7 @@ export function getBpmColour(bpm: number, opacity: number) {
 }
 
 export function getMapNameLink(map: Beatmap): { link: string; name: string } {
-  const link = `https://osu.ppy.sh/beatmapsets/${map.mapsetId}#osu/${map.beatmapId}`;
+  const link = getBeatmapUrl(map.beatmapId);
   const name = map.artist ? `${map.artist} - ${map.title} [${map.version}]` : link;
   return { link, name };
 }

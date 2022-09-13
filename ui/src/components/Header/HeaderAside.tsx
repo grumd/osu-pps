@@ -5,6 +5,7 @@ import { TbBrandReddit } from 'react-icons/tb';
 import { useMetadata } from '@/hooks/useMetadata';
 import { useMode } from '@/hooks/useMode';
 import { colors, space, styled } from '@/styles';
+import { getUserUrl } from '@/utils/externalLinks';
 
 import { Settings } from './Settings';
 import { SupportButton } from './SupportButton';
@@ -102,7 +103,7 @@ export function HeaderAside({ themeToggle }: { themeToggle: React.ReactNode }) {
           <a href="https://twitter.com/grumd_osu" target="_blank" rel="noreferrer noopener">
             <IconTwitter title="twitter" aria-label="twitter" />
           </a>
-          <a href="https://osu.ppy.sh/users/530913" target="_blank" rel="noreferrer noopener">
+          <a href={getUserUrl(530913)} target="_blank" rel="noreferrer noopener">
             <IconOsu title="osu" aria-label="osu" />
           </a>
         </RowBlock>

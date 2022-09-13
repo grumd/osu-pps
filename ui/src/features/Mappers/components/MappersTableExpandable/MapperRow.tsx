@@ -4,6 +4,7 @@ import { FlipArrowIcon } from '@/components/FlipArrowIcon/FlipArrowIcon';
 import { ExternalLink } from '@/components/Link/ExternalLink';
 import { ProgressBar } from '@/components/ProgressBar/ProgressBar';
 import { colors, fonts, space, styled } from '@/styles';
+import { getUserUrl } from '@/utils/externalLinks';
 
 import type { MapperItem } from './types';
 
@@ -117,7 +118,7 @@ export const Cells = memo(function _Cells({
     <>
       <TdIndex>{mapper.place}.</TdIndex>
       <TdMapperName>
-        <ExternalLink url={`https://osu.ppy.sh/users/${mapper.id}`}>
+        <ExternalLink url={getUserUrl(mapper.id)}>
           <MapperNames names={mapper.names} />
         </ExternalLink>
       </TdMapperName>

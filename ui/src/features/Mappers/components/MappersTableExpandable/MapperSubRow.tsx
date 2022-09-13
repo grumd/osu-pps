@@ -10,6 +10,7 @@ import {
 import { Text } from '@/components/Text/Text';
 import { colors, space, styled } from '@/styles';
 import { truncateFloat } from '@/utils';
+import { getBeatmapUrl } from '@/utils/externalLinks';
 
 import type { MapperMapItem } from './types';
 
@@ -74,9 +75,7 @@ export const MapperSubRow = ({ data, children, customHeaderRow }: MapperMapsProp
                   return (
                     <tr key={map.id}>
                       <td>
-                        <ExternalLink url={`https://osu.ppy.sh/beatmapsets/${map.id}`}>
-                          {map.text}
-                        </ExternalLink>
+                        <ExternalLink url={getBeatmapUrl(map.id)}>{map.text}</ExternalLink>
                       </td>
                       <td>
                         <MapCountBar progress={map.value / maxValue}>

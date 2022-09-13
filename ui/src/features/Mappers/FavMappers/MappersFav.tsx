@@ -41,14 +41,13 @@ export function MappersFav() {
   const maxValue = data ? data[0].value : 0;
 
   const filteredMappers = useMemo(() => {
-    let filtered = data || [];
     if (filter && data) {
-      filtered = matchSorter(data, filter, {
+      return matchSorter(data, filter, {
         keys: ['namesString'],
         baseSort: (a, b) => a.index - b.index, // prioritize higher ranking mappers in the search
       });
     }
-    return filtered;
+    return data;
   }, [data, filter]);
 
   const renderExpandedRow = useCallback(({ mapper }: { mapper: MapperItem }) => {
@@ -56,7 +55,8 @@ export function MappersFav() {
   }, []);
 
   const loadMore = useCallback(() => {
-    if (filteredMappers.length > showCount) setShowCount((c) => c + initialCount);
+    if (filteredMappers && filteredMappers.length > showCount)
+      setShowCount((c) => c + initialCount);
   }, [filteredMappers, showCount]);
 
   const visibleMappers = useMemo(() => {
@@ -64,7 +64,7 @@ export function MappersFav() {
   }, [showCount, filteredMappers]);
 
   useEffect(() => {
-    // Reset page when data changes or filtering changes
+    // Reset pagination when data changes or filtering changes
     setShowCount(initialCount);
   }, [data, filter]);
 

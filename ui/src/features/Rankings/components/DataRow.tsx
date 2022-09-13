@@ -4,6 +4,7 @@ import { Button } from '@/components/Button/Button';
 import { FlipArrowIcon } from '@/components/FlipArrowIcon/FlipArrowIcon';
 import { ExternalLink } from '@/components/Link/ExternalLink';
 import { colors, fonts, space, styled } from '@/styles';
+import { getUserUrl } from '@/utils/externalLinks';
 
 import type { DataItem } from '../types';
 import { RankChange } from './RankChange';
@@ -44,7 +45,7 @@ export const DataRow = ({ item }: { item: DataItem }) => {
           <RankChange delta={item.placeOld - item.place} />
         </Td>
         <Td css={{ width: '55%' }}>
-          <ExternalLink url={`https://osu.ppy.sh/users/${item.id}`}>{item.name}</ExternalLink>
+          <ExternalLink url={getUserUrl(item.id)}>{item.name}</ExternalLink>
         </Td>
         <Td css={{ textAlign: 'center', fontWeight: 'bold' }}>{Math.round(item.ppNew)}</Td>
         <Td
