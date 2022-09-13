@@ -1,4 +1,4 @@
-import { startTransition, useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
 
 import { useMode } from '@/hooks/useMode';
 
@@ -13,8 +13,11 @@ const useWorkerResult = (worker: Worker) => {
     useCallback(
       (notify) => {
         const onMessage = (res: MessageEvent<Beatmap[]>) => {
-          data.current = res.data;
-          notify();
+          if (res.data) {
+            // Keep old data when worker skipped filtering and returned null
+            data.current = res.data;
+            notify();
+          }
         };
         worker.addEventListener('message', onMessage);
         return () => {
@@ -45,9 +48,7 @@ export const useFilterWorker = (
 
   useEffect(() => {
     // HACK: Takes more than 200ms to serialize, so this effect runs last to not block previous effects from running
-    startTransition(() => {
-      filterWorker.postMessage(['maps-mode', { data, mode }]);
-    });
+    filterWorker.postMessage(['maps-mode', { data, mode }]);
   }, [data, mode]);
 
   useEffect(() => {
