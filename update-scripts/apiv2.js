@@ -65,13 +65,18 @@ const fetchApi = async (url, params, options = {}) => {
   }
 };
 
-const fetchApiWithPages = async (url, { params = {}, append, condition } = {}) => {
+const fetchApiWithPages = async (
+  url,
+  { params = {}, append, condition } = {},
+  { disableLogs = false } = {}
+) => {
   let nextPage;
   let accData;
   do {
     const { data } = await fetchApi(
       url,
-      nextPage ? { ...params, 'cursor[page]': nextPage } : params
+      nextPage ? { ...params, 'cursor[page]': nextPage } : params,
+      { disableLogs }
     );
     nextPage = data.cursor && condition(data) ? data.cursor.page : null;
     accData = accData ? append(accData, data) : data;
@@ -120,29 +125,41 @@ const fetchUserBestScores = async (userId, modeName, topScoresCount) => {
   }]
 */
 const fetchCountriesList = async (modeName) => {
-  return fetchApiWithPages(`/rankings/${modeName}/country`, {
-    append: (acc, data) => ({
-      ...data,
-      ranking: [...acc.ranking, ...data.ranking],
-    }),
-    condition: (data) => data.cursor && data.cursor.page <= 3,
-  });
+  return fetchApiWithPages(
+    `/rankings/${modeName}/country`,
+    {
+      append: (acc, data) => ({
+        ...data,
+        ranking: [...acc.ranking, ...data.ranking],
+      }),
+      condition: (data) => data.cursor && data.cursor.page <= 3,
+    },
+    {
+      disableLogs: true,
+    }
+  );
 };
 
 const fetchCountryRanking = async (modeName, country) => {
-  return fetchApiWithPages(`/rankings/${modeName}/performance`, {
-    params: { country },
-    append: (acc, data) => ({
-      ...data,
-      ranking: [...acc.ranking, ...data.ranking],
-    }),
-    condition: (data) => {
-      if (DEBUG) {
-        return false; // stop iterating pages for debug
-      }
-      return data.ranking.every((it) => it.pp > 1000);
+  return fetchApiWithPages(
+    `/rankings/${modeName}/performance`,
+    {
+      params: { country },
+      append: (acc, data) => ({
+        ...data,
+        ranking: [...acc.ranking, ...data.ranking],
+      }),
+      condition: (data) => {
+        if (DEBUG) {
+          return false; // stop iterating pages for debug
+        }
+        return data.ranking.every((it) => it.pp > 1000);
+      },
     },
-  });
+    {
+      disableLogs: true,
+    }
+  );
 };
 
 const fetchBeatmap = async (beatmapId) => {

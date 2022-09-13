@@ -22,11 +22,19 @@ const urlBeatmapInfo = (diffId, modeId) =>
 const getUniqueMapId = (map) => `${map.b}_${map.m}`;
 
 const shouldUpdateCached = (cached) => {
+  const cachedDate = cached.cache_date ? new Date(cached.cache_date) : null;
+  const approvedDate = cached.approved_date ? new Date(cached.approved_date) : null;
+  const wasCachedLongAgo =
+    !approvedDate ||
+    !cachedDate ||
+    // Update map cache increasingly rarely (2x longer wait every update)
+    Date.now() - cachedDate.getTime() > cachedDate.getTime() - approvedDate.getTime();
   const hasMapUpdatedAfterCached =
-    new Date(cached.last_update) > new Date(cached.cache_date) ||
-    new Date(cached.approved_date) > new Date(cached.cache_date) ||
-    new Date(cached.submit_date) > new Date(cached.cache_date);
-  return !cached.cache_date || hasMapUpdatedAfterCached || cached.passcount < 1000;
+    cachedDate &&
+    (new Date(cached.last_update) > cachedDate ||
+      new Date(cached.approved_date) > cachedDate ||
+      new Date(cached.submit_date) > cachedDate);
+  return wasCachedLongAgo || hasMapUpdatedAfterCached || cached.passcount < 1000;
 };
 
 module.exports = async (mode) => {
@@ -72,7 +80,7 @@ module.exports = async (mode) => {
               console.log('No maps found :(');
             }
           }),
-        ]);
+        ]).then((resolved) => resolved[1]);
 
     return getPromise
       .then((diff) => {

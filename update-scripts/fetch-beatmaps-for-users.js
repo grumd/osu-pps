@@ -30,7 +30,11 @@ const calculatePp99 = (map) => {
   const ppPerAccSum = map.pp.reduce((sum, pp, index) => {
     return sum + pp * map.acc[index];
   }, 0);
+  const ppSum = map.pp.reduce((sum, pp) => {
+    return sum + pp;
+  }, 0);
   map.pp99 = truncateFloat(ppPerAccSum / map.pp.length / 99);
+  map.ppAvg = truncateFloat(ppSum / map.pp.length);
   delete map.pp;
   delete map.acc;
 };

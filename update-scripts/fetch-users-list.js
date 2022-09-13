@@ -45,12 +45,11 @@ module.exports = async (mode) => {
     await writeJson(files.userIdsList(mode), []);
   }
   countriesList = await readJson(files.countriesList(mode));
+  console.log(`Fetching countries for ${mode.text}...`);
   await countriesList.slice(...(DEBUG ? [0, 1] : [0, 60])).reduce(async (prevProm, country) => {
     await prevProm;
-    console.log(`Starting to fetch ${country} (${mode.text})`);
     await fetchCountry(mode.text, country);
-    console.log(`Finished fetching ${country}`);
-    console.log(`Found ${idsList.length} unique users`);
+    console.log(`Found ${idsList.length} unique users in ${country}`);
     await delay(5000);
   }, Promise.resolve());
 
