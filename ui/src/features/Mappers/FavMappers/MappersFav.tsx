@@ -27,7 +27,9 @@ const StyledMain = styled('main', {
 
 const FilterContainer = styled('div', {
   padding: space.md,
-  width: '100%',
+  width: space.tableMaxWidth,
+  maxWidth: '100%',
+  margin: '0 auto',
 });
 
 const initialCount = 50;
@@ -74,7 +76,7 @@ export function MappersFav() {
       {isLoading && <Loader css={{ padding: `${space.md} 0` }} />}
       {visibleMappers && (
         <>
-          <ScrollArea css={{ flex: '1 1 0px', width: '100%', maxWidth: space.tableMaxWidth }}>
+          <ScrollArea css={{ flex: '1 1 0px' }}>
             <FilterContainer>
               <Input
                 placeholder="search names..."

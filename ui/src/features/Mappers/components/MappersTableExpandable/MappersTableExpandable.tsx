@@ -8,8 +8,9 @@ import type { MapperItem } from './types';
 
 const Table = styled('table', {
   borderCollapse: 'collapse',
-  width: '100%',
-  maxWidth: space.tableMaxWidth,
+  width: space.tableMaxWidth,
+  maxWidth: '100%',
+  margin: '0 auto',
 });
 
 const TableRow = styled('tr', {

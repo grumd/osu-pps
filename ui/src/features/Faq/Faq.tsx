@@ -65,6 +65,9 @@ const FaqList = styled('ul', {
   marginTop: 0,
   paddingLeft: space.xl,
   borderTop: `1px solid ${colors.sand6}`,
+  width: space.pageMaxWidth,
+  maxWidth: '100%',
+  margin: '0 auto',
 
   '& > li': {
     paddingTop: space.lg,

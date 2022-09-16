@@ -31,7 +31,11 @@ export function Rankings() {
   return (
     <StyledMain>
       {error instanceof Error && <ErrorBox>{error.message}</ErrorBox>}
-      <header>{isLoading && progress !== null && <ProgressBar progress={progress} />}</header>
+      <header>
+        {isLoading && progress !== null && (
+          <ProgressBar css={{ margin: '0 auto' }} progress={progress} />
+        )}
+      </header>
       <ScrollArea
         css={{
           flex: '1 1 0px',

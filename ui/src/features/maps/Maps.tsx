@@ -8,21 +8,14 @@ import { ScrolledFilteredMaps } from './components/ScrolledFilteredMaps';
 import { useMaps } from './hooks/useMaps';
 
 const StyledMain = styled('main', {
-  flex: '1 1 0px',
+  flex: '1 1 auto',
   display: 'flex',
   flexFlow: 'column nowrap',
+  alignItems: 'center',
 
-  '& > footer': {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: space.sm,
-  },
-
-  '@beatmapCardSm': {
-    maxWidth: '40em',
-    width: '100%',
-    alignSelf: 'center',
+  '& > header': {
+    width: space.pageMaxWidth,
+    maxWidth: '100%',
   },
 });
 

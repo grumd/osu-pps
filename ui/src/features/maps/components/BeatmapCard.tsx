@@ -26,7 +26,13 @@ const BeatmapCardDiv = styled('div', {
   color: colors.textWhite,
   borderRadius: space.md,
   backgroundColor: colors.bgElement,
-  marginBottom: space.sm,
+  width: space.pageMaxWidth,
+  maxWidth: '100%',
+  margin: `0 auto ${space.sm} auto`,
+
+  '@beatmapCardSm': {
+    width: space.cardSmallMaxWidth,
+  },
 });
 
 const MapCoverLink = styled(ExternalLink, {

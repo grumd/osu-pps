@@ -21,6 +21,9 @@ const SmallNavMenu = styled(NavMenu, {
   fontSize: fonts[75],
   paddingBottom: space.md,
   borderBottom: `${space.borderWidth} solid ${colors.border}`,
+  width: space.pageMaxWidth,
+  maxWidth: '100%',
+  margin: '0 auto',
 });
 
 const FaqLink = styled(MenuLink, {

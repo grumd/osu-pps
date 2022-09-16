@@ -69,6 +69,13 @@ const SongNameFilter = styled('div', {
 
 const FiltersContainer = styled('div', {
   paddingBottom: space.sm,
+  width: space.pageMaxWidth,
+  maxWidth: '100%',
+  margin: '0 auto',
+
+  '@beatmapCardSm': {
+    width: space.cardSmallMaxWidth,
+  },
 });
 
 const FilterButtons = styled('div', {

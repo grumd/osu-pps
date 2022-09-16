@@ -110,7 +110,7 @@ export function MappersPp() {
       {isLoading && <Loader css={{ padding: `${space.md} 0` }} />}
       {mappedData && (
         <>
-          <ScrollArea css={{ flex: '1 1 0px', width: '100%', maxWidth: space.tableMaxWidth }}>
+          <ScrollArea css={{ flex: '1 1 0px' }}>
             <ScrollAreaViewport ref={setScrollParent}>
               <MappersTableExpandable
                 mappers={mappedData}

@@ -8,12 +8,22 @@ import { colors, lightTheme, space, styled } from '@/styles';
 
 const RootContainer = styled('div', {
   display: 'flex',
-  justifyContent: 'center',
+  flexFlow: 'column nowrap',
   background: colors.bgMain,
   color: colors.textPrimary,
-  width: '100%',
   minHeight: '100%',
-  oveflow: 'hidden',
+  paddingLeft: space.lg,
+  paddingRight: space.lg,
+
+  '@beatmapCardMd': {
+    paddingLeft: space.sm,
+    paddingRight: space.sm,
+  },
+
+  '@beatmapCardSm': {
+    paddingLeft: space.xs,
+    paddingRight: space.xs,
+  },
 
   variants: {
     theme: {
@@ -28,46 +38,22 @@ const RootContainer = styled('div', {
   },
 });
 
-const LayoutContainer = styled('div', {
-  width: space.pageWidth,
-  paddingLeft: space.lg,
-  paddingRight: space.lg,
-  display: 'flex',
-  flexFlow: 'column nowrap',
-
-  '& > header': {
-    flex: '0 0 auto',
-  },
-
-  '@beatmapCardMd': {
-    paddingLeft: space.sm,
-    paddingRight: space.sm,
-  },
-
-  '@beatmapCardSm': {
-    paddingLeft: space.xs,
-    paddingRight: space.xs,
-  },
-});
-
 export function RootLayout() {
   const [theme, setTheme] = useThemeWithDefault('dark');
 
   return (
     <RootContainer theme={theme} className={theme === 'light' ? lightTheme : ''}>
-      <LayoutContainer>
-        <Header
-          themeToggle={
-            <SunMoonToggle
-              dark={theme !== 'light'}
-              onChange={(dark) => setTheme(dark ? 'dark' : 'light')}
-            />
-          }
-        />
-        <Suspense>
-          <Outlet />
-        </Suspense>
-      </LayoutContainer>
+      <Header
+        themeToggle={
+          <SunMoonToggle
+            dark={theme !== 'light'}
+            onChange={(dark) => setTheme(dark ? 'dark' : 'light')}
+          />
+        }
+      />
+      <Suspense>
+        <Outlet />
+      </Suspense>
     </RootContainer>
   );
 }

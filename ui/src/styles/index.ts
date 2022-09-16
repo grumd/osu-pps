@@ -67,8 +67,9 @@ export const { styled, createTheme, globalCss, theme, config, keyframes } = crea
       lg: '1em',
       xl: '1.5em',
       modBlock: '2.5em',
-      pageWidth: '80rem',
+      pageMaxWidth: '80rem',
       tableMaxWidth: '60rem',
+      cardSmallMaxWidth: '40rem',
       beatmapHeight: '5em',
       borderWidth: '0.5px', // workaround for inconsistent border width in Chrome when display scaling is more than 100%
     },

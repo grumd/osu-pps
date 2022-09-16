@@ -6,6 +6,10 @@ import { HeaderAside } from './HeaderAside';
 import { HeaderNavigation } from './HeaderNavigation';
 
 const HeaderContainer = styled('header', {
+  flex: '0 0 auto',
+  margin: '0 auto',
+  width: space.pageMaxWidth,
+  maxWidth: '100%',
   padding: `${space.sm} 0`,
   display: 'flex',
   flexFlow: 'row wrap',

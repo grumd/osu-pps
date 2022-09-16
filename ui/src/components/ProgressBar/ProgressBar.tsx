@@ -1,5 +1,6 @@
 import * as ProgressPrimitive from '@radix-ui/react-progress';
 
+import type { CSS } from '@/styles';
 import { colors, space, styled } from '@/styles';
 
 const Progress = styled(ProgressPrimitive.Root, {
@@ -20,15 +21,17 @@ export function ProgressBar({
   progress,
   className,
   children,
+  css,
   color = colors.bgBrightOrange.toString(),
 }: {
+  css?: CSS;
   progress: number;
   color?: string;
   className?: string;
   children?: React.ReactNode;
 }) {
   return (
-    <Progress className={className} value={progress} max={1}>
+    <Progress css={css} className={className} value={progress} max={1}>
       {children}
       <Indicator style={{ width: `${Math.round(progress * 100)}%`, backgroundColor: color }} />
     </Progress>
