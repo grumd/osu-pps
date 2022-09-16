@@ -213,7 +213,22 @@ export const BeatmapCard = memo(function _BeatmapCard({ map }: { map: Beatmap })
           kind={colorCodeStyle}
           color={getLengthColour(map.length, colorOpacity)}
         >
-          {secondsToFormatted(map.length)}
+          {mods.dt || mods.ht ? (
+            <HoverCard css={{ flex: '1 1 0' }}>
+              <HoverCardTrigger>
+                {secondsToFormatted(Math.round(map.length / bpmFactor))}*
+              </HoverCardTrigger>
+              <HoverCardContent>
+                <div>Original length: {secondsToFormatted(map.length)}</div>
+                <div>
+                  With {mods.dt ? 'DT' : 'HT'}:{' '}
+                  {secondsToFormatted(Math.round(map.length / bpmFactor))}
+                </div>
+              </HoverCardContent>
+            </HoverCard>
+          ) : (
+            secondsToFormatted(map.length)
+          )}
         </ColorCodedCell>
         <ColorCodedCell
           aria-label="bpm"
