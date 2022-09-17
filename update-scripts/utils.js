@@ -3,6 +3,7 @@ const path = require('path');
 const { spawn } = require('node:child_process');
 const { stringifyStream, parseChunked } = require('@discoveryjs/json-ext');
 const { execute } = require('many-promises');
+const { modes, modCodes } = require('./constants');
 
 const files = {
   countriesList: (mode) => `./countries-${mode.text}.json`,
@@ -57,58 +58,35 @@ const runScript = (fileName) => {
   });
 };
 
-const simplifyMods = (mods, { show } = {}) => {
-  let mod = parseInt(mods, 10);
-  const mapMods = {
-    nf: (mod & 1) == 1,
-    ez: (mod & 2) == 2,
-    hd: (mod & 8) == 8,
-    hr: (mod & 16) == 16,
-    sd: (mod & 32) == 32,
-    dt: (mod & 64) == 64,
-    ht: (mod & 256) == 256,
-    nc: (mod & 512) == 512,
-    fl: (mod & 1024) == 1024,
-    so: (mod & 4096) == 4096,
-    pf: (mod & 16384) == 16384,
-  };
-  if (show) {
-    console.log(mapMods);
-  }
-  mod -= mapMods.nc ? 512 : 0; // NC can be removed, DT is till there
-  mod -= mapMods.sd ? 32 : 0; // SD doesn't affect PP
-  mod -= mapMods.nf ? 1 : 0; // remove NF
-  mod -= mapMods.so ? 4096 : 0; // remove SO
-  return mod;
+const filterMods = (modsSum, allowedMods) => {
+  const filteredMods = allowedMods.reduce((sum, allowedMod) => {
+    return sum + ((modsSum & allowedMod) === allowedMod ? allowedMod : 0);
+  }, 0);
+
+  return filteredMods;
 };
 
-const trimModsForRankings = (mods, { show } = {}) => {
-  let mod = parseInt(mods, 10);
-  const mapMods = {
-    nf: (mod & 1) == 1,
-    ez: (mod & 2) == 2,
-    hd: (mod & 8) == 8,
-    hr: (mod & 16) == 16,
-    sd: (mod & 32) == 32,
-    dt: (mod & 64) == 64,
-    ht: (mod & 256) == 256,
-    nc: (mod & 512) == 512,
-    fl: (mod & 1024) == 1024,
-    so: (mod & 4096) == 4096,
-    pf: (mod & 16384) == 16384,
-  };
-  if (show) {
-    console.log(mapMods);
-  }
-  mod -= mapMods.nc ? 512 : 0; // NC can be removed, DT is till there
-  mod -= mapMods.sd ? 32 : 0; // SD doesn't affect PP
-  mod -= mapMods.nf ? 1 : 0; // remove NF
-  mod -= mapMods.so ? 4096 : 0; // remove SO
-  mod -= mapMods.hd ? 8 : 0;
-  mod -= mapMods.hr ? 16 : 0;
-  mod -= mapMods.pf ? 16384 : 0;
-  // ONLY LEAVING EZ / DT / FL / HT mods
-  return mod;
+// Remove mods that don't affect PP
+// Allowed mods:
+// osu:    DT, HD, HR, FL, HT, EZ, (TouchDevice - not including it yet but it affects PP)
+// mania:  EZ, DT, HT
+// taiko:  DT, HD, HR, FL, HT, EZ
+// fruits: DT, HD, HR, FL, HT, EZ
+const simplifyMods = (mods, modeId) => {
+  const modsSum = parseInt(mods, 10);
+  const allowedMods =
+    modeId === modes.mania.id
+      ? [modCodes.dt, modCodes.ez, modCodes.ht]
+      : [modCodes.dt, modCodes.hd, modCodes.hr, modCodes.fl, modCodes.ht, modCodes.ez];
+
+  return filterMods(modsSum, allowedMods);
+};
+
+// Only keeping DT/HT to get overweightness of the base map
+const trimModsForRankings = (mods) => {
+  const modsSum = parseInt(mods, 10);
+  const allowedMods = [modCodes.dt, modCodes.ht];
+  return filterMods(modsSum, allowedMods);
 };
 
 const modsToString = (mods) => {

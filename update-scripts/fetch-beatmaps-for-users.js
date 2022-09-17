@@ -39,9 +39,9 @@ const calculatePp99 = (map) => {
   delete map.acc;
 };
 
-const recordData = (data) => {
-  const topMapsPpSum = data.slice(0, ppBlockMapCount).reduce((sum, map) => {
-    return sum + parseFloat(map.pp);
+const recordData = (data, modeId) => {
+  const topMapsPpSum = data.slice(0, ppBlockMapCount).reduce((sum, score) => {
+    return sum + parseFloat(score.pp);
   }, 0);
   const ppBlockValue = Math.floor(Math.round(topMapsPpSum / ppBlockMapCount) / ppBlockSize);
   peoplePerPpBlocks[ppBlockValue] = (peoplePerPpBlocks[ppBlockValue] || 0) + 1;
@@ -51,14 +51,14 @@ const recordData = (data) => {
       const parsed = Number(score[key]);
       score[key] = isNaN(parsed) ? score[key] : parsed;
     });
-    score.enabled_mods = simplifyMods(score.enabled_mods);
+    const filteredMods = simplifyMods(score.enabled_mods, modeId);
     const mapId = getUniqueMapId(score);
     const acc =
       (100 * (score.count300 + score.count100 / 3 + score.count50 / 6)) /
       (score.countmiss + score.count50 + score.count100 + score.count300);
     if (!maps[mapId]) {
       maps[mapId] = {
-        m: score.enabled_mods,
+        m: filteredMods,
         b: score.beatmap_id,
         pp: [score.pp],
         acc: [truncateFloat(acc)],
@@ -97,7 +97,7 @@ const fetchUser = ({ userId, modeId, shouldRecordScores }) => {
         usersMaps[userId] = data && data.map((d) => `${d.beatmap_id}_${d.enabled_mods}_${d.pp}`);
         usersMapsDate[userId] = Math.floor(Date.now() / 1000 / 60); // unix minutes
       }
-      recordData(data, userId);
+      recordData(data, modeId);
     })
     .catch((error) => {
       console.log('\x1b[33m%s\x1b[0m', error.message);
