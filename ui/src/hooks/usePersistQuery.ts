@@ -44,9 +44,10 @@ export const usePersistQuery = <TKey extends readonly unknown[], TData>(
   const { isLoading, error, ...rest } = useQuery(
     [...key, meta.data?.lastUpdated, cachedOn],
     async () => {
-      if (meta.data && (!cachedOn || cachedOn < meta.data?.lastUpdated)) {
+      // !== instead of < because I want users to fetch new data in case we roll back
+      if (meta.data && (!cachedOn || cachedOn !== meta.data?.lastUpdated)) {
         const freshData = await fetchFn();
-        void savePersistData(key, freshData, meta.data?.lastUpdated ?? '');
+        void savePersistData(key, freshData, meta.data.lastUpdated);
         return freshData;
       } else {
         return null; // Do not refetch data from server if cache is fresh enough
