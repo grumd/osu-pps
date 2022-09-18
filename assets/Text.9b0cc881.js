@@ -1,0 +1,1 @@
+import{s as t,c as e}from"./index.5c7f159f.js";const o=t("span",{variants:{nowrap:{true:{whiteSpace:"nowrap"}},bold:{true:{fontWeight:"bold"}},faded:{true:{color:e.textInactive}},color:{red:{color:e.textRed},green:{color:e.textGreen},blue:{color:e.textBlue}}}});o.displayName="Text";export{o as T};
