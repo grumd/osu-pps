@@ -51,14 +51,14 @@ const recordData = (data, modeId) => {
       const parsed = Number(score[key]);
       score[key] = isNaN(parsed) ? score[key] : parsed;
     });
-    const filteredMods = simplifyMods(score.enabled_mods, modeId);
+    score.enabled_mods = simplifyMods(score.enabled_mods, modeId);
     const mapId = getUniqueMapId(score);
     const acc =
       (100 * (score.count300 + score.count100 / 3 + score.count50 / 6)) /
       (score.countmiss + score.count50 + score.count100 + score.count300);
     if (!maps[mapId]) {
       maps[mapId] = {
-        m: filteredMods,
+        m: score.enabled_mods,
         b: score.beatmap_id,
         pp: [score.pp],
         acc: [truncateFloat(acc)],
