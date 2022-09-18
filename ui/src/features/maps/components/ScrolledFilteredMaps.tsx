@@ -8,6 +8,7 @@ import {
   ScrollAreaThumb,
   ScrollAreaViewport,
 } from '@/components/Scroll/Scroll';
+import { useMode } from '@/hooks/useMode';
 
 import { nextPage, useFilters } from '../hooks/useFilters';
 import { useFilterWorker } from '../hooks/useFilters/useFilterWorker';
@@ -15,6 +16,7 @@ import type { Beatmap } from '../types';
 import { BeatmapCard } from './BeatmapCard';
 
 export function ScrolledFilteredMaps({ maps }: { maps: Beatmap[] | null | undefined }) {
+  const mode = useMode();
   const [scrollParent, setScrollParent] = useState<HTMLDivElement | null>(null);
   const filters = useFilters();
 
@@ -23,7 +25,7 @@ export function ScrolledFilteredMaps({ maps }: { maps: Beatmap[] | null | undefi
   const hasNextPage = !!filteredMaps && filters.count <= filteredMaps.length;
   const loadMore = () => {
     if (hasNextPage) {
-      nextPage();
+      nextPage(mode);
     }
   };
 

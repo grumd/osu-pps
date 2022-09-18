@@ -2,7 +2,9 @@ import _ from 'lodash/fp';
 import create from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { CalcMode } from '@/constants/modes';
+import { CalcMode, Mode } from '@/constants/modes';
+import { useMode } from '@/hooks/useMode';
+import { keys } from '@/utils/object';
 
 import type { Filters } from '../../types';
 
@@ -12,44 +14,76 @@ const initialFilters: Filters = {
   isShowingMore: false,
 };
 
+const initialFiltersMap: Record<Mode, Filters> = Object.fromEntries(
+  Object.values(Mode).map((mode) => {
+    return [mode, initialFilters];
+  })
+) as Record<Mode, Filters>;
+
 interface FiltersStore {
-  filters: Filters;
-  readonly setFilter: <K extends keyof Filters>(key: K, value: Filters[K]) => void;
-  readonly resetFilter: () => void;
-  readonly nextPage: () => void;
+  filters: Record<Mode, Filters>;
+  readonly setFilter: <K extends keyof Filters>(mode: Mode, key: K, value: Filters[K]) => void;
+  readonly resetFilter: (mode: Mode) => void;
+  readonly nextPage: (mode: Mode) => void;
 }
+
+const isFilterStoreLike = (obj: unknown): obj is { filters: Record<Mode, Filters> } => {
+  return typeof (obj as { filters: Record<Mode, Filters> })?.filters === 'object';
+};
 
 export const useFiltersStore = create<FiltersStore>()(
   persist(
     (set) => ({
-      filters: initialFilters,
-      resetFilter: () =>
+      filters: initialFiltersMap,
+      resetFilter: (mode) =>
         set((state) => ({
-          filters: { ...initialFilters, ..._.pick(['calcMode', 'isShowingMore'], state.filters) },
+          filters: { ...state.filters, [mode]: initialFilters },
         })),
-      setFilter: (key, value) => set((state) => ({ filters: { ...state.filters, [key]: value } })),
-      nextPage: () =>
-        set((state) => ({ filters: { ...state.filters, count: state.filters.count + 20 } })),
+      setFilter: (mode, key, value) =>
+        set((state) => ({
+          filters: { ...state.filters, [mode]: { ...state.filters[mode], [key]: value } },
+        })),
+      nextPage: (mode) =>
+        set((state) => ({
+          filters: {
+            ...state.filters,
+            [mode]: { ...state.filters[mode], count: state.filters[mode].count + 20 },
+          },
+        })),
     }),
     {
       name: 'filter-storage',
       // Do not persist `count` property of the filters
-      partialize: (state) => ({ filters: _.omit('count', state.filters) }),
+      partialize: (state) => ({ filters: _.mapValues(_.omit('count', state.filters)) }),
       merge: (persistedState, currentState) => {
+        if (!isFilterStoreLike(persistedState)) {
+          return currentState;
+        }
         return {
           ...currentState,
           filters: {
             ...currentState.filters,
-            ...(persistedState as FiltersStore).filters,
-            count: currentState.filters.count,
+            ..._.fromPairs(
+              keys(persistedState.filters).map((mode) => [
+                mode,
+                {
+                  ...currentState.filters[mode],
+                  ...persistedState.filters[mode],
+                  count: currentState.filters[mode].count + 20,
+                },
+              ])
+            ),
           },
         };
       },
-      version: 1,
+      version: 2,
     }
   )
 );
 
-export const useFilters = () => useFiltersStore((state) => state.filters);
+export const useFilters = () => {
+  const mode = useMode();
+  return useFiltersStore((state) => state.filters[mode]);
+};
 
 export const { setFilter, resetFilter, nextPage } = useFiltersStore.getState();

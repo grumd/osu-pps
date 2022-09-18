@@ -136,9 +136,9 @@ function CoverImage({ url, mapsetId }: { url: string; mapsetId: number }) {
 
 export const BeatmapCard = memo(function _BeatmapCard({ map }: { map: Beatmap }) {
   const mods = getMods(map.mods);
-  const calcMode = useFiltersStore((state) => state.filters.calcMode);
-  const isShowingMore = useFiltersStore((state) => state.filters.isShowingMore);
   const mode = useMode();
+  const calcMode = useFiltersStore((state) => state.filters[mode].calcMode);
+  const isShowingMore = useFiltersStore((state) => state.filters[mode].isShowingMore);
   const colorCodeStyle = useColorCodeStyle();
   const colorOpacity = opacityByStyle[colorCodeStyle];
 
