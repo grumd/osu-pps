@@ -2,7 +2,6 @@ const { axios } = require('./axios');
 const config = require('./config');
 const { DEBUG } = require('./constants');
 const { delay } = require('./utils');
-
 const baseURL = `https://osu.ppy.sh/api/v2/`;
 
 const setupToken = async () => {

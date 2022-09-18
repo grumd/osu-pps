@@ -27,8 +27,8 @@ const updateModeData = (mode = modes.osu) => {
         console.log('Saved all info, debug is on - not updating origin');
       }
     })
-    .then(text => console.log(text))
-    .catch(err => console.error(err));
+    .then((text) => console.log(text))
+    .catch((err) => console.error(err));
 };
 
 const job = () => {
@@ -49,6 +49,6 @@ const job = () => {
     });
 };
 
-console.log('Starting scheduler');
+console.log('Starting scheduler', { DEBUG });
 cron.scheduleJob('0 3 * * *', job);
 job();
