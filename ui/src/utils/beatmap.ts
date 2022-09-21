@@ -56,6 +56,7 @@ export function getMapNameLink(map: Beatmap): { link: string; name: string } {
 export function getMods(mods: string | number) {
   const m = typeof mods === 'string' ? parseInt(mods, 10) : mods;
   return {
+    ez: (m & 2) === 2,
     dt: (m & 64) === 64,
     hd: (m & 8) === 8,
     hr: (m & 16) === 16,

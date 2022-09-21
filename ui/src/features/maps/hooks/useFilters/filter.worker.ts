@@ -37,6 +37,7 @@ const state: FilterWorkerState = {
 };
 
 const getMods = (map: Beatmap) => ({
+  ez: (map.mods & 2) === 2,
   dt: (map.mods & 64) === 64,
   hd: (map.mods & 8) === 8,
   hr: (map.mods & 16) === 16,
@@ -63,7 +64,7 @@ function filter({ filters, mode, mapsPerMode }: FilterWorkerState) {
   if (!maps || !filters || !mode) {
     return null;
   }
-
+  console.log(filters);
   const {
     songName,
     calcMode,
@@ -132,7 +133,7 @@ function filter({ filters, mode, mapsPerMode }: FilterWorkerState) {
     filterFns.push((map, mods) => modAllowed(hd, mods.hd));
   }
   if (hr && hr !== 'any') {
-    filterFns.push((map, mods) => modAllowed(hr, mods.hr));
+    filterFns.push((map, mods) => modAllowed(hr, mods.hr) && (hr !== 'invert' || mods.ez));
   }
   if (fl && fl !== 'any') {
     filterFns.push((map, mods) => modAllowed(fl, mods.fl));

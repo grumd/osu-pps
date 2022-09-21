@@ -142,9 +142,9 @@ function CoverImage({ url, mapsetId }: { url: string; mapsetId: number }) {
 
 export const BeatmapCard = memo(function _BeatmapCard({ map }: { map: Beatmap }) {
   const mods = getMods(map.mods);
-  const calcMode = useFiltersStore((state) => state.filters.calcMode);
-  const isShowingMore = useFiltersStore((state) => state.filters.isShowingMore);
   const mode = useMode();
+  const calcMode = useFiltersStore((state) => state.filters[mode].calcMode);
+  const isShowingMore = useFiltersStore((state) => state.filters[mode].isShowingMore);
   const colorCodeStyle = useColorCodeStyle();
   const colorOpacity = opacityByStyle[colorCodeStyle];
 
@@ -198,15 +198,25 @@ export const BeatmapCard = memo(function _BeatmapCard({ map }: { map: Beatmap })
           <ModBlock active={mods.dt} inverted={mods.ht} aria-hidden={!mods.dt && !mods.ht}>
             {mods.ht ? 'HT' : 'DT'}
           </ModBlock>
-          <ModBlock active={mods.hd} aria-hidden={!mods.hd}>
-            HD
-          </ModBlock>
-          <ModBlock active={mods.hr} aria-hidden={!mods.hr}>
-            HR
-          </ModBlock>
-          <ModBlock active={mods.fl} aria-hidden={!mods.fl}>
-            FL
-          </ModBlock>
+          {!isMania && (
+            <ModBlock active={mods.hd} aria-hidden={!mods.hd}>
+              HD
+            </ModBlock>
+          )}
+          {isMania ? (
+            <ModBlock inverted={mods.ez} aria-hidden={!mods.ez}>
+              EZ
+            </ModBlock>
+          ) : (
+            <ModBlock active={mods.hr} inverted={mods.ez} aria-hidden={!mods.hr && !mods.ez}>
+              {mods.ez ? 'EZ' : 'HR'}
+            </ModBlock>
+          )}
+          {!isMania && (
+            <ModBlock active={mods.fl} aria-hidden={!mods.fl}>
+              FL
+            </ModBlock>
+          )}
         </ModsContainer>
         <ColorCodedCell
           aria-label="length"

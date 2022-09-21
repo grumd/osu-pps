@@ -16,6 +16,7 @@ import { fonts, space, styled } from '@/styles';
 
 import { resetFilter, setFilter, useFilters } from '../hooks/useFilters';
 import { useFiltersCount } from '../hooks/useFiltersCount';
+import type { Filters as TFilters } from '../types';
 import { CardGridLayout } from './CardGridLayout';
 import { ManiaKeysToggle, ModToggle } from './ModToggle';
 
@@ -137,18 +138,29 @@ const AdditionalFilters = styled('div', {
   },
 });
 
+// Mod filter options
+const anyYesNo = ['any', 'yes', 'no'] as const;
+const anyYesNoInvert = ['any', 'yes', 'no', 'invert'] as const;
+const anyInvert = ['any', 'invert'] as const;
+
 export const Filters = memo(function Filters() {
   const mode = useMode();
   const filters = useFilters();
   const [hidden, setHidden] = useState(false);
   const { moreCount, filtersCount } = useFiltersCount(mode, filters);
 
+  const isMania = mode === Mode.mania;
+
   const onClickHide = () => setHidden((v) => !v);
   const onClickMore = () => {
-    setFilter('isShowingMore', !filters.isShowingMore);
+    setFilter(mode, 'isShowingMore', !filters.isShowingMore);
   };
   const onClickReset = () => {
-    if (window.confirm('Reset all filters?')) resetFilter();
+    if (window.confirm('Reset all filters?')) resetFilter(mode);
+  };
+
+  const onChange = (key: keyof TFilters) => (value: TFilters[keyof TFilters]) => {
+    setFilter(mode, key, value);
   };
 
   return (
@@ -172,7 +184,7 @@ export const Filters = memo(function Filters() {
             type="text"
             placeholder="song name..."
             value={filters.songName ?? ''}
-            onChange={(value) => setFilter('songName', value)}
+            onChange={onChange('songName')}
           />
         </SongNameFilter>
         <MinMaxBlock>
@@ -184,14 +196,14 @@ export const Filters = memo(function Filters() {
               max={filters.ppMax ?? undefined}
               placeholder="min"
               value={filters.ppMin ?? ''}
-              onChange={(value) => setFilter('ppMin', value)}
+              onChange={onChange('ppMin')}
             />
             <Input
               type="number"
               min={filters.ppMin ?? undefined}
               placeholder="max"
               value={filters.ppMax ?? ''}
-              onChange={(value) => setFilter('ppMax', value)}
+              onChange={onChange('ppMax')}
             />
           </div>
         </MinMaxBlock>
@@ -200,7 +212,7 @@ export const Filters = memo(function Filters() {
             <ModBlock>
               <ManiaKeysToggle
                 state={filters.maniaKeys === undefined ? 'any' : filters.maniaKeys}
-                onChange={(value) => setFilter('maniaKeys', value)}
+                onChange={onChange('maniaKeys')}
               >
                 {_.isNumber(filters.maniaKeys) ? `${filters.maniaKeys}K` : '?K'}
               </ManiaKeysToggle>
@@ -209,28 +221,50 @@ export const Filters = memo(function Filters() {
           <ModBlock>
             <ModToggle
               state={filters.dt ?? 'any'}
-              withOther
+              options={anyYesNoInvert}
               otherLabel="HT"
-              onChange={(value) => setFilter('dt', value)}
+              onChange={onChange('dt')}
             >
               DT
             </ModToggle>
           </ModBlock>
-          <ModBlock>
-            <ModToggle state={filters.hd ?? 'any'} onChange={(value) => setFilter('hd', value)}>
-              HD
-            </ModToggle>
-          </ModBlock>
-          <ModBlock>
-            <ModToggle state={filters.hr ?? 'any'} onChange={(value) => setFilter('hr', value)}>
-              HR
-            </ModToggle>
-          </ModBlock>
-          <ModBlock>
-            <ModToggle state={filters.fl ?? 'any'} onChange={(value) => setFilter('fl', value)}>
-              FL
-            </ModToggle>
-          </ModBlock>
+          {!isMania && (
+            <ModBlock>
+              <ModToggle options={anyYesNo} state={filters.hd ?? 'any'} onChange={onChange('hd')}>
+                HD
+              </ModToggle>
+            </ModBlock>
+          )}
+          {isMania ? (
+            <ModBlock>
+              <ModToggle
+                options={anyInvert}
+                otherLabel="EZ"
+                state={filters.hr ?? 'any'}
+                onChange={onChange('hr')}
+              >
+                EZ
+              </ModToggle>
+            </ModBlock>
+          ) : (
+            <ModBlock>
+              <ModToggle
+                state={filters.hr ?? 'any'}
+                options={anyYesNoInvert}
+                otherLabel="EZ"
+                onChange={onChange('hr')}
+              >
+                HR
+              </ModToggle>
+            </ModBlock>
+          )}
+          {!isMania && (
+            <ModBlock>
+              <ModToggle options={anyYesNo} state={filters.fl ?? 'any'} onChange={onChange('fl')}>
+                FL
+              </ModToggle>
+            </ModBlock>
+          )}
         </ModsContainer>
         <MinMaxBlock>
           <FaRegClock />
@@ -238,12 +272,12 @@ export const Filters = memo(function Filters() {
             <TimeInput
               placeholder="0:00"
               seconds={filters.lengthMin ?? null}
-              onChange={(value) => setFilter('lengthMin', value)}
+              onChange={onChange('lengthMin')}
             />
             <TimeInput
               placeholder="0:00"
               seconds={filters.lengthMax ?? null}
-              onChange={(value) => setFilter('lengthMax', value)}
+              onChange={onChange('lengthMax')}
             />
           </div>
         </MinMaxBlock>
@@ -256,14 +290,14 @@ export const Filters = memo(function Filters() {
               max={filters.bpmMax ?? undefined}
               placeholder="min"
               value={filters.bpmMin ?? ''}
-              onChange={(value) => setFilter('bpmMin', value)}
+              onChange={onChange('bpmMin')}
             />
             <Input
               type="number"
               min={filters.bpmMin ?? undefined}
               placeholder="max"
               value={filters.bpmMax ?? ''}
-              onChange={(value) => setFilter('bpmMax', value)}
+              onChange={onChange('bpmMax')}
             />
           </div>
         </MinMaxBlock>
@@ -276,14 +310,14 @@ export const Filters = memo(function Filters() {
               max={filters.diffMax ?? undefined}
               placeholder="min"
               value={filters.diffMin ?? ''}
-              onChange={(value) => setFilter('diffMin', value)}
+              onChange={onChange('diffMin')}
             />
             <Input
               type="number"
               min={filters.diffMin ?? undefined}
               placeholder="max"
               value={filters.diffMax ?? ''}
-              onChange={(value) => setFilter('diffMax', value)}
+              onChange={onChange('diffMax')}
             />
           </div>
         </MinMaxBlock>
@@ -300,7 +334,7 @@ export const Filters = memo(function Filters() {
             value={filters.ranked ?? null}
             isMulti={false}
             isClearable
-            onChange={(selected) => setFilter('ranked', selected)}
+            onChange={onChange('ranked')}
             options={rankedDateOptions}
           />
           <Select
@@ -308,7 +342,7 @@ export const Filters = memo(function Filters() {
             value={filters.languages ?? []}
             isMulti
             isClearable
-            onChange={(selected) => setFilter('languages', [...selected])}
+            onChange={(selected) => onChange('languages')([...selected])}
             options={languageOptions}
           />
           <Select
@@ -316,7 +350,7 @@ export const Filters = memo(function Filters() {
             value={filters.genres ?? []}
             isMulti
             isClearable
-            onChange={(selected) => setFilter('genres', [...selected])}
+            onChange={(selected) => onChange('genres')([...selected])}
             options={genreOptions}
           />
         </AdditionalFilters>
