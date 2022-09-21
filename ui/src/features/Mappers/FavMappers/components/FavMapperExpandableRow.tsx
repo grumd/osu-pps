@@ -5,6 +5,7 @@ import Loader from '@/components/Loader/Loader';
 import { MapperSubRow } from '@/features/Mappers/components/MappersTableExpandable/MapperSubRow';
 import type { MapperItem } from '@/features/Mappers/components/MappersTableExpandable/types';
 import { space } from '@/styles';
+import { getMapsetUrl } from '@/utils/externalLinks';
 
 import { useMapperMaps } from '../hooks/useMapperMaps';
 
@@ -24,7 +25,7 @@ export const FavMapperExpandableRow = memo(function _FavMapperExpandableRow({
   }, [data]);
 
   return (
-    <MapperSubRow data={subRowData}>
+    <MapperSubRow data={subRowData} getUrl={getMapsetUrl}>
       {error instanceof Error && <ErrorBox>{error.message}</ErrorBox>}
       {isLoading && <Loader css={{ padding: `${space.md} 0` }} />}
     </MapperSubRow>

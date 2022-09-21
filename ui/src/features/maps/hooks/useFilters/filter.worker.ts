@@ -133,7 +133,7 @@ function filter({ filters, mode, mapsPerMode }: FilterWorkerState) {
     filterFns.push((map, mods) => modAllowed(hd, mods.hd));
   }
   if (hr && hr !== 'any') {
-    filterFns.push((map, mods) => modAllowed(hr, mods.hr));
+    filterFns.push((map, mods) => modAllowed(hr, mods.hr) && (hr !== 'invert' || mods.ez));
   }
   if (fl && fl !== 'any') {
     filterFns.push((map, mods) => modAllowed(fl, mods.fl));

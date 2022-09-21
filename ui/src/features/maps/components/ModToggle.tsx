@@ -54,28 +54,26 @@ const StyledToggleButton = styled('button', {
 export function ModToggle({
   state,
   onChange,
-  withOther = false,
   otherLabel = '',
   children,
+  options,
 }: {
   state: ModToggleState;
   onChange: (state: ModToggleState) => void;
-  withOther?: boolean;
   otherLabel?: string;
   children: string;
+  options: readonly ModToggleState[];
 }) {
   const onClick = () => {
-    const list: ModToggleState[] = withOther
-      ? ['any', 'yes', 'no', 'invert']
-      : ['any', 'yes', 'no'];
-    const index = list.indexOf(state);
+    const index = options.indexOf(state);
 
-    onChange(list[index === list.length - 1 ? 0 : index + 1]);
+    onChange(options[index === options.length - 1 ? 0 : index + 1]);
   };
 
   const getHoverOption = (option: ModToggleState) => (
     <StyledToggleButton
       type="button"
+      key={option}
       selected={state === option}
       state={option}
       onClick={() => onChange(option)}
@@ -92,12 +90,7 @@ export function ModToggle({
         </StyledToggleButton>
       </HoverCardTrigger>
       <HoverCardContent side="bottom">
-        <HoverCardOptions>
-          {getHoverOption('any')}
-          {getHoverOption('yes')}
-          {getHoverOption('no')}
-          {withOther && getHoverOption('invert')}
-        </HoverCardOptions>
+        <HoverCardOptions>{options.map(getHoverOption)}</HoverCardOptions>
       </HoverCardContent>
     </HoverCard>
   );

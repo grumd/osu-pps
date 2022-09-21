@@ -18,6 +18,7 @@ import type {
   MapperMapItem,
 } from '@/features/Mappers/components/MappersTableExpandable/types';
 import { space, styled } from '@/styles';
+import { getBeatmapUrl } from '@/utils/externalLinks';
 import { farmValueCalc } from '@/utils/farmValue';
 
 import { usePpMappers } from './hooks/usePpMappers';
@@ -100,6 +101,7 @@ export function MappersPp() {
             </td>
           </tr>
         }
+        getUrl={getBeatmapUrl}
       />
     );
   }, []);

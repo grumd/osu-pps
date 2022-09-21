@@ -46,9 +46,10 @@ interface MapperMapsProps {
   data: MapperMapItem[] | undefined;
   children?: React.ReactNode;
   customHeaderRow?: React.ReactNode;
+  getUrl: (id: number) => string;
 }
 
-export const MapperSubRow = ({ data, children, customHeaderRow }: MapperMapsProps) => {
+export const MapperSubRow = ({ data, children, customHeaderRow, getUrl }: MapperMapsProps) => {
   const averagePoints = data ? data.reduce((sum, map) => sum + map.value, 0) / data.length : 0;
   const maxValue = data ? data[0].value : 0;
 
@@ -75,7 +76,7 @@ export const MapperSubRow = ({ data, children, customHeaderRow }: MapperMapsProp
                   return (
                     <tr key={map.id}>
                       <td>
-                        <ExternalLink url={getBeatmapUrl(map.id)}>{map.text}</ExternalLink>
+                        <ExternalLink url={getUrl(map.id)}>{map.text}</ExternalLink>
                       </td>
                       <td>
                         <MapCountBar progress={map.value / maxValue}>

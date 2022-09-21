@@ -131,11 +131,18 @@ const AdditionalFilters = styled('div', {
   },
 });
 
+// Mod filter options
+const anyYesNo = ['any', 'yes', 'no'] as const;
+const anyYesNoInvert = ['any', 'yes', 'no', 'invert'] as const;
+const anyInvert = ['any', 'invert'] as const;
+
 export const Filters = memo(function Filters() {
   const mode = useMode();
   const filters = useFilters();
   const [hidden, setHidden] = useState(false);
   const { moreCount, filtersCount } = useFiltersCount(mode, filters);
+
+  const isMania = mode === Mode.mania;
 
   const onClickHide = () => setHidden((v) => !v);
   const onClickMore = () => {
@@ -207,33 +214,50 @@ export const Filters = memo(function Filters() {
           <ModBlock>
             <ModToggle
               state={filters.dt ?? 'any'}
-              withOther
+              options={anyYesNoInvert}
               otherLabel="HT"
               onChange={onChange('dt')}
             >
               DT
             </ModToggle>
           </ModBlock>
-          <ModBlock>
-            <ModToggle state={filters.hd ?? 'any'} onChange={onChange('hd')}>
-              HD
-            </ModToggle>
-          </ModBlock>
-          <ModBlock>
-            <ModToggle
-              state={filters.hr ?? 'any'}
-              withOther
-              otherLabel="EZ"
-              onChange={onChange('hr')}
-            >
-              HR
-            </ModToggle>
-          </ModBlock>
-          <ModBlock>
-            <ModToggle state={filters.fl ?? 'any'} onChange={onChange('fl')}>
-              FL
-            </ModToggle>
-          </ModBlock>
+          {!isMania && (
+            <ModBlock>
+              <ModToggle options={anyYesNo} state={filters.hd ?? 'any'} onChange={onChange('hd')}>
+                HD
+              </ModToggle>
+            </ModBlock>
+          )}
+          {isMania ? (
+            <ModBlock>
+              <ModToggle
+                options={anyInvert}
+                otherLabel="EZ"
+                state={filters.hr ?? 'any'}
+                onChange={onChange('hr')}
+              >
+                EZ
+              </ModToggle>
+            </ModBlock>
+          ) : (
+            <ModBlock>
+              <ModToggle
+                state={filters.hr ?? 'any'}
+                options={anyYesNoInvert}
+                otherLabel="EZ"
+                onChange={onChange('hr')}
+              >
+                HR
+              </ModToggle>
+            </ModBlock>
+          )}
+          {!isMania && (
+            <ModBlock>
+              <ModToggle options={anyYesNo} state={filters.fl ?? 'any'} onChange={onChange('fl')}>
+                FL
+              </ModToggle>
+            </ModBlock>
+          )}
         </ModsContainer>
         <MinMaxBlock>
           <FaRegClock />
