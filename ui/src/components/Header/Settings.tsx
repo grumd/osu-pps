@@ -12,10 +12,12 @@ import {
   DialogTrigger,
 } from '@/components/Dialog/Dialog';
 import { ColorCodeStyle, opacityByStyle, useColorCodeStyleStore } from '@/hooks/useColorCodeStyle';
+import { useUseDirectStore } from '@/hooks/useOsuDirect';
 import { colors, fonts, space, styled } from '@/styles';
 import { getLengthColour } from '@/utils/beatmap';
 
 import { ColorCodedCell } from '../ColorCodedCell/ColorCodedCell';
+import { Switch } from '../Switch/Switch';
 
 const SettingsIcon = styled(FiSettings, {
   fontSize: fonts[125],
@@ -26,7 +28,7 @@ const Fieldset = styled('fieldset', {
   display: 'flex',
   flexWrap: 'wrap',
   alignItems: 'center',
-  marginBottom: space.md,
+  marginTop: space.lg,
   color: colors.textPrimary,
 });
 
@@ -66,6 +68,7 @@ const labelByStyle: Record<ColorCodeStyle, string> = {
 
 export const Settings = ({ themeToggle }: { themeToggle: React.ReactNode }) => {
   const { style: colorCodeStyle, setStyle } = useColorCodeStyleStore();
+  const { direct, setDirect } = useUseDirectStore();
 
   return (
     <Dialog>
@@ -86,6 +89,10 @@ export const Settings = ({ themeToggle }: { themeToggle: React.ReactNode }) => {
         <Fieldset>
           <Label>Theme:</Label>
           <ThemeToggleBlock>{themeToggle}</ThemeToggleBlock>
+        </Fieldset>
+        <Fieldset>
+          <Label>Show osu!direct links:</Label>
+          <Switch value={direct} onChange={setDirect} />
         </Fieldset>
         <Fieldset>
           <Label>Color coding style:</Label>

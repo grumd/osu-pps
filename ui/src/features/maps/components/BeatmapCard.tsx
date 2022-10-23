@@ -1,4 +1,5 @@
 import { memo, useMemo } from 'react';
+import { MdDownload } from 'react-icons/md';
 import TimeAgo from 'react-timeago';
 
 import { ColorCodedCell } from '@/components/ColorCodedCell/ColorCodedCell';
@@ -8,6 +9,7 @@ import { Mode } from '@/constants/modes';
 import { genreMap, languageMap } from '@/constants/options';
 import { opacityByStyle, useColorCodeStyle } from '@/hooks/useColorCodeStyle';
 import { useMode } from '@/hooks/useMode';
+import { useOsuDirect } from '@/hooks/useOsuDirect';
 import { colors, fonts, space, styled } from '@/styles';
 import { secondsToFormatted, truncateFloat } from '@/utils';
 import {
@@ -42,6 +44,10 @@ const MapCoverLink = styled(ExternalLink, {
   width: space.beatmapHeight,
 });
 
+const DirectDownloadIcon = styled(MdDownload, {
+  fontSize: fonts[150],
+});
+
 const MapCoverBackground = styled('div', {
   width: '100%',
   height: '100%',
@@ -69,6 +75,14 @@ const ExtraInfo = styled('dl', {
   '& > dd': {
     margin: 0,
   },
+});
+
+const MapLinkFlex = styled('div', {
+  display: 'flex',
+  flexFlow: 'row nowrap',
+  gap: space.md,
+  justifyContent: 'space-between',
+  alignItems: 'center',
 });
 
 const MapLink = styled(ExternalLink, {
@@ -146,6 +160,7 @@ export const BeatmapCard = memo(function _BeatmapCard({ map }: { map: Beatmap })
   const calcMode = useFiltersStore((state) => state.filters[mode].calcMode);
   const isShowingMore = useFiltersStore((state) => state.filters[mode].isShowingMore);
   const colorCodeStyle = useColorCodeStyle();
+  const hasDirectLink = useOsuDirect();
   const colorOpacity = opacityByStyle[colorCodeStyle];
 
   const isMania = mode === Mode.mania;
@@ -161,7 +176,14 @@ export const BeatmapCard = memo(function _BeatmapCard({ map }: { map: Beatmap })
       <CardGridLayout>
         <CoverImage url={mapLink} mapsetId={map.mapsetId} />
         <MapLinkContainer>
-          <MapLink url={mapLink}>{linkText}</MapLink>
+          <MapLinkFlex>
+            <MapLink url={mapLink}>{linkText}</MapLink>
+            {hasDirectLink && (
+              <ExternalLink css={{ lineHeight: 0 }} url={`osu://b/${map.beatmapId}`}>
+                <DirectDownloadIcon />
+              </ExternalLink>
+            )}
+          </MapLinkFlex>
           {isShowingMore && (
             <ExtraInfo>
               <dt>ranked:</dt>
