@@ -179,7 +179,11 @@ export const BeatmapCard = memo(function _BeatmapCard({ map }: { map: Beatmap })
           <MapLinkFlex>
             <MapLink url={mapLink}>{linkText}</MapLink>
             {hasDirectLink && (
-              <ExternalLink css={{ lineHeight: 0 }} url={`osu://b/${map.beatmapId}`}>
+              <ExternalLink
+                title="osu!direct download (osu! supporter only)"
+                css={{ lineHeight: 0 }}
+                url={`osu://b/${map.beatmapId}`}
+              >
                 <DirectDownloadIcon />
               </ExternalLink>
             )}
