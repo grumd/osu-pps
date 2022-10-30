@@ -12,6 +12,15 @@ export const Link = styled('a', {
   '&:visited, &:active': {
     color: colors.linkActive,
   },
+
+  variants: {
+    unstyled: {
+      true: {
+        color: 'inherit',
+        textDecoration: 'inherit',
+      },
+    },
+  },
 });
 
 Link.displayName = 'Link';

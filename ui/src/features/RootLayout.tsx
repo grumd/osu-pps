@@ -1,8 +1,8 @@
 import { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 
-import { Header } from '@/components/Header/Header';
 import { SunMoonToggle } from '@/components/SunMoonToggle/SunMoonToggle';
+import { Header } from '@/features/Header';
 import { useThemeWithDefault } from '@/hooks/useTheme';
 import { colors, lightTheme, space, styled } from '@/styles';
 

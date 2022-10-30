@@ -1,7 +1,9 @@
 import { memo, useMemo } from 'react';
-import { MdDownload } from 'react-icons/md';
+import { MdDownload, MdFileCopy } from 'react-icons/md';
 import TimeAgo from 'react-timeago';
 
+import { Button } from '@/components/Button/Button';
+import { ClipboardButton } from '@/components/Button/ClipboardButton';
 import { ColorCodedCell } from '@/components/ColorCodedCell/ColorCodedCell';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/HoverCard/HoverCard';
 import { ExternalLink } from '@/components/Link/ExternalLink';
@@ -24,6 +26,22 @@ import { useFiltersStore } from '../hooks/useFilters';
 import type { Beatmap } from '../types';
 import { CardGridLayout } from './CardGridLayout';
 
+const MapButtons = styled('div', {
+  display: 'flex',
+  gap: space.sm,
+
+  '@beatmapCardLg': {
+    flexDirection: 'column',
+  },
+  '@beatmapCardMd': {
+    flexDirection: 'row',
+  },
+  '@beatmapCardSm': {
+    flexDirection: 'row',
+    gap: space.md,
+  },
+});
+
 const BeatmapCardDiv = styled('div', {
   color: colors.textWhite,
   borderRadius: space.md,
@@ -35,6 +53,12 @@ const BeatmapCardDiv = styled('div', {
   '@beatmapCardSm': {
     width: space.cardSmallMaxWidth,
   },
+
+  '@beatmapCardLg': {
+    [`&:not(:hover) ${MapButtons}`]: {
+      display: 'none',
+    },
+  },
 });
 
 const MapCoverLink = styled(ExternalLink, {
@@ -42,10 +66,6 @@ const MapCoverLink = styled(ExternalLink, {
   overflow: 'hidden',
   height: space.beatmapHeight,
   width: space.beatmapHeight,
-});
-
-const DirectDownloadIcon = styled(MdDownload, {
-  fontSize: fonts[150],
 });
 
 const MapCoverBackground = styled('div', {
@@ -80,7 +100,7 @@ const ExtraInfo = styled('dl', {
 const MapLinkFlex = styled('div', {
   display: 'flex',
   flexFlow: 'row nowrap',
-  gap: space.md,
+  gap: space.sm,
   justifyContent: 'space-between',
   alignItems: 'center',
 });
@@ -179,13 +199,18 @@ export const BeatmapCard = memo(function _BeatmapCard({ map }: { map: Beatmap })
           <MapLinkFlex>
             <MapLink url={mapLink}>{linkText}</MapLink>
             {hasDirectLink && (
-              <ExternalLink
-                title="osu!direct download (osu! supporter only)"
-                css={{ lineHeight: 0 }}
-                url={`osu://b/${map.beatmapId}`}
-              >
-                <DirectDownloadIcon />
-              </ExternalLink>
+              <MapButtons>
+                <ClipboardButton content={`${map.beatmapId}`} title="copy beatmap ID" />
+                <Button iconButton compact tabIndex={-1}>
+                  <ExternalLink
+                    title="osu!direct download (osu! supporter only)"
+                    css={{ lineHeight: 0 }}
+                    url={`osu://b/${map.beatmapId}`}
+                  >
+                    <MdDownload />
+                  </ExternalLink>
+                </Button>
+              </MapButtons>
             )}
           </MapLinkFlex>
           {isShowingMore && (

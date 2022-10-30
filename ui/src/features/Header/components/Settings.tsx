@@ -3,6 +3,7 @@ import { IoClose } from 'react-icons/io5';
 
 import { Button } from '@/components/Button/Button';
 import { ToggleButton } from '@/components/Button/ToggleButton';
+import { ColorCodedCell } from '@/components/ColorCodedCell/ColorCodedCell';
 import {
   Dialog,
   DialogClose,
@@ -11,13 +12,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/Dialog/Dialog';
+import { Switch } from '@/components/Switch/Switch';
 import { ColorCodeStyle, opacityByStyle, useColorCodeStyleStore } from '@/hooks/useColorCodeStyle';
 import { useUseDirectStore } from '@/hooks/useOsuDirect';
 import { colors, fonts, space, styled } from '@/styles';
 import { getLengthColour } from '@/utils/beatmap';
-
-import { ColorCodedCell } from '../ColorCodedCell/ColorCodedCell';
-import { Switch } from '../Switch/Switch';
 
 const SettingsIcon = styled(FiSettings, {
   fontSize: fonts[125],
@@ -91,7 +90,7 @@ export const Settings = ({ themeToggle }: { themeToggle: React.ReactNode }) => {
           <ThemeToggleBlock>{themeToggle}</ThemeToggleBlock>
         </Fieldset>
         <Fieldset>
-          <Label>Show osu!direct links:</Label>
+          <Label>Show beatmap download and copy ID buttons:</Label>
           <Switch value={direct} onChange={setDirect} />
         </Fieldset>
         <Fieldset>

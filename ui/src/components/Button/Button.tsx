@@ -11,7 +11,7 @@ export const Button = styled('button', {
   cursor: 'pointer',
   fontWeight: 600,
 
-  '&:focus': { boxShadow: `0 0 0 0.1em black` },
+  '&:focus-visible': { boxShadow: `0 0 0 0.1em black` },
 
   variants: {
     color: {
@@ -74,6 +74,13 @@ export const Button = styled('button', {
         },
       },
     },
+    compact: {
+      true: {
+        padding: space.xs,
+        borderRadius: '0.4em',
+        lineHeight: 1,
+      },
+    },
   },
 
   compoundVariants: [
@@ -87,7 +94,7 @@ export const Button = styled('button', {
         border: 'none',
 
         '&:hover': {
-          backgroundColor: colors.sand4,
+          backgroundColor: colors.sand5,
           boxShadow: 'none',
           border: 'none',
         },
@@ -103,7 +110,7 @@ export const Button = styled('button', {
         border: 'none',
 
         '&:hover': {
-          backgroundColor: colors.grassA4,
+          backgroundColor: colors.grassA5,
           boxShadow: 'none',
           border: 'none',
         },

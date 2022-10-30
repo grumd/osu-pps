@@ -2,8 +2,8 @@ import { Suspense } from 'react';
 import { FiHelpCircle } from 'react-icons/fi';
 import { Outlet } from 'react-router-dom';
 
-import { NavMenu } from '@/components/Header/NavMenu';
 import { MenuLink } from '@/components/MenuLink/MenuLink';
+import { NavMenu } from '@/features/Header';
 import { faq } from '@/routes';
 import { fav, pp } from '@/routes/mappers';
 import { colors, fonts, space, styled } from '@/styles';
