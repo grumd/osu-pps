@@ -2,7 +2,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/Hove
 import { colors, fonts, space, styled } from '@/styles';
 
 export type ModToggleState = 'any' | 'yes' | 'no' | 'invert';
-export type ManiaKeysToggleState = 'any' | 4 | 5 | 6 | 7;
+export type ManiaKeysToggleState = 'any' | 4 | 5 | 6 | 7 | 8 | 9;
 
 const HoverCardOptions = styled('div', {
   '& > button + button': {
@@ -106,7 +106,7 @@ export function ManiaKeysToggle({
   children: string;
 }) {
   const onClick = () => {
-    const list: ManiaKeysToggleState[] = ['any', 4, 5, 6, 7];
+    const list: ManiaKeysToggleState[] = ['any', 4, 5, 6, 7, 8, 9];
     const index = list.indexOf(state);
 
     onChange(list[index === list.length - 1 ? 0 : index + 1]);
@@ -137,6 +137,8 @@ export function ManiaKeysToggle({
           {getHoverOption(5, '5K')}
           {getHoverOption(6, '6K')}
           {getHoverOption(7, '7K')}
+          {getHoverOption(8, '8K')}
+          {getHoverOption(9, '9K')}
         </HoverCardOptions>
       </HoverCardContent>
     </HoverCard>
