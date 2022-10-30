@@ -4,13 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ErrorBox } from '@/components/ErrorBox/ErrorBox';
 import { Input } from '@/components/Input/Input';
 import Loader from '@/components/Loader/Loader';
-import {
-  ScrollArea,
-  ScrollAreaCorner,
-  ScrollAreaScrollbar,
-  ScrollAreaThumb,
-  ScrollAreaViewport,
-} from '@/components/Scroll/Scroll';
+import { ScrollArea } from '@/components/Scroll/Scroll';
 import { MappersTableExpandable } from '@/features/Mappers/components/MappersTableExpandable/MappersTableExpandable';
 import type { MapperItem } from '@/features/Mappers/components/MappersTableExpandable/types';
 import { space, styled } from '@/styles';
@@ -22,10 +16,10 @@ const StyledMain = styled('main', {
   flex: '1 1 auto',
   display: 'flex',
   flexFlow: 'column nowrap',
-  alignItems: 'center',
 });
 
 const FilterContainer = styled('div', {
+  alignSelf: 'center',
   padding: space.md,
   width: space.tableMaxWidth,
   maxWidth: '100%',
@@ -76,32 +70,21 @@ export function MappersFav() {
       {isLoading && <Loader css={{ padding: `${space.md} 0` }} />}
       {visibleMappers && (
         <>
-          <ScrollArea css={{ flex: '1 1 0px' }}>
-            <FilterContainer>
-              <Input
-                placeholder="search names..."
-                type="text"
-                onChange={setFilter}
-                value={filter}
+          <FilterContainer>
+            <Input placeholder="search names..." type="text" onChange={setFilter} value={filter} />
+          </FilterContainer>
+          <ScrollArea css={{ flex: '1 1 0px' }} ref={setScrollParent}>
+            {visibleMappers.length ? (
+              <MappersTableExpandable
+                mappers={visibleMappers}
+                scrollParent={scrollParent ?? undefined}
+                loadMore={loadMore}
+                maxValue={maxValue}
+                renderExpandedRow={renderExpandedRow}
               />
-            </FilterContainer>
-            <ScrollAreaViewport ref={setScrollParent}>
-              {visibleMappers.length ? (
-                <MappersTableExpandable
-                  mappers={visibleMappers}
-                  scrollParent={scrollParent ?? undefined}
-                  loadMore={loadMore}
-                  maxValue={maxValue}
-                  renderExpandedRow={renderExpandedRow}
-                />
-              ) : (
-                `Didn't find a mapper with this name :(`
-              )}
-            </ScrollAreaViewport>
-            <ScrollAreaScrollbar orientation="vertical">
-              <ScrollAreaThumb />
-            </ScrollAreaScrollbar>
-            <ScrollAreaCorner />
+            ) : (
+              `Didn't find a mapper with this name :(`
+            )}
           </ScrollArea>
         </>
       )}

@@ -1,12 +1,6 @@
 import { ErrorBox } from '@/components/ErrorBox/ErrorBox';
 import { ProgressBar } from '@/components/ProgressBar/ProgressBar';
-import {
-  ScrollArea,
-  ScrollAreaCorner,
-  ScrollAreaScrollbar,
-  ScrollAreaThumb,
-  ScrollAreaViewport,
-} from '@/components/Scroll/Scroll';
+import { ScrollArea } from '@/components/Scroll/Scroll';
 import { space, styled } from '@/styles';
 
 import { RankingsTable } from './components/RankingsTable';
@@ -44,11 +38,7 @@ export function Rankings() {
           alignItems: 'center',
         }}
       >
-        <ScrollAreaViewport>{data && <RankingsTable rankings={data} />}</ScrollAreaViewport>
-        <ScrollAreaScrollbar orientation="vertical">
-          <ScrollAreaThumb />
-        </ScrollAreaScrollbar>
-        <ScrollAreaCorner />
+        {data && <RankingsTable rankings={data} />}
       </ScrollArea>
     </StyledMain>
   );

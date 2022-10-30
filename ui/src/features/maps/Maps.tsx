@@ -11,9 +11,9 @@ const StyledMain = styled('main', {
   flex: '1 1 auto',
   display: 'flex',
   flexFlow: 'column nowrap',
-  alignItems: 'center',
 
   '& > header': {
+    alignSelf: 'center',
     width: space.pageMaxWidth,
     maxWidth: '100%',
   },

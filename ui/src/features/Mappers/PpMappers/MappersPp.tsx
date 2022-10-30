@@ -2,13 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { ErrorBox } from '@/components/ErrorBox/ErrorBox';
 import Loader from '@/components/Loader/Loader';
-import {
-  ScrollArea,
-  ScrollAreaCorner,
-  ScrollAreaScrollbar,
-  ScrollAreaThumb,
-  ScrollAreaViewport,
-} from '@/components/Scroll/Scroll';
+import { ScrollArea } from '@/components/Scroll/Scroll';
 import { Text } from '@/components/Text/Text';
 import { CalcMode } from '@/constants/modes';
 import { MapperSubRow } from '@/features/Mappers/components/MappersTableExpandable/MapperSubRow';
@@ -30,7 +24,6 @@ const StyledMain = styled('main', {
   flex: '1 1 auto',
   display: 'flex',
   flexFlow: 'column nowrap',
-  alignItems: 'center',
 });
 
 const MapperName = styled('div', {
@@ -112,19 +105,13 @@ export function MappersPp() {
       {isLoading && <Loader css={{ padding: `${space.md} 0` }} />}
       {mappedData && (
         <>
-          <ScrollArea css={{ flex: '1 1 0px' }}>
-            <ScrollAreaViewport ref={setScrollParent}>
-              <MappersTableExpandable
-                mappers={mappedData}
-                scrollParent={scrollParent ?? undefined}
-                maxValue={maxValue}
-                renderExpandedRow={renderExpandedRow}
-              />
-            </ScrollAreaViewport>
-            <ScrollAreaScrollbar orientation="vertical">
-              <ScrollAreaThumb />
-            </ScrollAreaScrollbar>
-            <ScrollAreaCorner />
+          <ScrollArea css={{ flex: '1 1 0px' }} ref={setScrollParent}>
+            <MappersTableExpandable
+              mappers={mappedData}
+              scrollParent={scrollParent ?? undefined}
+              maxValue={maxValue}
+              renderExpandedRow={renderExpandedRow}
+            />
           </ScrollArea>
         </>
       )}

@@ -1,13 +1,7 @@
 import { useState } from 'react';
 import { Virtuoso } from 'react-virtuoso';
 
-import {
-  ScrollArea,
-  ScrollAreaCorner,
-  ScrollAreaScrollbar,
-  ScrollAreaThumb,
-  ScrollAreaViewport,
-} from '@/components/Scroll/Scroll';
+import { ScrollArea } from '@/components/Scroll/Scroll';
 import { useMode } from '@/hooks/useMode';
 
 import { nextPage, useFilters } from '../hooks/useFilters';
@@ -35,27 +29,21 @@ export function ScrolledFilteredMaps({ maps }: { maps: Beatmap[] | null | undefi
         flex: '1 1 0px',
         display: 'flex',
         flexFlow: 'column nowrap',
-        alignItems: 'center',
       }}
+      ref={setScrollParent}
     >
-      <ScrollAreaViewport ref={setScrollParent}>
-        {!filteredMaps ? null : filteredMaps.length === 0 ? (
-          <p>{"Didn't find anything :("}</p>
-        ) : (
-          <Virtuoso
-            data={filteredMaps}
-            endReached={loadMore}
-            itemContent={(index, map) => (
-              <BeatmapCard key={`${map.beatmapId}_${map.mods}`} map={map} />
-            )}
-            customScrollParent={scrollParent ?? undefined}
-          />
-        )}
-      </ScrollAreaViewport>
-      <ScrollAreaScrollbar orientation="vertical">
-        <ScrollAreaThumb />
-      </ScrollAreaScrollbar>
-      <ScrollAreaCorner />
+      {!filteredMaps ? null : filteredMaps.length === 0 ? (
+        <p>{"Didn't find anything :("}</p>
+      ) : (
+        <Virtuoso
+          data={filteredMaps}
+          endReached={loadMore}
+          itemContent={(index, map) => (
+            <BeatmapCard key={`${map.beatmapId}_${map.mods}`} map={map} />
+          )}
+          customScrollParent={scrollParent ?? undefined}
+        />
+      )}
     </ScrollArea>
   );
 }

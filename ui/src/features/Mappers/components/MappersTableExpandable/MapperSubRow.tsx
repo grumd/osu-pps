@@ -1,16 +1,9 @@
 import { ExternalLink } from '@/components/Link/ExternalLink';
 import { ProgressBar } from '@/components/ProgressBar/ProgressBar';
-import {
-  ScrollArea,
-  ScrollAreaCorner,
-  ScrollAreaScrollbar,
-  ScrollAreaThumb,
-  ScrollAreaViewport,
-} from '@/components/Scroll/Scroll';
+import { ScrollArea } from '@/components/Scroll/Scroll';
 import { Text } from '@/components/Text/Text';
 import { colors, space, styled } from '@/styles';
 import { truncateFloat } from '@/utils';
-import { getBeatmapUrl } from '@/utils/externalLinks';
 
 import type { MapperMapItem } from './types';
 
@@ -57,44 +50,38 @@ export const MapperSubRow = ({ data, children, customHeaderRow, getUrl }: Mapper
     <Container>
       {children}
       {data && (
-        <ScrollArea>
-          <ScrollAreaViewport css={{ maxHeight: '20em', height: 'auto' }}>
-            <table>
-              <thead>
-                {customHeaderRow ?? (
-                  <tr>
-                    <td></td>
+        <ScrollArea css={{ maxHeight: '20em', height: 'auto' }}>
+          <table>
+            <thead>
+              {customHeaderRow ?? (
+                <tr>
+                  <td></td>
+                  <td>
+                    <Text bold>{data.length}</Text> maps; average points per map:{' '}
+                    <Text bold>{truncateFloat(averagePoints)}</Text>
+                  </td>
+                </tr>
+              )}
+            </thead>
+            <tbody>
+              {data.map((map) => {
+                return (
+                  <tr key={map.id}>
                     <td>
-                      <Text bold>{data.length}</Text> maps; average points per map:{' '}
-                      <Text bold>{truncateFloat(averagePoints)}</Text>
+                      <ExternalLink url={getUrl(map.id)}>{map.text}</ExternalLink>
+                    </td>
+                    <td>
+                      <MapCountBar progress={map.value / maxValue}>
+                        <div style={{ position: 'absolute', top: 0, left: '0.4em' }}>
+                          {truncateFloat(map.value, 10)}
+                        </div>
+                      </MapCountBar>
                     </td>
                   </tr>
-                )}
-              </thead>
-              <tbody>
-                {data.map((map) => {
-                  return (
-                    <tr key={map.id}>
-                      <td>
-                        <ExternalLink url={getUrl(map.id)}>{map.text}</ExternalLink>
-                      </td>
-                      <td>
-                        <MapCountBar progress={map.value / maxValue}>
-                          <div style={{ position: 'absolute', top: 0, left: '0.4em' }}>
-                            {truncateFloat(map.value, 10)}
-                          </div>
-                        </MapCountBar>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </ScrollAreaViewport>
-          <ScrollAreaScrollbar orientation="vertical">
-            <ScrollAreaThumb />
-          </ScrollAreaScrollbar>
-          <ScrollAreaCorner />
+                );
+              })}
+            </tbody>
+          </table>
         </ScrollArea>
       )}
     </Container>
