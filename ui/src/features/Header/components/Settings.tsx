@@ -72,7 +72,7 @@ export const Settings = ({ themeToggle }: { themeToggle: React.ReactNode }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button iconButton color="sand" aria-label="settings">
+        <Button iconButtonKind="default" kind="light" aria-label="settings">
           <SettingsIcon />
         </Button>
       </DialogTrigger>
@@ -80,7 +80,7 @@ export const Settings = ({ themeToggle }: { themeToggle: React.ReactNode }) => {
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
           <DialogClose asChild>
-            <Button iconButton color="sand" aria-label="close">
+            <Button iconButtonKind="default" kind="light" aria-label="close">
               <IoClose />
             </Button>
           </DialogClose>

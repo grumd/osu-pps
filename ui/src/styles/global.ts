@@ -32,4 +32,20 @@ export const globalStyles = globalCss({
       fontSize: '2.95vw',
     },
   },
+
+  '.visx-tooltip-reset': {
+    background: 'inherit !important',
+    padding: 'inherit !important',
+    fontWeight: 'inherit !important',
+    color: 'inherit !important',
+    borderRadius: 'inherit !important',
+    fontSize: 'inherit !important',
+    boxShadow: 'inherit !important',
+    lineHeight: 'inherit !important',
+    fontFamily: 'inherit !important',
+  },
+
+  'dl, dd': {
+    margin: 0,
+  },
 });

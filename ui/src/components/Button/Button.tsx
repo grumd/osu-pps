@@ -6,7 +6,7 @@ export const Button = styled('button', {
   alignItems: 'center',
   justifyContent: 'center',
   borderRadius: space.xs,
-  padding: `${space.md} ${space.lg}`,
+  padding: `${space.sm} ${space.md}`,
   lineHeight: 1.2,
   cursor: 'pointer',
   fontWeight: 600,
@@ -14,105 +14,108 @@ export const Button = styled('button', {
   '&:focus-visible': { boxShadow: `0 0 0 0.1em black` },
 
   variants: {
-    color: {
-      sand: {
-        color: colors.sand11,
-        boxShadow: `0 0 0.6em -0.2em ${colors.sand3}`,
-        backgroundColor: colors.sand3,
-        border: `1px solid ${colors.sand7}`,
-
-        '&:hover': {
-          backgroundColor: colors.sand4,
-          border: `1px solid ${colors.sand8}`,
-        },
-      },
-      green: {
-        color: colors.grassA11,
-        boxShadow: `0 0 0.6em -0.2em ${colors.grassA3}`,
-        backgroundColor: colors.grassA3,
-        border: `1px solid ${colors.grassA7}`,
-
-        '&:hover': {
-          backgroundColor: colors.grassA4,
-          border: `1px solid ${colors.grassA8}`,
-        },
-      },
-      red: {
-        color: colors.redA11,
-        boxShadow: `0 0 0.6em -0.2em ${colors.redA3}`,
-        backgroundColor: colors.redA3,
-        border: `1px solid ${colors.redA7}`,
-
-        '&:hover': {
-          backgroundColor: colors.redA4,
-          border: `1px solid ${colors.redA8}`,
-        },
-      },
-      indigo: {
-        color: colors.indigoA11,
-        boxShadow: `0 0 0.6em -0.2em ${colors.indigoA3}`,
-        backgroundColor: colors.indigoA3,
-        border: `1px solid ${colors.indigoA7}`,
-
-        '&:hover': {
-          backgroundColor: colors.indigoA4,
-          border: `1px solid ${colors.indigoA8}`,
-        },
-      },
-    },
-    iconButton: {
-      true: {
-        padding: space.md,
-        borderRadius: '50%',
+    kind: {
+      default: {},
+      light: {
         border: 'none',
         backgroundColor: 'transparent',
         boxShadow: 'none',
-
         '&:hover': {
           border: 'none',
           boxShadow: 'none',
         },
       },
     },
-    compact: {
-      true: {
+    color: {
+      sand: {
+        color: colors.sand12,
+        '&:hover': {
+          backgroundColor: colors.sand5,
+        },
+      },
+      green: {
+        color: colors.grassA11,
+        '&:hover': {
+          backgroundColor: colors.grassA4,
+        },
+      },
+      red: {
+        color: colors.redA11,
+        '&:hover': {
+          backgroundColor: colors.redA4,
+        },
+      },
+      indigo: {
+        color: colors.indigoA11,
+        '&:hover': {
+          backgroundColor: colors.indigoA4,
+        },
+      },
+    },
+    iconButtonKind: {
+      default: {
+        padding: space.md,
+        borderRadius: '50%',
+      },
+      compact: {
         padding: space.xs,
         borderRadius: '0.4em',
         lineHeight: 1,
       },
+      none: {},
     },
   },
 
   compoundVariants: [
     {
-      iconButton: true,
+      kind: 'default',
       color: 'sand',
       css: {
-        color: colors.sand11,
-        backgroundColor: 'transparent',
-        boxShadow: 'none',
-        border: 'none',
+        boxShadow: `0 0 0.6em -0.2em ${colors.sand3}`,
+        backgroundColor: colors.sand3,
+        border: `1px solid ${colors.sand7}`,
 
         '&:hover': {
-          backgroundColor: colors.sand5,
-          boxShadow: 'none',
-          border: 'none',
+          border: `1px solid ${colors.sand8}`,
         },
       },
     },
     {
-      iconButton: true,
+      kind: 'default',
       color: 'green',
       css: {
-        color: colors.grassA11,
-        backgroundColor: 'transparent',
-        boxShadow: 'none',
-        border: 'none',
+        boxShadow: `0 0 0.6em -0.2em ${colors.grassA3}`,
+        backgroundColor: colors.grassA3,
+        border: `1px solid ${colors.grassA7}`,
 
         '&:hover': {
-          backgroundColor: colors.grassA5,
-          boxShadow: 'none',
-          border: 'none',
+          border: `1px solid ${colors.grassA8}`,
+        },
+      },
+    },
+    {
+      kind: 'default',
+      color: 'red',
+      css: {
+        boxShadow: `0 0 0.6em -0.2em ${colors.redA3}`,
+        backgroundColor: colors.redA3,
+        border: `1px solid ${colors.redA7}`,
+
+        '&:hover': {
+          border: `1px solid ${colors.redA8}`,
+        },
+      },
+    },
+    {
+      kind: 'default',
+      color: 'indigo',
+      css: {
+        boxShadow: `0 0 0.6em -0.2em ${colors.indigoA3}`,
+        backgroundColor: colors.indigoA3,
+        border: `1px solid ${colors.indigoA7}`,
+
+        '&:hover': {
+          border: `1px solid ${colors.indigoA8}`,
         },
       },
     },
@@ -120,6 +123,8 @@ export const Button = styled('button', {
 
   defaultVariants: {
     color: 'sand',
+    kind: 'default',
+    iconButtonKind: 'none',
   },
 });
 

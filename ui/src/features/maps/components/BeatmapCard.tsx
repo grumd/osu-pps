@@ -24,6 +24,7 @@ import {
 
 import { useFiltersStore } from '../hooks/useFilters';
 import type { Beatmap } from '../types';
+import { PpButton } from './BeatmapPpData/PpButton';
 import { CardGridLayout } from './CardGridLayout';
 
 const MapButtons = styled('div', {
@@ -109,19 +110,6 @@ const MapLink = styled(ExternalLink, {
   wordBreak: 'break-word',
 });
 
-const PpNumber = styled('span', {
-  textAlign: 'center',
-
-  '& > span:first-child': {
-    fontSize: fonts['150'],
-    fontWeight: 'bold',
-  },
-
-  '& > span:last-child': {
-    color: colors.textInactive,
-  },
-});
-
 const ModsContainer = styled('div', {
   display: 'flex',
   alignItems: 'center',
@@ -201,7 +189,7 @@ export const BeatmapCard = memo(function _BeatmapCard({ map }: { map: Beatmap })
             {hasDirectLink && (
               <MapButtons>
                 <ClipboardButton content={`${map.beatmapId}`} title="copy beatmap ID" />
-                <Button iconButton compact tabIndex={-1}>
+                <Button iconButtonKind="compact" kind="light" tabIndex={-1}>
                   <ExternalLink
                     title="osu!direct download (osu! supporter only)"
                     css={{ lineHeight: 0 }}
@@ -236,10 +224,14 @@ export const BeatmapCard = memo(function _BeatmapCard({ map }: { map: Beatmap })
             </ExtraInfo>
           )}
         </MapLinkContainer>
-        <PpNumber>
-          <span>{map.pp?.toFixed(0) ?? '?'}</span>
-          <span>pp</span>
-        </PpNumber>
+        <div>
+          <PpButton
+            beatmapName={linkText}
+            pp={map.pp}
+            beatmapId={map.beatmapId}
+            modsBitmask={map.mods}
+          />
+        </div>
         <ModsContainer aria-label="Selected mods">
           {isMania && (
             <ModBlock active={!!map.maniaKeys}>

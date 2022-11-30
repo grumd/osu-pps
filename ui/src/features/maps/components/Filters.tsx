@@ -109,8 +109,6 @@ const HideButton = styled(Button, {
 });
 
 const FilterButton = styled(Button, {
-  padding: `${space.sm} 0`,
-
   '& svg': {
     marginRight: space.sm,
   },

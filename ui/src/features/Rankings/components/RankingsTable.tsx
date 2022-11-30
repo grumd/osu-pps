@@ -80,7 +80,11 @@ export const RankingsTable = ({ rankings }: { rankings: Ranking[] }) => {
           <tr>
             <Th colSpan={2}>
               <PagesControls>
-                <Button color="sand" iconButton onClick={() => setPage((p) => Math.max(1, p - 1))}>
+                <Button
+                  iconButtonKind="default"
+                  kind="light"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                >
                   <FaChevronLeft />
                 </Button>
                 <Input
@@ -90,8 +94,8 @@ export const RankingsTable = ({ rankings }: { rankings: Ranking[] }) => {
                   onChange={(value) => setPage(Math.min(pagesCount, Math.max(1, value ?? 1)))}
                 />
                 <Button
-                  color="sand"
-                  iconButton
+                  iconButtonKind="default"
+                  kind="light"
                   onClick={() => setPage((p) => Math.min(pagesCount, p + 1))}
                 >
                   <FaChevronRight />

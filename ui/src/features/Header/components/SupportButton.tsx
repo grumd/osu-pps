@@ -102,7 +102,7 @@ export const SupportButton = () => {
         <DialogHeader>
           <DialogTitle>Donate</DialogTitle>
           <DialogClose asChild>
-            <Button iconButton color="sand" aria-label="close">
+            <Button iconButtonKind="default" kind="light" aria-label="close">
               <IoClose />
             </Button>
           </DialogClose>

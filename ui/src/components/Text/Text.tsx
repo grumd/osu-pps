@@ -1,4 +1,4 @@
-import { colors, styled } from '@/styles';
+import { colors, fonts, styled } from '@/styles';
 
 export const Text = styled('span', {
   variants: {
@@ -26,6 +26,14 @@ export const Text = styled('span', {
       },
       blue: {
         color: colors.textBlue,
+      },
+    },
+    size: {
+      big: {
+        fontSize: fonts[150],
+      },
+      small: {
+        fontSize: fonts[75],
       },
     },
   },

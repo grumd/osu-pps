@@ -53,7 +53,7 @@ export const ClipboardButton = ({ content, title }: ClipboardButtonProps) => {
   };
 
   return (
-    <Button iconButton compact onClick={onClickCopy} title={title}>
+    <Button iconButtonKind="compact" kind="light" onClick={onClickCopy} title={title}>
       {status === 'idle' ? (
         <CopyIcon />
       ) : status === 'success' ? (

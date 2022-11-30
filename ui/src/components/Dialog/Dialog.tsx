@@ -8,14 +8,17 @@ const overlayShow = keyframes({
 });
 
 const contentShow = keyframes({
-  '0%': { opacity: 0, transform: 'translate(-50%, -48%) scale(.95)' },
-  '100%': { opacity: 1, transform: 'translate(-50%, -50%) scale(1)' },
+  '0%': { opacity: 0, transform: 'translate(0, -5%) scale(.95)' },
+  '100%': { opacity: 1, transform: 'translate(0, 0) scale(1)' },
 });
 
 const StyledOverlay = styled(DialogPrimitive.Overlay, {
   backgroundColor: `rgba(0, 0, 0, 0.5)`,
   position: 'fixed',
   inset: 0,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   '@media (prefers-reduced-motion: no-preference)': {
     animation: `${overlayShow} 150ms cubic-bezier(0.16, 1, 0.3, 1)`,
   },
@@ -27,10 +30,6 @@ const StyledContent = styled(DialogPrimitive.Content, {
   borderRadius: space.lg,
   padding: space.lg,
   boxShadow: '0 0 1em 0 rgba(0, 0, 0, 0.75)',
-  position: 'fixed',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
   width: '90vw',
   maxWidth: '41em',
   maxHeight: '85vh',
@@ -43,8 +42,9 @@ const StyledContent = styled(DialogPrimitive.Content, {
 function Content({ children, ...props }: React.ComponentProps<typeof StyledContent>) {
   return (
     <DialogPrimitive.Portal>
-      <StyledOverlay />
-      <StyledContent {...props}>{children}</StyledContent>
+      <StyledOverlay>
+        <StyledContent {...props}>{children}</StyledContent>
+      </StyledOverlay>
     </DialogPrimitive.Portal>
   );
 }

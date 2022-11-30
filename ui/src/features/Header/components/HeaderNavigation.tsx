@@ -9,14 +9,14 @@ import { FakeListItem, NavMenu } from './NavMenu';
 
 export function HeaderNavigation() {
   const params = useRouteParams(mode);
-  const modeMatch = useMatch(`${mode.template}/*`);
+  const modeMatch = useMatch(`${mode.templateWithQuery}/*`);
 
   const modeParams = { mode: params.mode ?? Mode.osu };
 
   const getOtherModeUrl = (newMode: Mode) =>
-    modeMatch
-      ? generatePath(`${mode.template}/*`, { mode: newMode, '*': modeMatch.params['*'] })
-      : generatePath(mode.template, { mode: newMode });
+    modeMatch?.params['*']
+      ? generatePath(`${mode.templateWithQuery}/*`, { mode: newMode, '*': modeMatch.params['*'] })
+      : generatePath(mode.templateWithQuery, { mode: newMode });
 
   return (
     <div>
