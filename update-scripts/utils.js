@@ -22,6 +22,7 @@ const files = {
   // data folder
   mapsetsCsv: (mode) => `./../data/maps/${mode.text}/mapsets.csv`,
   diffsCsv: (mode) => `./../data/maps/${mode.text}/diffs.csv`,
+  beatmapScores: (mode, mapModId) => `./../data/maps/${mode.text}/maps-scores/${mapModId}.json`,
   dataMappers: (mode) => `./../data/mappers/${mode.text}/pp-mappers.json`,
   mappersFavTop: (mode) => `./../data/mappers/${mode.text}/favored-mappers.json`,
   mappersFavTopDetails: (mode, mapperId) =>
@@ -46,7 +47,10 @@ const getDiffHours = (diff) =>
 
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const truncateFloat = (x) => Math.floor(x * 100) / 100;
+const truncateFloat = (x, decimals = 2) => {
+  const factor = Math.pow(10, decimals);
+  return Math.floor(x * factor) / factor;
+};
 
 const runScript = (fileName) => {
   return new Promise((res) => {

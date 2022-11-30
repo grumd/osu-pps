@@ -39,7 +39,14 @@ const fetchApi = async (url, params, options = {}) => {
     const response = await axios.get(url, { params, baseURL });
     return response;
   } catch (error) {
-    if (error.response.status === 400) {
+    if (!error.response) {
+      // This probably only happens when your internet is out
+      console.warn(error.message);
+      console.warn(`Retrying...`);
+      await delay(3000);
+      await setupToken();
+      return fetchApi(url, params, options);
+    } else if (error.response.status === 400) {
       console.error('Bad request:', url, {
         params,
         baseURL,
