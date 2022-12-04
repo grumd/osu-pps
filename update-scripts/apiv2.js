@@ -41,32 +41,41 @@ const fetchApi = async (url, params, options = {}) => {
   } catch (error) {
     if (!error.response) {
       // This probably only happens when your internet is out
-      console.warn(error.message);
+      console.warn('No response:', error.message);
       console.warn(`Retrying...`);
       await delay(3000);
       await setupToken();
       return fetchApi(url, params, options);
     } else if (error.response.status === 400) {
-      console.error('Bad request:', url, {
+      // Probably my mistake
+      console.error('400 Bad Request:', url, {
         params,
         baseURL,
         authToken: axios.defaults.headers.common['Authorization'],
       });
       throw new Error(error.message);
+    } else if (error.response.status === 404) {
+      // Probably restricted user
+      console.warn('404 Not Found:', url, params);
+      throw new Error(error.message);
     } else if (error.response.status === 401) {
+      // Probably API v2 token is expired
       await setupToken();
       return fetchApi(url, params, options);
     } else if (error.response.status === 429) {
-      console.warn('429 - Too many requests, waiting for', wait429, 'ms');
+      // Probably need to fetch less often
+      console.warn('429 Too many requests, waiting for', wait429, 'ms');
       await delay(wait429);
       return fetchApi(url, params, { ...options, wait429: wait429 * 1.5 });
-    } else if (error.response.status === 404 || retries < 1) {
-      throw new Error(error.message);
     } else if (retries >= 1) {
+      // Retrying a few times in case of unstable connection
+      console.warn(url, params);
       console.warn(error.message);
       console.warn(`Retrying ${retries - 1} times...`);
       await delay(5000);
       return fetchApi(url, params, { ...options, retries: retries - 1 });
+    } else {
+      throw error;
     }
   }
 };

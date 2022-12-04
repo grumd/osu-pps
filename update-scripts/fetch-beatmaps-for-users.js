@@ -101,19 +101,8 @@ const recordData = (scores, modeId) => {
   });
 };
 
-const fetchUserBeatmaps = (userId, modeText, scoresCount, retryCount = 0) => {
-  if (retryCount > 3) {
-    return Promise.reject(new Error('Too many retries'));
-  }
-  retryCount && console.log(`Retry #${retryCount}`);
-  return fetchUserBestScores(userId, modeText, scoresCount).catch((err) => {
-    console.log('Error:', err.message);
-    return delay(5000).then(() => fetchUserBeatmaps(userId, modeText, scoresCount, retryCount + 1));
-  });
-};
-
 const fetchUser = ({ userId, mode, shouldRecordScores }) => {
-  return fetchUserBeatmaps(userId, mode.text, shouldRecordScores ? 100 : 20)
+  return fetchUserBestScores(userId, mode.text, shouldRecordScores ? 100 : 20)
     .then(({ data: newData }) => {
       // TODO: rewrite fetch-beatmaps-for-users together with fetch-map-info because we get both in api v2
       // Transforming to old format here
