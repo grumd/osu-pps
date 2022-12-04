@@ -14,12 +14,10 @@ const {
   writeJson,
   readJson,
   writeFileSync,
+  modsArrayToBitmask,
 } = require('./utils');
+const { fetchUserBestScores } = require('./apiv2');
 
-const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
-
-const getUrl = (userId, modeId, limit) =>
-  `https://osu.ppy.sh/api/get_user_best?k=${apikey}&u=${userId}&limit=${limit}&type=id&m=${modeId}`;
 const getUniqueMapModId = (score) => `${score.beatmap_id}_${score.enabled_mods}`;
 const getMagnitudeByIndex = (x) => Math.pow(Math.pow(x - 100, 2) / 10000, 20); // ((x-100)^2/10000)^20
 
@@ -46,7 +44,7 @@ const calculatePp99 = (mapModId) => {
 
   // If we already have a 99% score with 0 misses, just use the pp value from there
   const [acc0, score0] = ppByAccAsArray[0];
-  if (acc0 === '99' && score0.countmiss === 0) {
+  if (acc0 === '99' && score0.statistics.count_miss === 0) {
     return score0.pp;
   }
 
@@ -60,40 +58,23 @@ const calculatePp99 = (mapModId) => {
   return truncateFloat(ppPerAccSum / subArray.length / 99);
 };
 
-const trimScoreForStats = _.pick([
-  'maxcombo',
-  'count50',
-  'count100',
-  'count300',
-  'countmiss',
-  'user_id',
-  'score_id',
-  'rank',
-  'pp',
-]);
+const trimScoreForStats = _.pick(['maxcombo', 'statistics', 'user_id', 'score_id', 'rank', 'pp']);
 
 const writeMapPpStats = (mapModId, mode) => {
   const ppByAcc = ppByAccByMap.get(mapModId);
   writeFileSync(files.beatmapScores(mode, mapModId), JSON.stringify(Object.fromEntries(ppByAcc)));
 };
 
-const recordData = (data, modeId) => {
-  const topMapsPpSum = data.slice(0, ppBlockMapCount).reduce((sum, score) => {
-    return sum + parseFloat(score.pp);
+const recordData = (scores, modeId) => {
+  const topMapsPpSum = scores.slice(0, ppBlockMapCount).reduce((sum, score) => {
+    return sum + score.pp;
   }, 0);
   const ppBlockValue = Math.floor(Math.round(topMapsPpSum / ppBlockMapCount) / ppBlockSize);
   peoplePerPpBlocks[ppBlockValue] = (peoplePerPpBlocks[ppBlockValue] || 0) + 1;
 
-  data.forEach((score, index) => {
-    Object.keys(score).forEach((key) => {
-      const parsed = Number(score[key]);
-      score[key] = isNaN(parsed) ? score[key] : parsed;
-    });
+  scores.forEach((score, index) => {
     score.enabled_mods = simplifyMods(score.enabled_mods, modeId);
     const mapModId = getUniqueMapModId(score);
-    const acc =
-      (100 * (score.count300 + score.count100 / 3 + score.count50 / 6)) /
-      (score.countmiss + score.count50 + score.count100 + score.count300);
     if (!maps[mapModId]) {
       maps[mapModId] = {
         m: score.enabled_mods,
@@ -106,7 +87,7 @@ const recordData = (data, modeId) => {
     }
 
     // Recording pp for different accuracies for every map (separate files)
-    const shortAcc = truncateFloat(acc, 1); // Truncate to XX.X % format
+    const shortAcc = truncateFloat(score.accuracy, 1); // Truncate to XX.X % format
     const trimmedScore = trimScoreForStats(score);
     if (!ppByAccByMap.has(mapModId)) {
       ppByAccByMap.set(mapModId, new Map([[shortAcc, trimmedScore]]));
@@ -120,26 +101,42 @@ const recordData = (data, modeId) => {
   });
 };
 
-const fetchUserBeatmaps = (userId, modeId, scoresCount, retryCount = 0) => {
+const fetchUserBeatmaps = (userId, modeText, scoresCount, retryCount = 0) => {
   if (retryCount > 3) {
     return Promise.reject(new Error('Too many retries'));
   }
   retryCount && console.log(`Retry #${retryCount}`);
-  return axios.get(getUrl(userId, modeId, scoresCount)).catch((err) => {
+  return fetchUserBestScores(userId, modeText, scoresCount).catch((err) => {
     console.log('Error:', err.message);
-    return delay(5000).then(() => fetchUserBeatmaps(userId, modeId, scoresCount, retryCount + 1));
+    return delay(5000).then(() => fetchUserBeatmaps(userId, modeText, scoresCount, retryCount + 1));
   });
 };
 
-const fetchUser = ({ userId, modeId, shouldRecordScores }) => {
-  return fetchUserBeatmaps(userId, modeId, shouldRecordScores ? 100 : 20)
-    .then(({ data }) => {
+const fetchUser = ({ userId, mode, shouldRecordScores }) => {
+  return fetchUserBeatmaps(userId, mode.text, shouldRecordScores ? 100 : 20)
+    .then(({ data: newData }) => {
+      // TODO: rewrite fetch-beatmaps-for-users together with fetch-map-info because we get both in api v2
+      // Transforming to old format here
+      const data = newData.map((d) => ({
+        accuracy: d.accuracy * 100,
+        beatmap_id: d.beatmap.id,
+        score_id: d.id,
+        score: d.score,
+        maxcombo: d.max_combo,
+        statistics: d.statistics,
+        enabled_mods: modsArrayToBitmask(d.mods),
+        user_id: d.user_id,
+        date: d.created_at,
+        rank: d.rank,
+        pp: d.pp,
+      }));
+
       if (shouldRecordScores) {
         // Recording as one string for compression sake
         usersMaps[userId] = data && data.map((d) => `${d.beatmap_id}_${d.enabled_mods}_${d.pp}`);
         usersMapsDate[userId] = Math.floor(Date.now() / 1000 / 60); // unix minutes
       }
-      recordData(data, modeId);
+      recordData(data, mode.id);
     })
     .catch((error) => {
       console.log('\x1b[33m%s\x1b[0m', error.message);
@@ -172,7 +169,7 @@ module.exports = async (mode) => {
       const shouldRecordScores = index < 11000;
       return fetchUser({
         userId: user.id,
-        modeId: mode.id,
+        mode,
         shouldRecordScores,
       });
     },

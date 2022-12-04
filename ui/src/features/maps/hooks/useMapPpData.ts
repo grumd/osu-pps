@@ -9,10 +9,14 @@ import { queryClient } from '@/utils/queryClient';
 
 type PpData = {
   maxcombo: number;
-  count50: number;
-  count100: number;
-  count300: number;
-  countmiss: number;
+  statistics: {
+    count_50: number;
+    count_100: number;
+    count_300: number;
+    count_miss: number;
+    count_katu: number;
+    count_geki: number;
+  };
   user_id: number;
   score_id: number;
   rank: 'F' | 'D' | 'C' | 'B' | 'A' | 'S' | 'X' | 'SH' | 'XH';

@@ -1,15 +1,10 @@
 // const { parallelRun, delay } = require('./utils');
 
-const { fetchBeatmap } = require('./apiv2');
-
-const logMemory = () => {
-  console.log(process.memoryUsage().heapUsed / 1024 / 1024, 'mb');
-};
+const { fetchUserBestScores } = require('./apiv2');
 
 const main = async () => {
-  const data = await fetchBeatmap(1988753);
-
-  console.log(data.data.beatmapset.covers);
+  const data = await fetchUserBestScores(15225195, 'mania', 10);
+  console.log(data.data);
   // const arr = Array(500)
   //   .fill(null)
   //   .map(() => ({ foo: 'foo' }));

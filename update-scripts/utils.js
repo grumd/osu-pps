@@ -113,6 +113,13 @@ const modsToString = (mods) => {
     .join('');
 };
 
+const modsArrayToBitmask = (mods) => {
+  return mods.reduce((mask, mod) => {
+    const code = mod === 'NC' ? modCodes.dt : modCodes[mod.toLowerCase()] ?? 0;
+    return mask + code;
+  }, 0);
+};
+
 var prevRow = [],
   str2Char = [];
 const levenshtein = (str1, str2) => {
@@ -279,4 +286,5 @@ module.exports = {
   writeFileSync,
   writeJson,
   readJson,
+  modsArrayToBitmask,
 };

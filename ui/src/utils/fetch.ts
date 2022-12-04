@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Papa from 'papaparse';
 
-import { DEBUG_FETCH } from '@/constants/api';
+import { API_PREFIX, DEBUG_FETCH } from '@/constants/api';
 
 interface GithubFileApiResponse {
   size: number;
@@ -35,7 +35,7 @@ export const fetchCsvWithProgress = async <T>({
   // Github API
   // https://api.github.com/repos/grumd/osu-pps/contents/data/maps/osu/diffs.csv?ref=data
   const apiResponse = DEBUG_FETCH
-    ? { data: { size: 1, download_url: `/${path}` } }
+    ? { data: { size: 1, download_url: `${API_PREFIX}/${path}` } }
     : await axios.get<GithubFileApiResponse>(
         `https://api.github.com/repos/grumd/osu-pps/contents/${path}?ref=data`
       );

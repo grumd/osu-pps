@@ -8,5 +8,11 @@ export default defineConfig({
   plugins: [react(), tsconfigPaths(), visualizer()],
   server: {
     open: true,
+    proxy: {
+      '/local-api': {
+        target: 'http://localhost:5174',
+        rewrite: (path) => path.replace(/^\/local-api/, ''),
+      },
+    },
   },
 });

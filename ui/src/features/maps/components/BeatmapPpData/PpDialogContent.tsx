@@ -5,6 +5,7 @@ import { useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/Button/Button';
 import { ErrorBox } from '@/components/ErrorBox/ErrorBox';
 import Loader from '@/components/Loader/Loader';
+import { Mode } from '@/constants/modes';
 import { useMode } from '@/hooks/useMode';
 import { styled } from '@/styles';
 import { getScoreUrl, getUserUrl } from '@/utils/externalLinks';
@@ -17,7 +18,8 @@ const xAccessor = (d: DataPoint) => d && d.accuracy;
 const yAccessor = (d: DataPoint) => d && d.pp;
 
 const missesColors = ['#5ab852', '#e58850', '#fa6151', '#ed4545'];
-const colorAccessor = (d: DataPoint) => missesColors[Math.min(d.countmiss, 3)];
+const colorAccessor = (d: DataPoint) => missesColors[Math.min(d.statistics.count_miss, 3)];
+const colorAccessorMania = () => missesColors[0];
 
 const GraphContainer = styled('div', {
   height: '40vw',
@@ -67,6 +69,9 @@ export default function PpDialogContent({ beatmapId, modsBitmask }: PpDialogCont
     else window.open(getUserUrl(score.user_id), '_blank');
   };
 
+  const maxAccuracy =
+    mode === Mode.fruits ? Math.min(100, lineData[lineData.length - 1].accuracy + 0.1) : 100;
+
   return (
     <div>
       <GraphContainer>
@@ -74,7 +79,11 @@ export default function PpDialogContent({ beatmapId, modsBitmask }: PpDialogCont
           {({ width, height }) => {
             return (
               <XYChart
-                xScale={{ type: 'linear', zero: false, domain: [lineData[0].accuracy - 0.1, 100] }}
+                xScale={{
+                  type: 'linear',
+                  zero: false,
+                  domain: [lineData[0].accuracy - 0.1, maxAccuracy],
+                }}
                 yScale={{ type: 'linear', zero: false }}
                 height={height}
                 width={width}
@@ -97,7 +106,7 @@ export default function PpDialogContent({ beatmapId, modsBitmask }: PpDialogCont
                   tickFormat={(n) => `${n}pp`}
                 />
                 <GlyphSeries
-                  colorAccessor={colorAccessor}
+                  colorAccessor={mode === Mode.mania ? colorAccessorMania : colorAccessor}
                   size={Math.ceil(width / 80)}
                   dataKey="pp"
                   data={lineData}
@@ -129,7 +138,9 @@ export default function PpDialogContent({ beatmapId, modsBitmask }: PpDialogCont
                     const d = tooltipData?.nearestDatum?.datum as DataPoint | undefined;
                     visibleTooltipDataPoint.current = d;
                     if (!d) return null;
-                    return <ScoreTooltip score={d} hideLinkText={isTouchEvent.current} />;
+                    return (
+                      <ScoreTooltip mode={mode} score={d} hideLinkText={isTouchEvent.current} />
+                    );
                   }}
                 />
               </XYChart>

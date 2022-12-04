@@ -117,7 +117,11 @@ const fetchApiWithPages = async (
 }
 */
 const fetchUserBestScores = async (userId, modeName, topScoresCount) => {
-  return fetchApi(`/users/${userId}/scores/best`, { mode: modeName, limit: topScoresCount });
+  return fetchApi(
+    `/users/${userId}/scores/best`,
+    { mode: modeName, limit: topScoresCount },
+    { disableLogs: true }
+  );
 };
 
 /*
