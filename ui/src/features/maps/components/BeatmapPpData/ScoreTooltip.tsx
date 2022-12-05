@@ -70,7 +70,10 @@ interface ScoreTooltipProps {
   mode: Mode;
 }
 
-export const ScoreTooltip = ({ score, hideLinkText, mode }: ScoreTooltipProps): JSX.Element => {
+export const ScoreTooltip = ({ score, hideLinkText, mode }: ScoreTooltipProps): JSX.Element | null => {
+  if (!score || !score.statistics) {
+    return null;
+  }
   const { count_300, count_100, count_50, count_miss, count_geki, count_katu } = score.statistics;
   const stats = {
     [Mode.osu]: [

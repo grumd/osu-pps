@@ -14,12 +14,13 @@ import { useMapPpData } from '../../hooks/useMapPpData';
 import type { DataPoint } from '../../hooks/useMapPpData';
 import { ScoreTooltip } from './ScoreTooltip';
 
-const xAccessor = (d: DataPoint) => d && d.accuracy;
-const yAccessor = (d: DataPoint) => d && d.pp;
+const xAccessor = (d: DataPoint) => d?.accuracy;
+const yAccessor = (d: DataPoint) => d?.pp;
 
 const missesColors = ['#5ab852', '#e58850', '#fa6151', '#ed4545'];
-const colorAccessor = (d: DataPoint) => missesColors[Math.min(d.statistics.count_miss, 3)];
-const colorAccessorMania = () => missesColors[0];
+const colorAccessor = (d: DataPoint) => missesColors[Math.min(d?.statistics?.count_miss, 3)];
+const colorAccessorMania = (d: DataPoint) =>
+  missesColors[Math.min(Math.floor((100 - d.accuracy) / 3), 3)];
 
 const GraphContainer = styled('div', {
   height: '40vw',
@@ -40,7 +41,6 @@ export default function PpDialogContent({ beatmapId, modsBitmask }: PpDialogCont
   const [lastTouchedScore, setLastTouchedScore] = useState<DataPoint | null>(null);
   const { data, isLoading, error } = useMapPpData(beatmapId, modsBitmask);
   const mode = useMode();
-  const visibleTooltipDataPoint = useRef<DataPoint | undefined>();
 
   const lineData = useMemo(() => {
     return (
@@ -136,7 +136,6 @@ export default function PpDialogContent({ beatmapId, modsBitmask }: PpDialogCont
                   className="visx-tooltip-reset"
                   renderTooltip={({ tooltipData }) => {
                     const d = tooltipData?.nearestDatum?.datum as DataPoint | undefined;
-                    visibleTooltipDataPoint.current = d;
                     if (!d) return null;
                     return (
                       <ScoreTooltip mode={mode} score={d} hideLinkText={isTouchEvent.current} />
