@@ -47,7 +47,8 @@ export const useFilterWorker = (
   }, [filters]);
 
   useEffect(() => {
-    // HACK: Takes more than 200ms to serialize, so this effect runs last to not block previous effects from running
+    // HACK: Takes more than 200ms to serialize the message,
+    // so this effect runs last to not block previous effects from running
     filterWorker.postMessage(['maps-mode', { data, mode }]);
   }, [data, mode]);
 

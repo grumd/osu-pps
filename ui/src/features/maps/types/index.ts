@@ -58,6 +58,8 @@ export interface Beatmap extends BeatmapDiff, BeatmapSet {
   farmValues: Record<CalcMode, number>;
 }
 
+export type SortTypes = 'farmValue' | 'pp' | 'length' | 'difficulty' | 'hoursSinceRanked' | 'bpm';
+
 export interface Filters {
   songName?: string;
   bpmMax?: number | null;
@@ -79,4 +81,5 @@ export interface Filters {
   languages?: { value: number; label: string }[] | null;
   genres?: { value: number; label: string }[] | null;
   ranked?: { value: number; label: string } | null;
+  sorting?: { value: [SortTypes, 'asc' | 'desc']; label: string } | null;
 }

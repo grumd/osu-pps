@@ -3,6 +3,7 @@ import create from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import { CalcMode, Mode } from '@/constants/modes';
+import { sortOptions } from '@/constants/options';
 import { useMode } from '@/hooks/useMode';
 import { keys } from '@/utils/object';
 
@@ -12,6 +13,7 @@ const initialFilters: Filters = {
   count: 20,
   calcMode: CalcMode.ByPopulationAndTime,
   isShowingMore: false,
+  sorting: sortOptions[0],
 };
 
 const initialFiltersMap: Record<Mode, Filters> = Object.fromEntries(
@@ -76,7 +78,7 @@ export const useFiltersStore = create<FiltersStore>()(
           },
         };
       },
-      version: 2,
+      version: 3,
     }
   )
 );

@@ -29,6 +29,7 @@ import { CardGridLayout } from './CardGridLayout';
 
 const MapButtons = styled('div', {
   display: 'flex',
+  gridArea: 'buttons',
   gap: space.sm,
 
   '@beatmapCardLg': {
@@ -82,9 +83,19 @@ const MapCoverBackground = styled('div', {
 
 const MapLinkContainer = styled('div', {
   padding: `${space.xs} 0`,
+  alignSelf: 'stretch',
+  display: 'grid',
+  alignItems: 'center',
+  gridTemplateAreas: ` 
+    'link buttons'
+    'info buttons'
+  `,
+  gridTemplateColumns: 'auto min-content',
+  gridTemplateRows: '1fr auto',
 });
 
 const ExtraInfo = styled('dl', {
+  gridArea: 'info',
   fontSize: fonts[75],
   margin: `${space.sm} 0 0 0`,
   '& > *': {
@@ -98,15 +109,8 @@ const ExtraInfo = styled('dl', {
   },
 });
 
-const MapLinkFlex = styled('div', {
-  display: 'flex',
-  flexFlow: 'row nowrap',
-  gap: space.sm,
-  justifyContent: 'space-between',
-  alignItems: 'center',
-});
-
 const MapLink = styled(ExternalLink, {
+  gridArea: 'link',
   wordBreak: 'break-word',
 });
 
@@ -184,23 +188,21 @@ export const BeatmapCard = memo(function _BeatmapCard({ map }: { map: Beatmap })
       <CardGridLayout>
         <CoverImage url={mapLink} mapsetId={map.mapsetId} />
         <MapLinkContainer>
-          <MapLinkFlex>
-            <MapLink url={mapLink}>{linkText}</MapLink>
-            {hasDirectLink && (
-              <MapButtons>
-                <ClipboardButton content={`${map.beatmapId}`} title="copy beatmap ID" />
-                <Button iconButtonKind="compact" kind="light" tabIndex={-1}>
-                  <ExternalLink
-                    title="osu!direct download (osu! supporter only)"
-                    css={{ lineHeight: 0 }}
-                    url={`osu://b/${map.beatmapId}`}
-                  >
-                    <MdDownload />
-                  </ExternalLink>
-                </Button>
-              </MapButtons>
-            )}
-          </MapLinkFlex>
+          <MapLink url={mapLink}>{linkText}</MapLink>
+          {hasDirectLink && (
+            <MapButtons>
+              <ClipboardButton content={`${map.beatmapId}`} title="copy beatmap ID" />
+              <Button iconButtonKind="compact" kind="light" tabIndex={-1}>
+                <ExternalLink
+                  title="osu!direct download (osu! supporter only)"
+                  css={{ lineHeight: 0 }}
+                  url={`osu://b/${map.beatmapId}`}
+                >
+                  <MdDownload />
+                </ExternalLink>
+              </Button>
+            </MapButtons>
+          )}
           {isShowingMore && (
             <ExtraInfo>
               <dt>ranked:</dt>

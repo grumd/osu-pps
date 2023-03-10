@@ -10,7 +10,7 @@ import { Input } from '@/components/Input/Input';
 import { Select } from '@/components/Select/Select';
 import { TimeInput } from '@/components/TimeInput/TimeInput';
 import { Mode } from '@/constants/modes';
-import { genreOptions, languageOptions, rankedDateOptions } from '@/constants/options';
+import { genreOptions, languageOptions, rankedDateOptions, sortOptions } from '@/constants/options';
 import { useMode } from '@/hooks/useMode';
 import { fonts, space, styled } from '@/styles';
 
@@ -129,10 +129,11 @@ const FilterButton = styled(Button, {
 
 const AdditionalFilters = styled('div', {
   display: 'flex',
+  flexWrap: 'wrap',
   gap: space.md,
   marginTop: space.sm,
   '& > *': {
-    flex: '1 1 0',
+    flex: '1 1 220px',
   },
 });
 
@@ -321,7 +322,7 @@ export const Filters = memo(function Filters() {
         </MinMaxBlock>
         <MinMaxBlock>
           <span>
-            <FarmerIcon />
+            <FarmerIcon title="how farmable a map is" />
           </span>
         </MinMaxBlock>
       </CardGridLayout>
@@ -350,6 +351,13 @@ export const Filters = memo(function Filters() {
             isClearable
             onChange={(selected) => onChange('genres')([...selected])}
             options={genreOptions}
+          />
+          <Select
+            placeholder="sorting"
+            value={filters.sorting ?? []}
+            isMulti={false}
+            onChange={onChange('sorting')}
+            options={sortOptions}
           />
         </AdditionalFilters>
       )}

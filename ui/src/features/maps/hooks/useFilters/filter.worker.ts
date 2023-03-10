@@ -36,13 +36,16 @@ const state: FilterWorkerState = {
   mapsPerMode: {},
 };
 
+const hasDt = (map: Beatmap) => (map.mods & 64) === 64;
+const hasHt = (map: Beatmap) => (map.mods & 256) === 256;
+
 const getMods = (map: Beatmap) => ({
+  dt: hasDt(map),
+  ht: hasHt(map),
   ez: (map.mods & 2) === 2,
-  dt: (map.mods & 64) === 64,
   hd: (map.mods & 8) === 8,
   hr: (map.mods & 16) === 16,
   fl: (map.mods & 1024) === 1024,
-  ht: (map.mods & 256) === 256,
 });
 
 const matchesMaxMin = (
@@ -159,9 +162,25 @@ function filter({ filters, mode, mapsPerMode }: FilterWorkerState) {
       })
     : maps.slice(); // Make a copy to prevent sorting array in-place
 
-  const sorted = calcMode
-    ? filtered.sort((a, b) => b.farmValues[calcMode] - a.farmValues[calcMode])
-    : filtered;
+  const [sortType, sortDir] = filters.sorting?.value ?? ['farmValue', 'desc'];
+
+  const getBpm = (map: Beatmap) => map.bpm * (hasDt(map) ? 1.5 : hasHt(map) ? 0.75 : 1);
+  const getLength = (map: Beatmap) => map.length * (hasDt(map) ? 0.75 : hasHt(map) ? 1.5 : 1);
+
+  const sortFunction = {
+    farmValue: calcMode
+      ? (a: Beatmap, b: Beatmap) => b.farmValues[calcMode] - a.farmValues[calcMode]
+      : null,
+    pp: (a: Beatmap, b: Beatmap) => (b.pp ?? 0) - (a.pp ?? 0),
+    bpm: (a: Beatmap, b: Beatmap) => getBpm(b) - getBpm(a),
+    length: (a: Beatmap, b: Beatmap) => getLength(b) - getLength(a),
+    difficulty: (a: Beatmap, b: Beatmap) => b.difficulty - a.difficulty,
+    hoursSinceRanked: (a: Beatmap, b: Beatmap) =>
+      b.approvedHoursTimestamp - a.approvedHoursTimestamp,
+  }[sortType ?? 'farmValue'];
+  const sortCoef = sortDir === 'asc' ? -1 : 1;
+
+  const sorted = sortFunction ? filtered.sort((a, b) => sortFunction(a, b) * sortCoef) : filtered;
 
   const truncated = sorted.slice(0, count ?? 20);
 

@@ -59,6 +59,17 @@ const faqs = [
       </>
     ),
   },
+  {
+    question: `Is this a full beatmap database that has all ranked maps ever?`,
+    answer: (
+      <>
+        No, this database only includes maps that <b>at least one player has a top 100 score on</b>.
+        I only scan a couple hundred thousands of top players, so some maps that aren't actively
+        played are not in the database. That's also why you might not find the map you're looking
+        for if you're sorting by length/difficulty/etc.
+      </>
+    ),
+  },
 ];
 
 const FaqList = styled('ul', {
