@@ -1,7 +1,8 @@
 config.json
 
 update-scripts/temp
-react-app/public/data
+
+stats.html
 
 node_modules
 
