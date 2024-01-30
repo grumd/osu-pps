@@ -49,7 +49,12 @@ export function getBpmColour(bpm: number, opacity: number) {
 
 export function getMapNameLink(map: Beatmap): { link: string; name: string } {
   const link = getBeatmapUrl(map.beatmapId);
-  const name = map.artist ? `${map.artist} - ${map.title} [${map.version}]` : link;
+  const nameElements = [
+    map.artist ? `${map.artist} - ` : '',
+    map.title,
+    map.version ? ` [${map.version}]` : '',
+  ].filter(Boolean);
+  const name = nameElements.length ? nameElements.join('') : link;
   return { link, name };
 }
 

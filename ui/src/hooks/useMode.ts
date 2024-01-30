@@ -1,4 +1,4 @@
-import { useRouteParams } from 'typesafe-routes';
+import { useRouteParams } from 'typesafe-routes/react-router';
 
 import type { Mode } from '@/constants/modes';
 import { mode } from '@/routes';

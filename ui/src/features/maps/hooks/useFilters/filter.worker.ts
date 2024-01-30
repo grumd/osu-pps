@@ -97,10 +97,7 @@ function filter({ filters, mode, mapsPerMode }: FilterWorkerState) {
   if (songName) {
     const searchWords = songName?.toLowerCase().split(' ');
     filterFns.push((map) => {
-      const name = map.artist
-        ? `${map.artist} - ${map.title} [${map.version}] ${map.mapsetId} ${map.beatmapId}`.toLowerCase()
-        : `${map.mapsetId} ${map.beatmapId}`;
-
+      const name = `${map.artist} - ${map.title} [${map.version}] ${map.mapsetId} ${map.beatmapId}`.toLowerCase(); 
       return searchWords.every((word) => name.includes(word));
     });
   }
