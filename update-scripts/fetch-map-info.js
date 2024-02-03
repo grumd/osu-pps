@@ -1,7 +1,9 @@
 'use strict';
 
-const axios = require('./axios');
 const fs = require('fs');
+const queryString = require('query-string');
+
+const axios = require('./axios');
 const {
   truncateFloat,
   delay,
@@ -15,10 +17,16 @@ const { modes } = require('./constants');
 
 const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
 
-// a=1 - add converts to response
-const urlBeatmapInfo = (diffId, modeId) =>
-  `https://osu.ppy.sh/api/get_beatmaps?k=${apikey}&b=${diffId}&limit=1&m=${modeId}` +
-  (modeId > 0 ? '&a=1' : '');
+const urlBeatmapInfo = (diffId, modeId) => {
+  const params = queryString.stringify({
+    k: apikey,
+    b: diffId,
+    limit: 1,
+    m: modeId,
+    ...(modeId > 0 ? { a: 1 } : {}),
+  });
+  return `https://osu.ppy.sh/api/get_beatmaps?${params}`;
+};
 const getUniqueMapId = (map) => `${map.b}_${map.m}`;
 
 const shouldUpdateCached = (cached) => {
@@ -63,7 +71,7 @@ module.exports = async (mode) => {
     const getPromise = !shouldFetchMapInfo
       ? Promise.resolve(mapsCache[map.b])
       : Promise.all([
-          delay(300),
+          delay(500),
           axios.get(urlBeatmapInfo(map.b, mode.id)).then(({ data }) => {
             if (data.length > 0) {
               const diff = data[0];
@@ -78,6 +86,10 @@ module.exports = async (mode) => {
               return diff;
             } else {
               console.log('No maps found :(');
+            }
+          }).then((diff) => {
+            if (diff) {
+              return axios.get(urlBeatmapInfo(map.b, mode.id)).then(({ data }) => {
             }
           }),
         ]).then((resolved) => resolved[1]);

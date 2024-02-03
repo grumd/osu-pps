@@ -25,8 +25,12 @@ const setupToken = async () => {
   }, expires_in * 1000);
 };
 
-const fetchApi = async (url, params, options = {}) => {
-  const { wait429 = 10000, retries = 2, disableLogs = false } = options;
+const fetchApi = async (url, options = {}) => {
+  const { params, wait429 = 10000, retries = 2, disableLogs = false, method = 'get' } = options;
+
+  const body = Object.fromEntries(
+    Object.entries(options.body).filter(([_, value]) => value != null)
+  );
 
   if (!axios.defaults.headers.common['Authorization']) {
     await setupToken();
@@ -34,9 +38,15 @@ const fetchApi = async (url, params, options = {}) => {
 
   try {
     if (!disableLogs) {
-      console.log('Fetching', url, params);
+      console.log('Fetching', url, ...[params, body].filter(Boolean));
     }
-    const response = await axios.get(url, { params, baseURL });
+    const response = await axios({
+      method,
+      url,
+      params,
+      baseURL,
+      data: body,
+    });
     return response;
   } catch (error) {
     if (!error.response) {
@@ -45,7 +55,7 @@ const fetchApi = async (url, params, options = {}) => {
       console.warn(`Retrying...`);
       await delay(3000);
       await setupToken();
-      return fetchApi(url, params, options);
+      return fetchApi(url, options);
     } else if (error.response.status === 400) {
       // Probably my mistake
       console.error('400 Bad Request:', url, {
@@ -61,19 +71,19 @@ const fetchApi = async (url, params, options = {}) => {
     } else if (error.response.status === 401) {
       // Probably API v2 token is expired
       await setupToken();
-      return fetchApi(url, params, options);
+      return fetchApi(url, options);
     } else if (error.response.status === 429) {
       // Probably need to fetch less often
       console.warn('429 Too many requests, waiting for', wait429, 'ms');
       await delay(wait429);
-      return fetchApi(url, params, { ...options, wait429: wait429 * 1.5 });
+      return fetchApi(url, { ...options, wait429: wait429 * 1.5 });
     } else if (retries >= 1) {
       // Retrying a few times in case of unstable connection
       console.warn(url, params);
       console.warn(error.message);
       console.warn(`Retrying ${retries - 1} times...`);
       await delay(5000);
-      return fetchApi(url, params, { ...options, retries: retries - 1 });
+      return fetchApi(url, { ...options, retries: retries - 1 });
     } else {
       throw error;
     }
@@ -82,17 +92,15 @@ const fetchApi = async (url, params, options = {}) => {
 
 const fetchApiWithPages = async (
   url,
-  { params = {}, append, condition } = {},
-  { disableLogs = false } = {}
+  { params = {}, append, condition, disableLogs = false } = {}
 ) => {
   let nextPage;
   let accData;
   do {
-    const { data } = await fetchApi(
-      url,
-      nextPage ? { ...params, 'cursor[page]': nextPage } : params,
-      { disableLogs }
-    );
+    const { data } = await fetchApi(url, {
+      disableLogs,
+      params: nextPage ? { ...params, 'cursor[page]': nextPage } : params,
+    });
     nextPage = data.cursor && condition(data) ? data.cursor.page : null;
     accData = accData ? append(accData, data) : data;
   } while (nextPage);
@@ -126,11 +134,10 @@ const fetchApiWithPages = async (
 }
 */
 const fetchUserBestScores = async (userId, modeName, topScoresCount) => {
-  return fetchApi(
-    `/users/${userId}/scores/best`,
-    { mode: modeName, limit: topScoresCount },
-    { disableLogs: true }
-  );
+  return fetchApi(`/users/${userId}/scores/best`, {
+    disableLogs: true,
+    params: { mode: modeName, limit: topScoresCount },
+  });
 };
 
 /*
@@ -144,45 +151,46 @@ const fetchUserBestScores = async (userId, modeName, topScoresCount) => {
   }]
 */
 const fetchCountriesList = async (modeName) => {
-  return fetchApiWithPages(
-    `/rankings/${modeName}/country`,
-    {
-      append: (acc, data) => ({
-        ...data,
-        ranking: [...acc.ranking, ...data.ranking],
-      }),
-      condition: (data) => data.cursor && data.cursor.page <= 3,
-    },
-    {
-      disableLogs: true,
-    }
-  );
+  return fetchApiWithPages(`/rankings/${modeName}/country`, {
+    append: (acc, data) => ({
+      ...data,
+      ranking: [...acc.ranking, ...data.ranking],
+    }),
+    condition: (data) => data.cursor && data.cursor.page <= 3,
+    disableLogs: true,
+  });
 };
 
 const fetchCountryRanking = async (modeName, country) => {
-  return fetchApiWithPages(
-    `/rankings/${modeName}/performance`,
-    {
-      params: { country },
-      append: (acc, data) => ({
-        ...data,
-        ranking: [...acc.ranking, ...data.ranking],
-      }),
-      condition: (data) => {
-        if (DEBUG) {
-          return false; // stop iterating pages for debug
-        }
-        return data.ranking.every((it) => it.pp > 1000);
-      },
+  return fetchApiWithPages(`/rankings/${modeName}/performance`, {
+    params: { country },
+    append: (acc, data) => ({
+      ...data,
+      ranking: [...acc.ranking, ...data.ranking],
+    }),
+    condition: (data) => {
+      if (DEBUG) {
+        return false; // stop iterating pages for debug
+      }
+      return data.ranking.every((it) => it.pp > 1000);
     },
-    {
-      disableLogs: true,
-    }
-  );
+    disableLogs: true,
+  });
 };
 
 const fetchBeatmap = async (beatmapId) => {
   return fetchApi(`/beatmaps/${beatmapId}`);
+};
+
+const fetchBeatmapAttributes = async (beatmapId, { mods, ruleset, rulesetId }) => {
+  return fetchApi(`/beatmaps/${beatmapId}/attributes`, {
+    method: 'post',
+    body: {
+      mods,
+      ruleset,
+      ruleset_id: rulesetId,
+    },
+  });
 };
 
 const fetchUserFavourites = async (userId) => {
@@ -191,14 +199,13 @@ const fetchUserFavourites = async (userId) => {
   let offset = 0;
   const limit = 100;
   do {
-    const response = await fetchApi(
-      `/users/${userId}/beatmapsets/favourite`,
-      {
+    const response = await fetchApi(`/users/${userId}/beatmapsets/favourite`, {
+      params: {
         offset,
         limit,
       },
-      { disableLogs: true }
-    );
+      disableLogs: true,
+    });
     const { data: maps } = response;
     favourites.push(...maps);
     offset = favourites.length;
@@ -214,6 +221,7 @@ module.exports = {
   fetchCountryRanking,
   fetchCountriesList,
   fetchUserBestScores,
+  fetchBeatmapAttributes,
 };
 
 // const main = async () => {
