@@ -15,7 +15,10 @@ export interface BeatmapDiffLegacy {
   p: number;
   h: number;
   appr_h: number;
-  k?: number;
+  cs: number;
+  ar: number;
+  accuracy: number;
+  drain: number;
 }
 
 export interface BeatmapSetLegacy {
@@ -43,6 +46,10 @@ export interface BeatmapDiff {
   hoursSinceRanked: number;
   approvedHoursTimestamp: number;
   maniaKeys?: number;
+  ar: number;
+  cs: number;
+  accuracy: number;
+  drain: number;
 }
 
 export interface BeatmapSet {
@@ -78,8 +85,10 @@ export interface Filters {
   calcMode: CalcMode;
   count: number;
   isShowingMore: boolean;
-  languages?: { value: number; label: string }[] | null;
-  genres?: { value: number; label: string }[] | null;
+  ar?: [number | null | undefined, number | null | undefined];
+  cs?: [number | null | undefined, number | null | undefined];
+  hp?: [number | null | undefined, number | null | undefined];
+  od?: [number | null | undefined, number | null | undefined];
   ranked?: { value: number; label: string } | null;
   sorting?: { value: [SortTypes, 'asc' | 'desc']; label: string } | null;
 }

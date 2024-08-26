@@ -1,29 +1,17 @@
 'use strict';
 
-const axios = require('./axios');
 const fs = require('fs');
-const {
-  truncateFloat,
-  delay,
-  getDiffHours,
-  files,
-  writeJson,
-  readJson,
-  parallelRun,
-} = require('./utils');
+const { delay, getDiffHours, files, writeJson, readJson, parallelRun } = require('./utils');
+const { fetchBeatmap } = require('./apiv2');
 const { modes } = require('./constants');
 
-const apikey = JSON.parse(fs.readFileSync('./config.json')).apikey;
-
-// a=1 - add converts to response
-const urlBeatmapInfo = (diffId, modeId) =>
-  `https://osu.ppy.sh/api/get_beatmaps?k=${apikey}&b=${diffId}&limit=1&m=${modeId}` +
-  (modeId > 0 ? '&a=1' : '');
 const getUniqueMapId = (map) => `${map.b}_${map.m}`;
 
 const shouldUpdateCached = (cached) => {
   const cachedDate = cached.cache_date ? new Date(cached.cache_date) : null;
-  const approvedDate = cached.approved_date ? new Date(cached.approved_date) : null;
+  const approvedDate = cached.beatmapset.ranked_date
+    ? new Date(cached.beatmapset.ranked_date)
+    : null;
   const wasCachedLongAgo =
     !approvedDate ||
     !cachedDate ||
@@ -32,7 +20,7 @@ const shouldUpdateCached = (cached) => {
   const hasMapUpdatedAfterCached =
     cachedDate &&
     (new Date(cached.last_update) > cachedDate ||
-      new Date(cached.approved_date) > cachedDate ||
+      new Date(cached.beatmapset.ranked_date) > cachedDate ||
       new Date(cached.submit_date) > cachedDate);
   return wasCachedLongAgo || hasMapUpdatedAfterCached || cached.passcount < 1000;
 };
@@ -64,42 +52,39 @@ module.exports = async (mode) => {
       ? Promise.resolve(mapsCache[map.b])
       : Promise.all([
           delay(300),
-          axios.get(urlBeatmapInfo(map.b, mode.id)).then(({ data }) => {
-            if (data.length > 0) {
-              const diff = data[0];
-              Object.keys(diff).forEach((key) => {
-                const parsed = Number(diff[key]);
-                diff[key] = isNaN(parsed) ? diff[key] : truncateFloat(parsed);
-              });
-              mapsCache[map.b] = {
-                ...diff,
-                cache_date: new Date().toISOString().replace('T', ' ').slice(0, 19),
-              };
-              return diff;
-            } else {
-              console.log('No maps found :(');
-            }
+          fetchBeatmap(map.b).then(({ data }) => {
+            mapsCache[map.b] = {
+              ...data,
+              cache_date: new Date().toISOString().replace('T', ' ').slice(0, 19),
+            };
+            return data;
           }),
-        ]).then((resolved) => resolved[1]);
+        ]).then((resolved) => {
+          return resolved[1];
+        });
 
     return getPromise
       .then((diff) => {
         if (diff) {
-          map.art = diff.artist;
-          map.t = diff.title;
+          map.art = diff.beatmapset.artist;
+          map.t = diff.beatmapset.title;
           map.v = diff.version;
           map.s = diff.beatmapset_id;
           map.l = diff.hit_length;
           map.bpm = diff.bpm;
-          map.d = diff.difficultyrating;
+          map.d = diff.difficulty_rating;
           map.p = diff.passcount;
           map.h = getDiffHours(diff); // Hours since it was ranked
-          map.appr_h = Math.floor(new Date(diff.approved_date).getTime() / 1000 / 60 / 60); // Hours since 1970
-          map.g = diff.genre_id;
-          map.ln = diff.language_id;
-          if (mode === modes.mania && diff.mode === modes.mania.id) {
+          map.appr_h = Math.floor(new Date(diff.beatmapset.ranked_date).getTime() / 1000 / 60 / 60); // Hours since 1970
+          map.ar = diff.ar;
+          map.accuracy = diff.accuracy; // od
+          map.cs = diff.cs;
+          map.drain = diff.drain; // hp
+          map.mapper_id = diff.user_id;
+
+          if (mode === modes.mania && diff.mode_int === modes.mania.id) {
             // Key count for mania
-            map.k = diff.diff_size;
+            map.k = diff.cs;
           }
 
           const mapId = getUniqueMapId(map);

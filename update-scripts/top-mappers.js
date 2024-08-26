@@ -1,9 +1,8 @@
 const _ = require('lodash/fp');
 
 const { DEBUG } = require('./constants');
-const { fetchUserFavourites } = require('./apiv2');
+const { fetchUserFavourites, fetchUserInfo } = require('./apiv2');
 const {
-  levenshtein,
   getDiffHours,
   truncateFloat,
   files,
@@ -11,6 +10,7 @@ const {
   writeFileSync,
   readJson,
   writeJson,
+  delay,
 } = require('./utils');
 
 const getAdjustedX = (x, adj, h) => +x / Math.pow(adj || 1, 0.65) / Math.pow(+h || 1, 0.35);
@@ -21,60 +21,46 @@ module.exports = async (mode) => {
   const mapCache = await readJson(files.mapInfoCache(mode));
   const sortedResults = (await readJson(files.mapsList(mode))).sort((a, b) => b.x - a.x);
 
-  let mapperNames = [];
-  Object.keys(mapCache).forEach((mapId) => {
-    const map = mapCache[mapId];
+  const mapIds = Object.keys(mapCache);
 
-    if (typeof map.tags === 'string' && typeof map.version === 'string') {
-      map.tagsLC = map.tags.toLowerCase();
-      map.versionLC = map.version.toLowerCase();
-    }
-    const mapperName = mapperNames.find((name) => name.name === map.creator);
+  let mapperNames = [];
+  mapIds.forEach((mapId) => {
+    const map = mapCache[mapId];
+    const mapperName = mapperNames.find((name) => name.name === map.beatmapset.creator);
     if (!mapperName) {
       mapperNames.push({
-        name: map.creator,
-        nameLC: typeof map.creator === 'string' ? map.creator.toLowerCase() : null,
-        id: map.creator_id,
+        name: map.beatmapset.creator,
+        id: map.beatmapset.user_id,
       });
     }
   });
-  mapperNames.sort((a, b) => _.size(b.nameLC) - _.size(a.nameLC));
 
-  console.log('Recognizing guest mappers');
+  console.log('Fetch guest mapper names');
 
-  Object.keys(mapCache).forEach((mapId) => {
+  for (const mapId of mapIds) {
     const map = mapCache[mapId];
-    const guestMapper = mapperNames.find((mapper) => {
-      if (!map.versionLC || !map.tagsLC || !mapper.nameLC) {
-        return false;
-      }
-      const mapperName = mapper.nameLC;
-      const mapperNameWithUnderscores = mapperName.replace(/ /g, '_');
-      const mapTags = map.tagsLC;
-      const isInTags =
-        mapTags.includes(' ' + mapperNameWithUnderscores + ' ') ||
-        mapTags.endsWith(' ' + mapperNameWithUnderscores) ||
-        mapTags.startsWith(mapperNameWithUnderscores + ' ');
-      if (!isInTags) return false;
-      const mapVersion = map.versionLC;
-      const hasFullMapperName = mapVersion.includes(mapperName);
-      if (hasFullMapperName) return true;
-      const indexOfS = mapVersion.indexOf("'s ");
-      if (indexOfS < 0) return false;
-      const usernamePart = mapVersion.slice(0, indexOfS);
-      const isPartOfUsername = mapperName.includes(usernamePart);
-      if (isPartOfUsername) return true;
-      if (mapTags.includes(usernamePart)) return false;
-      const levelshteinPoints = levenshtein(mapperName, usernamePart);
-      const levenshteinSaidOkay = levelshteinPoints < mapperName.length / 2;
-      return levenshteinSaidOkay;
-    });
-    if (guestMapper) {
-      map.creator_id = guestMapper.id;
-      map.creator = guestMapper.name;
+    if (map.user_id !== map.beatmapset.user_id) {
       map.isGD = true;
+      const mapperName = mapperNames.find((name) => name.id === map.user_id);
+      if (!mapperName) {
+        try {
+          const [{ username }] = await Promise.all([fetchUserInfo(map.user_id), delay(300)]);
+          mapperNames.push({ name: username, id: map.user_id });
+          map.creator = username;
+        } catch (error) {
+          console.error(
+            `Fetching guest mapper of mapset ${map.beatmapset_id}, beatmap ${map.id}. Error:`,
+            error.message
+          );
+          map.creator = map.beatmapset.creator;
+        }
+      } else {
+        map.creator = mapperName.name;
+      }
+    } else {
+      map.creator = map.beatmapset.creator;
     }
-  });
+  }
 
   console.log('Calculating pp mappers list');
 
@@ -94,7 +80,7 @@ module.exports = async (mode) => {
     const xAdj = getAdjustedX(res.x, res.adj, map.h);
 
     const newMapRecord = {
-      id: map.beatmap_id,
+      id: map.id,
       pp: res.pp99,
       x,
       xAge,
@@ -111,7 +97,7 @@ module.exports = async (mode) => {
         pointsAdj: xAdj,
       });
     } else {
-      const mapRecorded = mapper.mapsRecorded.find((m) => m.id === map.beatmap_id);
+      const mapRecorded = mapper.mapsRecorded.find((m) => m.id === map.id);
       if (!mapRecorded) {
         mapper.mapsRecorded.push(newMapRecord);
         mapper.points += x;
@@ -125,7 +111,7 @@ module.exports = async (mode) => {
 
   const mapsPerMapper = _.groupBy('creator_id', _.values(mapCache));
   const mapperStats = _.mapValues((mapsArrayRaw) => {
-    const mapsArray = mapsArrayRaw.filter((m) => m.mode == mode.id);
+    const mapsArray = mapsArrayRaw.filter((m) => m.mode_int == mode.id);
     const names = _.uniqBy('creator', mapsArray).map((m) => m.creator);
     if (!mapsArray.length) {
       return { names, playcount: 0, favs: 0, count: 0, mapsets: 0 };
@@ -133,7 +119,7 @@ module.exports = async (mode) => {
     const playcount = _.sumBy('playcount', mapsArray);
 
     const mapsets = _.uniqBy('beatmapset_id', mapsArray);
-    const favs = _.sumBy('favourite_count', mapsets);
+    const favs = _.sumBy('beatmapset.favourite_count', mapsets);
 
     return {
       userId: mapsArray[0].creator_id,
@@ -257,7 +243,7 @@ module.exports = async (mode) => {
           .slice(0, 20)
           .map((map) => ({
             id: map.id,
-            text: `${mapCache[map.id].artist} - ${mapCache[map.id].title} [${
+            text: `${mapCache[map.id].beatmapset.artist} - ${mapCache[map.id].beatmapset.title} [${
               mapCache[map.id].version
             }]`,
             ow: shouldTruncateFloat ? truncateFloat(map[xKey]) : map[xKey],

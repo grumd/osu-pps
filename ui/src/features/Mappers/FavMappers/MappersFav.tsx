@@ -34,7 +34,7 @@ export function MappersFav() {
   const [filter, setFilter] = useState('');
   const [scrollParent, setScrollParent] = useState<HTMLDivElement | null>(null);
 
-  const maxValue = data ? data[0].value : 0;
+  const maxValue = data?.[0] ? data[0].value : 0;
 
   const filteredMappers = useMemo(() => {
     if (filter && data) {

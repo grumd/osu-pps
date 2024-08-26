@@ -1,9 +1,9 @@
 // const { parallelRun, delay } = require('./utils');
 
-const { fetchUserBestScores } = require('./apiv2');
+const { fetchBeatmap } = require('./apiv2');
 
 const main = async () => {
-  const data = await fetchUserBestScores(15225195, 'mania', 10);
+  const data = await fetchBeatmap(3996492);
   console.log(data.data);
   // const arr = Array(500)
   //   .fill(null)

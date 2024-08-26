@@ -43,7 +43,7 @@ const uniq = (array, getKey = (item) => item) => {
 };
 
 const getDiffHours = (diff) =>
-  Math.ceil((Date.now() - new Date(diff.last_update).getTime()) / 1000 / 60 / 60);
+  Math.ceil((Date.now() - new Date(diff.last_updated).getTime()) / 1000 / 60 / 60);
 
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 

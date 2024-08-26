@@ -23,7 +23,8 @@
     "test": "jest",
     "host": "serve -l 3000 -s ./dist",
     "predeploy": "npm run build",
-    "deploy": "cross-env NODE_DEBUG=gh-pages gh-pages -d dist"
+    "deploy": "cross-env NODE_DEBUG=gh-pages gh-pages -d dist",
+    "hostdata": "serve -l 5174 -s ../"
   },
   "dependencies": {
     "@radix-ui/colors": "^0.1.8",

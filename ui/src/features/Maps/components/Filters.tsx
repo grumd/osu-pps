@@ -10,7 +10,7 @@ import { Input } from '@/components/Input/Input';
 import { Select } from '@/components/Select/Select';
 import { TimeInput } from '@/components/TimeInput/TimeInput';
 import { Mode } from '@/constants/modes';
-import { genreOptions, languageOptions, rankedDateOptions, sortOptions } from '@/constants/options';
+import { rankedDateOptions, sortOptions } from '@/constants/options';
 import { useMode } from '@/hooks/useMode';
 import { fonts, space, styled } from '@/styles';
 
@@ -132,8 +132,10 @@ const AdditionalFilters = styled('div', {
   flexWrap: 'wrap',
   gap: space.md,
   marginTop: space.sm,
+  alignItems: 'end',
+
   '& > *': {
-    flex: '1 1 220px',
+    flex: '0 1 auto',
   },
 });
 
@@ -336,22 +338,28 @@ export const Filters = memo(function Filters() {
             onChange={onChange('ranked')}
             options={rankedDateOptions}
           />
-          <Select
-            placeholder="language (empty = any)"
-            value={filters.languages ?? []}
-            isMulti
-            isClearable
-            onChange={(selected) => onChange('languages')([...selected])}
-            options={languageOptions}
-          />
-          <Select
-            placeholder="genre (empty = any)"
-            value={filters.genres ?? []}
-            isMulti
-            isClearable
-            onChange={(selected) => onChange('genres')([...selected])}
-            options={genreOptions}
-          />
+          {(['ar', 'cs', 'od', 'hp'] as const).map((key) => (
+            <MinMaxBlock key={key}>
+              <span>{key}</span>
+              <div>
+                <Input
+                  type="number"
+                  min={0}
+                  max={filters[key]?.[0] ?? undefined}
+                  placeholder="min"
+                  value={filters[key]?.[0] ?? ''}
+                  onChange={(value) => setFilter(mode, key, [value, filters[key]?.[1]])}
+                />
+                <Input
+                  type="number"
+                  max={filters[key]?.[1] ?? undefined}
+                  placeholder="max"
+                  value={filters[key]?.[1] ?? ''}
+                  onChange={(value) => setFilter(mode, key, [filters[key]?.[0], value])}
+                />
+              </div>
+            </MinMaxBlock>
+          ))}
           <Select
             placeholder="sorting"
             value={filters.sorting ?? []}

@@ -78,7 +78,7 @@ export const useFiltersStore = create<FiltersStore>()(
           },
         };
       },
-      version: 3,
+      version: 4,
     }
   )
 );

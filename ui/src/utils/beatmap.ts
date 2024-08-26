@@ -74,3 +74,23 @@ export function getModsText(mods: string | number) {
   const { dt, hd, hr, fl, ht } = getMods(mods);
   return [ht && 'HT', dt && 'DT', hd && 'HD', hr && 'HR', fl && 'FL'].filter(Boolean).join('');
 }
+
+export function getRealAr(ar: number, ezhrMultiplier: number, dthtMultiplier: number) {
+  if (ezhrMultiplier === 1 && dthtMultiplier === 1) {
+    return ar;
+  }
+
+  const moddedAr = ar * ezhrMultiplier;
+
+  const ms = moddedAr > 5 ? 1200 - (750 * (moddedAr - 5)) / 5 : 1200 + (600 * (5 - moddedAr)) / 5;
+
+  const moddedMs = ms / dthtMultiplier;
+
+  if (moddedMs < 300) {
+    return 11;
+  } else if (moddedMs < 1200) {
+    return Math.round((11 - (moddedMs - 300) / 150) * 100) / 100;
+  } else {
+    return Math.round((5 - (moddedMs - 1200) / 120) * 100) / 100;
+  }
+}

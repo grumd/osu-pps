@@ -10,11 +10,28 @@ module.exports = async (mode) => {
   console.log('Compressing maps data to csv');
   const mapsData = await readJson(files.mapsDetailedList(mode));
 
-  const mapsetInfos = _.flow(
-    _.map(_.pick(['art', 't', 'bpm', 'g', 'ln', 's'])),
-    _.uniqBy('s')
-  )(mapsData);
-  const trimmedDiffData = _.map(_.omit(['art', 't', 'bpm', 'g', 'ln']), mapsData);
+  const mapsetInfos = _.flow(_.map(_.pick(['art', 't', 'bpm', 's'])), _.uniqBy('s'))(mapsData);
+  const trimmedDiffData = _.map(
+    _.pick([
+      'm',
+      'b',
+      'x',
+      'pp99',
+      'adj',
+      'v',
+      's',
+      'l',
+      'd',
+      'p',
+      'h',
+      'appr_h',
+      'ar',
+      'accuracy',
+      'cs',
+      'drain',
+    ]),
+    mapsData
+  );
 
   writeFileSync(files.mapsetsCsv(mode), Papa.unparse(mapsetInfos));
   writeFileSync(files.diffsCsv(mode), Papa.unparse(trimmedDiffData));

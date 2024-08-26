@@ -9,6 +9,26 @@ interface FilterWorkerState {
   mapsPerMode: Partial<Record<Mode, Beatmap[] | null>>;
 }
 
+function getRealAr(ar: number, ezhrMultiplier: number, dthtMultiplier: number) {
+  if (ezhrMultiplier === 1 && dthtMultiplier === 1) {
+    return ar;
+  }
+
+  const moddedAr = ar * ezhrMultiplier;
+
+  const ms = moddedAr > 5 ? 1200 - (750 * (moddedAr - 5)) / 5 : 1200 + (600 * (5 - moddedAr)) / 5;
+
+  const moddedMs = ms / dthtMultiplier;
+
+  if (moddedMs < 300) {
+    return 11;
+  } else if (moddedMs < 1200) {
+    return Math.round((11 - (moddedMs - 300) / 150) * 100) / 100;
+  } else {
+    return Math.round((5 - (moddedMs - 1200) / 120) * 100) / 100;
+  }
+}
+
 // Specialized equality function for performance
 const isEqualMaps = (x: Beatmap[] | null | undefined, y: Beatmap[] | null | undefined): boolean => {
   return (
@@ -84,8 +104,10 @@ function filter({ filters, mode, mapsPerMode }: FilterWorkerState) {
     hd,
     hr,
     fl,
-    languages,
-    genres,
+    ar,
+    cs,
+    od,
+    hp,
     ranked,
     maniaKeys,
   } = filters;
@@ -97,7 +119,8 @@ function filter({ filters, mode, mapsPerMode }: FilterWorkerState) {
   if (songName) {
     const searchWords = songName?.toLowerCase().split(' ');
     filterFns.push((map) => {
-      const name = `${map.artist} - ${map.title} [${map.version}] ${map.mapsetId} ${map.beatmapId}`.toLowerCase(); 
+      const name =
+        `${map.artist} - ${map.title} [${map.version}] ${map.mapsetId} ${map.beatmapId}`.toLowerCase();
       return searchWords.every((word) => name.includes(word));
     });
   }
@@ -139,12 +162,26 @@ function filter({ filters, mode, mapsPerMode }: FilterWorkerState) {
     filterFns.push((map, mods) => modAllowed(fl, mods.fl));
   }
 
-  if (languages && languages.length) {
-    filterFns.push((map) => languages.some((v) => v.value === map.language));
+  if (ar && (ar[0] || ar[1])) {
+    filterFns.push((map, mods) => {
+      const realAr = getRealAr(
+        map.ar,
+        mods.hr ? 1.4 : mods.ez ? 0.5 : 1,
+        mods.dt ? 1.5 : mods.ht ? 0.75 : 1
+      );
+      return matchesMaxMin(ar[0], ar[1], realAr);
+    });
   }
-  if (genres && genres.length) {
-    filterFns.push((map) => genres.some((v) => v.value === map.genre));
+  if (cs && (cs[0] || cs[1])) {
+    filterFns.push((map) => matchesMaxMin(cs[0], cs[1], map.cs));
   }
+  if (od && (od[0] || od[1])) {
+    filterFns.push((map) => matchesMaxMin(od[0], od[1], map.accuracy));
+  }
+  if (hp && (hp[0] || hp[1])) {
+    filterFns.push((map) => matchesMaxMin(hp[0], hp[1], map.drain));
+  }
+
   if (ranked && ranked.value > 0) {
     const hoursNow = Date.now() / 1000 / 60 / 60;
     filterFns.push((map) => {

@@ -133,6 +133,10 @@ const fetchUserBestScores = async (userId, modeName, topScoresCount) => {
   );
 };
 
+const fetchUserInfo = async (userId) => {
+  return fetchApi(`/users/${userId}`, {}, { disableLogs: true });
+};
+
 /*
   [{
     code: 'US',
@@ -182,7 +186,7 @@ const fetchCountryRanking = async (modeName, country) => {
 };
 
 const fetchBeatmap = async (beatmapId) => {
-  return fetchApi(`/beatmaps/${beatmapId}`);
+  return fetchApi(`/beatmaps/${beatmapId}`, {}, { disableLogs: true });
 };
 
 const fetchUserFavourites = async (userId) => {
@@ -214,6 +218,7 @@ module.exports = {
   fetchCountryRanking,
   fetchCountriesList,
   fetchUserBestScores,
+  fetchUserInfo,
 };
 
 // const main = async () => {

@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react';
-import { MdDownload, MdFileCopy } from 'react-icons/md';
+import { MdDownload } from 'react-icons/md';
 import TimeAgo from 'react-timeago';
 
 import { Button } from '@/components/Button/Button';
@@ -8,7 +8,6 @@ import { ColorCodedCell } from '@/components/ColorCodedCell/ColorCodedCell';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/HoverCard/HoverCard';
 import { ExternalLink } from '@/components/Link/ExternalLink';
 import { Mode } from '@/constants/modes';
-import { genreMap, languageMap } from '@/constants/options';
 import { opacityByStyle, useColorCodeStyle } from '@/hooks/useColorCodeStyle';
 import { useMode } from '@/hooks/useMode';
 import { useOsuDirect } from '@/hooks/useOsuDirect';
@@ -20,6 +19,7 @@ import {
   getLengthColour,
   getMapNameLink,
   getMods,
+  getRealAr,
 } from '@/utils/beatmap';
 
 import { useFiltersStore } from '../hooks/useFilters';
@@ -211,18 +211,22 @@ export const BeatmapCard = memo(function _BeatmapCard({ map }: { map: Beatmap })
                 <TimeAgo date={rankedDate} />
                 {', '}
               </dd>
-              {map.language && (
-                <>
-                  <dt>language:</dt>
-                  <dd> {languageMap[map.language]}, </dd>
-                </>
-              )}
-              {map.genre && (
-                <>
-                  <dt>genre:</dt>
-                  <dd> {genreMap[map.genre]}</dd>
-                </>
-              )}
+              <dt>AR:</dt>
+              <dd>
+                {' '}
+                {getRealAr(
+                  map.ar,
+                  mods.hr ? 1.4 : mods.ez ? 0.5 : 1,
+                  mods.dt ? 1.5 : mods.ht ? 0.75 : 1
+                )}
+                ,{' '}
+              </dd>
+              <dt>CS:</dt>
+              <dd> {map.cs}, </dd>
+              <dt>OD:</dt>
+              <dd> {map.accuracy}, </dd>
+              <dt>HP:</dt>
+              <dd> {map.drain}</dd>
             </ExtraInfo>
           )}
         </MapLinkContainer>

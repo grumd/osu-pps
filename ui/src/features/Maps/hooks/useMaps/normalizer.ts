@@ -35,7 +35,11 @@ export const normalizeBeatmap = (diff: BeatmapDiff | BeatmapDiffLegacy): Beatmap
       passCount: diff.p,
       hoursSinceRanked: diff.h,
       approvedHoursTimestamp: diff.appr_h,
-      maniaKeys: diff.k,
+      maniaKeys: diff.cs,
+      ar: diff.ar,
+      cs: diff.cs,
+      accuracy: diff.accuracy,
+      drain: diff.drain,
     };
   }
   return diff;
