@@ -44,7 +44,9 @@ const job = () => {
     return;
   }
 
-  console.log(`--no-push is enabled, will not push to origin`);
+  if (skipPush) {
+    console.log(`--no-push is enabled, will not push to origin`);
+  }
 
   jobIsRunning = true;
   return Promise.resolve()
