@@ -195,11 +195,14 @@ const parallelRun = async ({
 
   const showProgress = (index) => {
     if (progress) {
-      const left = ((Date.now() - startTime) / index) * (items.length - index);
+      const seconds = (((Date.now() - startTime) / index) * (items.length - index)) / 1000;
+      let h = Math.floor(seconds / 3600);
+      let m = Math.floor((seconds % 3600) / 60);
+      let s = Math.floor(seconds % 60);
       console.log(
-        `${Math.floor((100 * index) / items.length)}% done - ETA ${Math.floor(left / 60000)
+        `${Math.floor((100 * index) / items.length)}% done - ETA ${h}:${m
           .toString()
-          .padStart(2, '0')}:${(Math.floor(left / 1000) % 60).toString().padStart(2, '0')}`
+          .padStart(2, '0')}:${s.toString().padStart(2, '0')}`
       );
       onProgress && onProgress(index);
     }

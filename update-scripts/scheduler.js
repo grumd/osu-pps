@@ -11,6 +11,8 @@ const organizeData = require('./organize-data');
 
 let jobIsRunning = false;
 
+const skipPush = process.argv.includes('--no-push');
+
 const updateModeData = (mode = modes.osu) => {
   return Promise.resolve()
     .then(() => fetchUsersList(mode))
@@ -20,12 +22,17 @@ const updateModeData = (mode = modes.osu) => {
     .then(() => calculateTopMappers(mode))
     .then(() => organizeData(mode))
     .then(() => {
-      if (!DEBUG) {
-        console.log('Saved all info, updating origin');
-        return runScript('push-safe.sh');
-      } else {
-        console.log('Saved all info, debug is on - not updating origin');
+      if (skipPush) {
+        console.log('Saved all info, --no-push is enabled, not pushing to origin');
+        return;
       }
+      if (DEBUG) {
+        console.log('Saved all info, debug is on - not updating origin');
+        return;
+      }
+
+      console.log('Saved all info, updating origin');
+      return runScript('push-safe.sh');
     })
     .then((text) => console.log(text))
     .catch((err) => console.error(err));
@@ -36,6 +43,8 @@ const job = () => {
     console.log('Updater is already running');
     return;
   }
+
+  console.log(`--no-push is enabled, will not push to origin`);
 
   jobIsRunning = true;
   return Promise.resolve()

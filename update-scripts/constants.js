@@ -1,7 +1,7 @@
 const config = require('./config');
 
 module.exports = {
-  DEBUG: config.debug || false,
+  DEBUG: config.debug || process.argv.includes('--debug') || false,
   ppBlockSize: 5,
   ppBlockMapCount: 10,
   modes: {
