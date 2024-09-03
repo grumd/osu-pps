@@ -1,4 +1,4 @@
-import{s as n,a as s,c as i,j as e,b as a,F as o}from"./index.0884d824.js";const r=[{question:"What is overweightness? How is it calculated?",answer:`It's a metric I invented that shows how easy it is to get pp out of a particular map as compared to other maps of that level.
+import{s as n,a as s,c as i,j as e,b as a,F as o}from"./index.dece521a.js";const r=[{question:"What is overweightness? How is it calculated?",answer:`It's a metric I invented that shows how easy it is to get pp out of a particular map as compared to other maps of that level.
       Main component of my formulae is how many people have this map as their top score.
       If a map is easier than other maps, more people in general will have this map as one of their top scores.
       It also accounts for several other things, e.g. how recently a map was ranked, how many people can play at this level, how much playcount this map has, etc.`},{question:"What does the pp number in the map list mean?",answer:`You could notice that the pp number doesn't mean pp for 100% or even pp for 99%. "Maps" page actually shows average pp that people get
