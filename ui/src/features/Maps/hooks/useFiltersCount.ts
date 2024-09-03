@@ -13,8 +13,10 @@ export const useFiltersCount = (
   return useMemo(() => {
     const moreCount = [
       !!filters.ranked,
-      !!filters.genres?.length,
-      !!filters.languages?.length,
+      !!filters.ar?.some((v) => v != null),
+      !!filters.cs?.some((v) => v != null),
+      !!filters.hp?.some((v) => v != null),
+      !!filters.od?.some((v) => v != null),
     ].reduce((sum, bool) => sum + (bool ? 1 : 0), 0);
 
     const filtersCount = keys(filters)
