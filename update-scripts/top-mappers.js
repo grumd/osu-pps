@@ -15,14 +15,20 @@ const {
 
 const getAdjustedX = (x, adj, h) => +x / Math.pow(adj || 1, 0.65) / Math.pow(+h || 1, 0.35);
 
-module.exports = async (mode) => {
-  console.log(`Calculating TOP 20 pp mappers for ${mode.text}`);
+const log = (...msg) => {
+  console.log('Mapper stats:', ...msg);
+};
 
+module.exports = async (mode) => {
+  log(`Calculating TOP 20 pp mappers for ${mode.text}`);
+
+  log('Reading and sorting maps cache');
   const mapCache = await readJson(files.mapInfoCache(mode));
   const sortedResults = (await readJson(files.mapsList(mode))).sort((a, b) => b.x - a.x);
 
   const mapIds = Object.keys(mapCache);
 
+  log('Recording list of known mapper names');
   let mapperNames = [];
   mapIds.forEach((mapId) => {
     const map = mapCache[mapId];
@@ -34,35 +40,41 @@ module.exports = async (mode) => {
       });
     }
   });
+  log(`Recorded ${mapperNames.length} known mapper names`);
 
-  console.log('Fetch guest mapper names');
+  log('Finding guest mapper names');
 
-  for (const mapId of mapIds) {
-    const map = mapCache[mapId];
-    if (map.user_id !== map.beatmapset.user_id) {
-      map.isGD = true;
-      const mapperName = mapperNames.find((name) => name.id === map.user_id);
-      if (!mapperName) {
-        try {
-          const [{ username }] = await Promise.all([fetchUserInfo(map.user_id), delay(300)]);
-          mapperNames.push({ name: username, id: map.user_id });
-          map.creator = username;
-        } catch (error) {
-          console.error(
-            `Fetching guest mapper of mapset ${map.beatmapset_id}, beatmap ${map.id}. Error:`,
-            error.message
-          );
-          map.creator = map.beatmapset.creator;
+  await parallelRun({
+    items: mapIds,
+    concurrentLimit: 1,
+    job: async (mapId) => {
+      const map = mapCache[mapId];
+      if (map.user_id !== map.beatmapset.user_id) {
+        map.isGD = true;
+        const mapperName = mapperNames.find((name) => name.id === map.user_id);
+        if (!mapperName) {
+          try {
+            // log(`Fetching unknown guest mapper of mapset ${map.beatmapset_id}, beatmap ${map.id}`);
+            const [{ username }] = await Promise.all([fetchUserInfo(map.user_id), delay(300)]);
+            mapperNames.push({ name: username, id: map.user_id });
+            map.creator = username;
+          } catch (error) {
+            console.error(
+              `Fetching guest mapper of mapset ${map.beatmapset_id}, beatmap ${map.id}. Error:`,
+              error.message
+            );
+            map.creator = '<DELETED>';
+          }
+        } else {
+          map.creator = mapperName.name;
         }
       } else {
-        map.creator = mapperName.name;
+        map.creator = map.beatmapset.creator;
       }
-    } else {
-      map.creator = map.beatmapset.creator;
-    }
-  }
+    },
+  });
 
-  console.log('Calculating pp mappers list');
+  log('Calculating pp mappers list');
 
   const mappers = [];
   sortedResults.forEach((res) => {
@@ -72,7 +84,7 @@ module.exports = async (mode) => {
       return;
     }
 
-    const mapper = mappers.find((mapper) => mapper.id === map.creator_id);
+    const mapper = mappers.find((mapper) => mapper.id === map.user_id);
     map.h = getDiffHours(map);
 
     const x = +res.x;
@@ -90,7 +102,7 @@ module.exports = async (mode) => {
     if (!mapper) {
       mappers.push({
         name: map.creator,
-        id: map.creator_id,
+        id: map.user_id,
         mapsRecorded: [newMapRecord],
         points: x,
         pointsAge: xAge,
@@ -107,9 +119,9 @@ module.exports = async (mode) => {
     }
   });
 
-  console.log('Calculating favs, playcount, mapper fav');
+  log('Calculating favs, playcount, mapper fav');
 
-  const mapsPerMapper = _.groupBy('creator_id', _.values(mapCache));
+  const mapsPerMapper = _.groupBy('user_id', _.values(mapCache));
   const mapperStats = _.mapValues((mapsArrayRaw) => {
     const mapsArray = mapsArrayRaw.filter((m) => m.mode_int == mode.id);
     const names = _.uniqBy('creator', mapsArray).map((m) => m.creator);
@@ -122,7 +134,7 @@ module.exports = async (mode) => {
     const favs = _.sumBy('beatmapset.favourite_count', mapsets);
 
     return {
-      userId: mapsArray[0].creator_id,
+      userId: mapsArray[0].user_id,
       names,
       playcount,
       favs,
@@ -149,8 +161,8 @@ module.exports = async (mode) => {
     DEBUG ? (items) => items.slice(0, 5) : _.identity
   )(list);
 
-  console.log('Mappers with 3+ maps ranked:', mappersWithTenMaps.length);
-  console.log('Fetching their favourite maps...');
+  log('Mappers with 3+ maps ranked:', mappersWithTenMaps.length);
+  log('Fetching their favourite maps...');
 
   await parallelRun({
     items: mappersWithTenMaps,
@@ -170,7 +182,7 @@ module.exports = async (mode) => {
     },
   });
 
-  console.log('Finished fetching favourites');
+  log('Finished fetching favourites');
 
   const favsPerMapper = {};
   mappersWithTenMaps.forEach((mapper) => {
@@ -225,7 +237,7 @@ module.exports = async (mode) => {
     delete favsPerMapper[mapperId].mapsDict;
   }
 
-  console.log('Recorded top of mappers by mapper favs');
+  log('Recorded top of mappers by mapper favs');
   await writeJson(
     files.mappersFavTop(mode),
     _.orderBy(['count'], ['desc'], _.values(favsPerMapper))
@@ -269,7 +281,7 @@ module.exports = async (mode) => {
   };
 
   await writeJson(files.dataMappers(mode), resultingObject);
-  console.log('Finished calculating TOP 20 mappers!');
+  log('Finished calculating TOP 20 mappers!');
 };
 
-// module.exports(modes.osu);
+// module.exports(require('./constants').modes.osu);
