@@ -181,6 +181,7 @@ const parallelRun = async ({
   minRequestTime,
   progress = true,
   onProgress,
+  jobTimeout = 1000 * 60 * 5, // 5 minutes
 }) => {
   const startTime = Date.now();
   const logIndexes = Array(9)
@@ -227,11 +228,26 @@ const parallelRun = async ({
   } else {
     const results = await execute({
       items,
-      job: async (item) => {
+      job: (item) => {
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => {
+            reject(
+              new Error('Job timed out after ' + (jobTimeout / 1000 / 60).toFixed(2) + 'minutes')
+            );
+          }, jobTimeout);
+        });
+
         currentIndex = items.indexOf(item);
-        const result = await job(item);
-        logIndexes.includes(currentIndex) && showProgress(currentIndex);
-        return result;
+
+        return Promise.race([job(item), timeoutPromise])
+          .catch((err) => {
+            console.error(err.message);
+            // don't throw errors to allow the rest of the jobs to run
+          })
+          .then((result) => {
+            logIndexes.includes(currentIndex) && showProgress(currentIndex);
+            return result;
+          });
       },
       concurrentLimit,
       minJobTime: minRequestTime,
