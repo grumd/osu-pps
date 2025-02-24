@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const { delay, getDiffHours, files, writeJson, readJson, parallelRun } = require('./utils');
-const { fetchBeatmap } = require('./apiv2');
+const { fetchBeatmap, fetchUserInfo } = require('./apiv2');
 const { modes } = require('./constants');
 
 const getUniqueMapId = (map) => `${map.b}_${map.m}`;
@@ -12,17 +12,20 @@ const shouldUpdateCached = (cached) => {
   const approvedDate = cached.beatmapset.ranked_date
     ? new Date(cached.beatmapset.ranked_date)
     : null;
+  const doesntHaveOwners = !cached.owners;
   const wasCachedLongAgo =
     !approvedDate ||
     !cachedDate ||
-    // Update map cache increasingly rarely (2x longer wait every update)
+    // Update map cache increasingly more rarely (2x longer wait every update)
     Date.now() - cachedDate.getTime() > cachedDate.getTime() - approvedDate.getTime();
   const hasMapUpdatedAfterCached =
     cachedDate &&
     (new Date(cached.last_update) > cachedDate ||
       new Date(cached.beatmapset.ranked_date) > cachedDate ||
       new Date(cached.submit_date) > cachedDate);
-  return wasCachedLongAgo || hasMapUpdatedAfterCached || cached.passcount < 1000;
+  return (
+    wasCachedLongAgo || hasMapUpdatedAfterCached || doesntHaveOwners || cached.passcount < 1000
+  );
 };
 
 module.exports = async (mode) => {

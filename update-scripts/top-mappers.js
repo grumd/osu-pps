@@ -10,7 +10,6 @@ const {
   writeFileSync,
   readJson,
   writeJson,
-  delay,
 } = require('./utils');
 
 const getAdjustedX = (x, adj, h) => +x / Math.pow(adj || 1, 0.65) / Math.pow(+h || 1, 0.35);
@@ -18,73 +17,96 @@ const getAdjustedX = (x, adj, h) => +x / Math.pow(adj || 1, 0.65) / Math.pow(+h 
 const log = (...msg) => {
   console.log('Mapper stats:', ...msg);
 };
+const logError = (...msg) => {
+  console.error('Mapper stats error:', ...msg);
+};
 
 module.exports = async (mode) => {
   log(`Calculating TOP 20 pp mappers for ${mode.text}`);
 
-  log('Reading and sorting maps cache');
+  log('Reading maps cache');
   const mapCache = await readJson(files.mapInfoCache(mode));
-  const sortedResults = (await readJson(files.mapsList(mode))).sort((a, b) => b.x - a.x);
+  const resJson = await readJson(files.mapsList(mode));
 
-  const mapIds = Object.keys(mapCache);
+  log('Sorting maps by farmability');
+  const resSortedByX = resJson.filter((res) => mapCache[res.b]).sort((a, b) => b.x - a.x);
 
-  log('Recording list of known mapper names');
-  let mapperNames = [];
-  mapIds.forEach((mapId) => {
+  // For legacy maps that don't have owners array
+  const mapperNamesCache = {};
+  log('Recording list of known mapper names from mapsCache');
+  Object.keys(mapCache).forEach((mapId) => {
     const map = mapCache[mapId];
-    const mapperName = mapperNames.find((name) => name.name === map.beatmapset.creator);
-    if (!mapperName) {
-      mapperNames.push({
-        name: map.beatmapset.creator,
-        id: map.beatmapset.user_id,
-      });
+    const mapperNames = mapperNamesCache[map.beatmapset.user_id];
+    if (!mapperNames) {
+      mapperNamesCache[map.beatmapset.user_id] = [map.beatmapset.creator];
+    } else if (!mapperNames.includes(map.beatmapset.creator)) {
+      mapperNamesCache[map.beatmapset.user_id].push(map.beatmapset.creator);
     }
   });
-  log(`Recorded ${mapperNames.length} known mapper names`);
-
-  log('Finding guest mapper names');
+  log(`Recorded ${Object.keys(mapperNamesCache).length} known mapper names from mapsCache`);
+  log(
+    `Found ${
+      Object.values(mapperNamesCache).filter((names) => names.length > 1).length
+    } mappers with more than one name`
+  );
+  const resWithoutKnownNames = resSortedByX.filter((res) => {
+    const map = mapCache[res.b];
+    const mapperNames = mapperNamesCache[map.user_id];
+    return (!map.owners || !map.owners.length) && !mapperNames;
+  });
+  log(
+    `Found ${resWithoutKnownNames.length} maps without known mapper names or owners array - fetching them...`
+  );
 
   await parallelRun({
-    items: mapIds,
+    items: resWithoutKnownNames,
     concurrentLimit: 1,
-    job: async (mapId) => {
-      const map = mapCache[mapId];
-      if (map.user_id !== map.beatmapset.user_id) {
-        map.isGD = true;
-        const mapperName = mapperNames.find((name) => name.id === map.user_id);
-        if (!mapperName) {
-          try {
-            // log(`Fetching unknown guest mapper of mapset ${map.beatmapset_id}, beatmap ${map.id}`);
-            const [{ username }] = await Promise.all([fetchUserInfo(map.user_id), delay(300)]);
-            mapperNames.push({ name: username, id: map.user_id });
-            map.creator = username;
-          } catch (error) {
-            console.error(
-              `Fetching guest mapper of mapset ${map.beatmapset_id}, beatmap ${map.id}. Error:`,
-              error.message
-            );
-            map.creator = '<DELETED>';
-          }
-        } else {
-          map.creator = mapperName.name;
-        }
-      } else {
-        map.creator = map.beatmapset.creator;
+    minRequestTime: 300,
+    job: async (res) => {
+      const map = mapCache[res.b];
+      try {
+        const { username } = await fetchUserInfo(map.user_id);
+        mapperNamesCache[map.user_id] = [username];
+      } catch (error) {
+        logError(
+          `Fetching guest mapper ID ${map.user_id} of mapset ${map.beatmapset_id}, beatmap ${map.id}. Error:`,
+          error.message
+        );
       }
     },
   });
 
+  // add mapper name information to maps without owners array
+  const resWithoutOwners = resSortedByX.filter((res) => {
+    const map = mapCache[res.b];
+    return !map.owners || !map.owners.length;
+  });
+  log(`Adding generated owners array to ${resWithoutOwners.length} maps without owners array...`);
+  for (const res of resWithoutOwners) {
+    const map = mapCache[res.b];
+    const mapperNames = mapperNamesCache[map.user_id];
+    if (!mapperNames || !mapperNames.length) {
+      logError('\nMapper name information missing', res);
+      continue;
+    }
+    map.owners = mapperNames.map((name) => ({
+      username: name,
+      id: map.user_id,
+    }));
+  }
   log('Calculating pp mappers list');
 
   const mappers = [];
-  sortedResults.forEach((res) => {
+
+  for (const res of resSortedByX) {
     const map = mapCache[res.b];
-    if (!map) {
-      console.log('\nMap cache not found', res);
-      return;
+
+    const owners = map.owners;
+    if (!owners || !owners.length) {
+      logError('\nOwners array missing', res);
+      continue;
     }
 
-    const mapper = mappers.find((mapper) => mapper.id === map.user_id);
     map.h = getDiffHours(map);
 
     const x = +res.x;
@@ -99,25 +121,33 @@ module.exports = async (mode) => {
       xAdj,
       m: res.m,
     };
-    if (!mapper) {
-      mappers.push({
-        name: map.creator,
-        id: map.user_id,
-        mapsRecorded: [newMapRecord],
-        points: x,
-        pointsAge: xAge,
-        pointsAdj: xAdj,
-      });
-    } else {
-      const mapRecorded = mapper.mapsRecorded.find((m) => m.id === map.id);
-      if (!mapRecorded) {
-        mapper.mapsRecorded.push(newMapRecord);
-        mapper.points += x;
-        mapper.pointsAge += xAge;
-        mapper.pointsAdj += xAdj;
+
+    for (const owner of owners) {
+      const mapper = mappers.find((mapper) => mapper.id === owner.id);
+
+      if (!mapper) {
+        mappers.push({
+          name: owner.username,
+          id: owner.id,
+          mapsRecorded: [newMapRecord],
+          points: x,
+          pointsAge: xAge,
+          pointsAdj: xAdj,
+        });
+      } else {
+        const mapRecorded = mapper.mapsRecorded.find((m) => m.id === map.id);
+        if (newMapRecord.id > Math.max(...mapper.mapsRecorded.map((m) => m.id))) {
+          mapper.name = owner.username; // update mapper name to use the name from latest maps
+        }
+        if (!mapRecorded) {
+          mapper.mapsRecorded.push(newMapRecord);
+          mapper.points += x;
+          mapper.pointsAge += xAge;
+          mapper.pointsAdj += xAdj;
+        }
       }
     }
-  });
+  }
 
   log('Calculating favs, playcount, mapper fav');
 
@@ -177,7 +207,7 @@ module.exports = async (mode) => {
           covers: { list: d.covers && d.covers.list },
         }));
       } catch (error) {
-        console.error(`User ${mapper.userId} (${mapper.names[0]}) error:`, error.message);
+        logError(`User ${mapper.userId} (${mapper.names[0]}) error:`, error.message);
       }
     },
   });
@@ -284,4 +314,4 @@ module.exports = async (mode) => {
   log('Finished calculating TOP 20 mappers!');
 };
 
-// module.exports(require('./constants').modes.osu);
+module.exports(require('./constants').modes.osu);
