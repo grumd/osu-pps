@@ -149,7 +149,7 @@ module.exports = async (mode) => {
   let items = uniq(fullUsersList, (user) => user.id);
   items = items.slice(...(DEBUG ? [0, 100] : []));
   console.log(`Loaded ${items.length} users, reducing the number of users to fetch`);
-  items = items.filter((user, index) => index === 0 || user.pp < items[index - 1].pp - 0.3);
+  items = items.filter((user, index) => index === 0 || user.pp < items[index - 1].pp - 0.05);
   console.log(`Reduced to ${items.length} users`);
   console.log('Fetching scores of all users to find the list of popular maps...');
   await parallelRun({
