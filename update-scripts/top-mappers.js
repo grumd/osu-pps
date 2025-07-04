@@ -314,4 +314,4 @@ module.exports = async (mode) => {
   log('Finished calculating TOP 20 mappers!');
 };
 
-module.exports(require('./constants').modes.osu);
+// module.exports(require('./constants').modes.osu);
