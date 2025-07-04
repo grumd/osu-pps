@@ -146,13 +146,16 @@ module.exports = async (mode) => {
   } catch (e) {
     console.log('Error parsing ' + files.userIdsList(mode));
   }
-  const uniqueUsersList = uniq(fullUsersList, (user) => user.id);
-  // const fetchPromises = [];
-  const items = uniqueUsersList.slice(...(DEBUG ? [0, 100] : []));
+  let items = uniq(fullUsersList, (user) => user.id);
+  items = items.slice(...(DEBUG ? [0, 100] : []));
+  console.log(`Loaded ${items.length} users, reducing the number of users to fetch`);
+  items = items.filter((user, index) => index === 0 || user.pp < items[index - 1].pp - 0.3);
+  console.log(`Reduced to ${items.length} users`);
   console.log('Fetching scores of all users to find the list of popular maps...');
   await parallelRun({
     items,
-    minRequestTime: 100,
+    concurrentLimit: 1,
+    minRequestTime: 200,
     job: (user) => {
       const index = items.indexOf(user);
       const shouldRecordScores = index < 11000;

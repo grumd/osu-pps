@@ -39,7 +39,7 @@ const calculate = async () => {
   await parallelRun({
     items: gdIds,
     concurrentLimit: 1,
-    minRequestTime: 100,
+    minRequestTime: 200,
     job: (id) => {
       return get(urlBeatmapInfo(id, MODE)).then((res) => gdMaps.push(res.data[0]));
     },

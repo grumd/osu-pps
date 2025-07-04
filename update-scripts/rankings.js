@@ -169,6 +169,8 @@ module.exports = async (mode) => {
   /*
   return parallelRun({
     items: rankings,
+    concurrentLimit: 1,
+    minRequestTime: 200,
     job: player => {
       return fetchUserRank({ userId: player.id, modeId: mode.id })
         .then(rank => {
