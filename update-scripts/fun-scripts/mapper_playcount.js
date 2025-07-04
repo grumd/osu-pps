@@ -38,6 +38,8 @@ const calculate = async () => {
   const gdMaps = [];
   await parallelRun({
     items: gdIds,
+    concurrentLimit: 1,
+    minRequestTime: 100,
     job: (id) => {
       return get(urlBeatmapInfo(id, MODE)).then((res) => gdMaps.push(res.data[0]));
     },

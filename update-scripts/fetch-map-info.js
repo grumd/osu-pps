@@ -105,7 +105,7 @@ module.exports = async (mode) => {
   console.log('Fetching detailed diff info about every beatmap...');
   await parallelRun({
     items: mapsArray,
-    concurrentLimit: 1,
+    minRequestTime: 100,
     job: async (map) => {
       const index = mapsArray.indexOf(map);
       await addBeatmapInfo(map, mode);

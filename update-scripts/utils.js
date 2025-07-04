@@ -177,7 +177,7 @@ const levenshtein = (str1, str2) => {
 const parallelRun = async ({
   items,
   job,
-  concurrentLimit = 3,
+  concurrentLimit = 1,
   minRequestTime,
   progress = true,
   onProgress,
