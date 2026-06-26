@@ -4,7 +4,6 @@ import { ErrorBox } from '@/components/ErrorBox/ErrorBox';
 import Loader from '@/components/Loader/Loader';
 import { ScrollArea } from '@/components/Scroll/Scroll';
 import { Text } from '@/components/Text/Text';
-import { CalcMode } from '@/constants/modes';
 import { MapperSubRow } from '@/features/Mappers/components/MappersTableExpandable/MapperSubRow';
 import { MappersTableExpandable } from '@/features/Mappers/components/MappersTableExpandable/MappersTableExpandable';
 import type {
@@ -13,7 +12,7 @@ import type {
 } from '@/features/Mappers/components/MappersTableExpandable/types';
 import { space, styled } from '@/styles';
 import { getBeatmapUrl } from '@/utils/externalLinks';
-import { farmValueCalc } from '@/utils/farmValue';
+import { OVERWEIGHTNESS_DISPLAY_SCALE } from '@/utils/overweightness';
 
 import { usePpMappers } from './hooks/usePpMappers';
 import prizeBronze from './images/prize_bronze.png';
@@ -46,14 +45,7 @@ const getMapperName = (name: string, index: number) => {
   );
 };
 
-const getAdjustedFarmValue = (value: number): number => {
-  return farmValueCalc[CalcMode.ByPopulationAndTime]({
-    farmValue: value,
-    hoursSinceRanked: 1,
-    passCount: 1,
-    adjusted: 1,
-  });
-};
+const getAdjustedFarmValue = (value: number): number => value * OVERWEIGHTNESS_DISPLAY_SCALE;
 
 interface PpMapperItem extends MapperItem {
   maps: MapperMapItem[];

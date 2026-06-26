@@ -22,12 +22,7 @@ export const useFiltersCount = (
     const filtersCount = keys(filters)
       .filter(
         (key) =>
-          ![
-            'calcMode',
-            'count',
-            'isShowingMore',
-            mode !== Mode.mania ? 'maniaKeys' : null,
-          ].includes(key)
+          !['count', 'isShowingMore', mode !== Mode.mania ? 'maniaKeys' : null].includes(key)
       )
       .reduce((sum, key) => {
         const value = filters[key];

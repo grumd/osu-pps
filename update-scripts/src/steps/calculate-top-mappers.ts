@@ -9,6 +9,7 @@ import { fetchUser, fetchUserFavourites } from '../osu-api/api.ts';
 import type { CachedBeatmap, MapInfoCache, MapRecord } from '../data/types.ts';
 import { readJson, writeFile, writeJson } from '../utils/io.ts';
 import { hoursSince, sumBy, truncateFloat, uniqBy } from '../utils/misc.ts';
+import { overweightness } from '../utils/overweightness.ts';
 import { runJobs } from '../utils/run-jobs.ts';
 
 /** Mappers need at least this many ranked mapsets for their favourites to count as votes. */
@@ -21,10 +22,6 @@ const TOP_MAPS_PER_MAPPER = 20;
 
 const log = (...args: unknown[]) => console.log('Mapper stats:', ...args);
 const logError = (...args: unknown[]) => console.error('Mapper stats error:', ...args);
-
-/** Same formula as the rankings overweightness. */
-const adjustedX = (x: number, adj: number, hours: number) =>
-  x / Math.pow(adj || 1, 0.65) / Math.pow(hours || 1, 0.35);
 
 interface MapperMapRecord {
   /** beatmap id */
@@ -198,7 +195,7 @@ function collectPpMappers(maps: readonly MapRecord[], cache: MapInfoCache): PpMa
       pp: map.pp99,
       x: map.x,
       xAge: (map.x / hours) * 10_000,
-      xAdj: adjustedX(map.x, map.adj, hours),
+      xAdj: overweightness(map.x, map.adj, hours),
       m: map.m,
     };
 

@@ -169,7 +169,6 @@ function CoverImage({ url, mapsetId }: { url: string; mapsetId: number }) {
 export const BeatmapCard = memo(function _BeatmapCard({ map }: { map: Beatmap }) {
   const mods = getMods(map.mods);
   const mode = useMode();
-  const calcMode = useFiltersStore((state) => state.filters[mode].calcMode);
   const isShowingMore = useFiltersStore((state) => state.filters[mode].isShowingMore);
   const colorCodeStyle = useColorCodeStyle();
   const hasDirectLink = useOsuDirect();
@@ -315,7 +314,7 @@ export const BeatmapCard = memo(function _BeatmapCard({ map }: { map: Beatmap })
         >
           {map.difficulty.toFixed(2)}
         </ColorCodedCell>
-        <TextCell aria-label="overweightness">{map.farmValues[calcMode].toFixed(0)}</TextCell>
+        <TextCell aria-label="overweightness">{map.overweightness.toFixed(0)}</TextCell>
       </CardGridLayout>
     </BeatmapCardDiv>
   );

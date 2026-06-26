@@ -90,7 +90,6 @@ function filter({ filters, mode, mapsPerMode }: FilterWorkerState) {
   console.log(filters);
   const {
     songName,
-    calcMode,
     count,
     bpmMax,
     bpmMin,
@@ -202,9 +201,7 @@ function filter({ filters, mode, mapsPerMode }: FilterWorkerState) {
   const getLength = (map: Beatmap) => map.length * (hasDt(map) ? 0.75 : hasHt(map) ? 1.5 : 1);
 
   const sortFunction = {
-    farmValue: calcMode
-      ? (a: Beatmap, b: Beatmap) => b.farmValues[calcMode] - a.farmValues[calcMode]
-      : null,
+    farmValue: (a: Beatmap, b: Beatmap) => b.overweightness - a.overweightness,
     pp: (a: Beatmap, b: Beatmap) => (b.pp ?? 0) - (a.pp ?? 0),
     bpm: (a: Beatmap, b: Beatmap) => getBpm(b) - getBpm(a),
     length: (a: Beatmap, b: Beatmap) => getLength(b) - getLength(a),

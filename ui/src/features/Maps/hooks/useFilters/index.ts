@@ -2,7 +2,7 @@ import _ from 'lodash/fp';
 import create from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { CalcMode, Mode } from '@/constants/modes';
+import { Mode } from '@/constants/modes';
 import { sortOptions } from '@/constants/options';
 import { useMode } from '@/hooks/useMode';
 import { keys } from '@/utils/object';
@@ -11,7 +11,6 @@ import type { Filters } from '../../types';
 
 const initialFilters: Filters = {
   count: 20,
-  calcMode: CalcMode.ByPopulationAndTime,
   isShowingMore: false,
   sorting: sortOptions[0],
 };

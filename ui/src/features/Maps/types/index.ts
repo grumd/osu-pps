@@ -1,5 +1,3 @@
-import type { CalcMode } from '@/constants/modes';
-
 import type { ManiaKeysToggleState, ModToggleState } from '../components/ModToggle';
 
 export interface BeatmapDiffLegacy {
@@ -62,7 +60,7 @@ export interface BeatmapSet {
 }
 
 export interface Beatmap extends BeatmapDiff, BeatmapSet {
-  farmValues: Record<CalcMode, number>;
+  overweightness: number;
 }
 
 export type SortTypes = 'farmValue' | 'pp' | 'length' | 'difficulty' | 'hoursSinceRanked' | 'bpm';
@@ -82,7 +80,6 @@ export interface Filters {
   hr?: ModToggleState;
   fl?: ModToggleState;
   maniaKeys?: ManiaKeysToggleState;
-  calcMode: CalcMode;
   count: number;
   isShowingMore: boolean;
   ar?: [number | null | undefined, number | null | undefined];

@@ -89,8 +89,9 @@ const { modes } = await import('../src/modes.ts');
 
 const users = [
   { name: 'one', id: 1, pp: 9000 },
-  { name: 'one-dupe', id: 1, pp: 9000 }, // duplicate id — removed
-  { name: 'two', id: 2, pp: 8999.96 }, // within 0.05pp of the previous user — skipped
+  { name: 'one-dupe', id: 1, pp: 9000 }, // duplicate id — removed by uniqBy
+  { name: 'two', id: 2, pp: 8999.96 }, // 0.04pp below user 1 — skipped, folded into user 1
+  { name: 'five', id: 5, pp: 8999.93 }, // 0.03pp below user 2 — also skipped into user 1 (so its weight is 3)
   { name: 'three', id: 3, pp: 8000 },
   { name: 'four-restricted', id: 4, pp: 7000 }, // API returns 404
 ];
@@ -108,13 +109,15 @@ test('skips duplicate users, near-identical pp users, and restricted users', () 
   assert.deepEqual(fetchedIds, [1, 3, 4]);
 });
 
-test('aggregates farmability per map+mods combination', () => {
+test('aggregates farmability per map+mods combination, weighted by represented users', () => {
   // user 1 mods HD+NC+CL -> legacy bitmask 72 (HD 8 + DT 64); user 3 HD+DT -> the same combo
   const map100 = mapsList.find((map) => map.b === 100 && map.m === 72);
   assert.ok(map100);
-  // user 1: indexes 0 and 1, user 3: index 0 (null-pp score is filtered out first)
+  // user 1 carries weight 3 (itself + skipped users 2 and 5); user 3 carries weight 1.
+  // user 1: indexes 0 and 1; user 3: index 0 (null-pp score is filtered out first).
   // magnitude(0) = 1, magnitude(1) = 0.9801^20 ≈ 0.669
-  assert.equal(map100.x, 2.66);
+  // x = 3 * (1 + 0.669) + 1 * 1 = 6.007 -> 6.00
+  assert.equal(map100.x, 6);
   // nomod map from user 1's third score
   const map200 = mapsList.find((map) => map.b === 200 && map.m === 0);
   assert.ok(map200);
@@ -130,7 +133,14 @@ test('estimates pp99 from the recorded accuracy buckets', () => {
   // ties on combo are broken by closeness to 99% accuracy
   const stats = (pp: number) => ({
     maxcombo: 500,
-    statistics: { count_300: 1, count_100: 0, count_50: 0, count_miss: 0, count_katu: 0, count_geki: 0 },
+    statistics: {
+      count_300: 1,
+      count_100: 0,
+      count_50: 0,
+      count_miss: 0,
+      count_katu: 0,
+      count_geki: 0,
+    },
     user_id: 1,
     score_id: 1,
     rank: 'S',
@@ -176,14 +186,21 @@ test('records compressed per-user score strings with the full mods bitmask', () 
   assert.ok(Math.abs(dates['1']! - nowMinutes) <= 1);
 });
 
-test('counts users into pp blocks and computes the adj per map', () => {
+test('weights pp blocks by represented users so adj reflects the real, un-skipped player count', () => {
   const blocks = readJsonFile<Array<number | null>>(files.ppBlocks(modes.osu));
-  // user 1: top scores avg = (400+390+300)/10 = 109 -> block 21
-  // user 3: 350/10 = 35 -> block 7
-  assert.equal(blocks[21], 1);
+  // user 1 (weight 3 = itself + skipped users 2 and 5): top scores avg = (400+390+300)/10 = 109 -> block 21
+  // user 3 (weight 1): 350/10 = 35 -> block 7
+  // The skipped users 2 and 5 are counted in their representative's block, not dropped.
+  assert.equal(blocks[21], 3);
   assert.equal(blocks[7], 1);
 
-  // map 100_72: pp99 from buckets 99.1/97 — both scores' blocks have 1 user
+  // Invariant: block totals account for every represented real user exactly once.
+  // users 1 + 2 + 5 (block 21) and user 3 (block 7) = 4; restricted user 4 errored before
+  // recording, so it contributes nothing.
+  const totalRecorded = blocks.reduce<number>((sum, count) => sum + (count ?? 0), 0);
+  assert.equal(totalRecorded, 4);
+
+  // adj is the (weighted) player count at each map's level
   for (const map of mapsList) {
     assert.ok(map.adj >= 1);
   }

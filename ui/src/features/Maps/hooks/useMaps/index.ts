@@ -1,12 +1,11 @@
 import _ from 'lodash/fp';
 import { useState } from 'react';
 
-import type { CalcMode, Mode } from '@/constants/modes';
+import type { Mode } from '@/constants/modes';
 import { useMode } from '@/hooks/useMode';
 import { usePersistQuery } from '@/hooks/usePersistQuery';
-import { farmValueCalc } from '@/utils/farmValue';
 import { fetchCsvWithProgress } from '@/utils/fetch';
-import { keys } from '@/utils/object';
+import { overweightness } from '@/utils/overweightness';
 
 import type {
   Beatmap,
@@ -48,10 +47,7 @@ export const useMaps = () => {
         acc.push({
           ...normItem,
           ...mapset,
-          farmValues: keys(farmValueCalc).reduce((farmAcc, key) => {
-            farmAcc[key] = farmValueCalc[key](normItem);
-            return farmAcc;
-          }, {} as Record<CalcMode, number>),
+          overweightness: overweightness(normItem),
         });
       }
       return acc;

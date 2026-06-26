@@ -64,14 +64,25 @@ export async function fetchUserScores(mode: Mode): Promise<void> {
   const fullUsersList = await readJson<UserListEntry[]>(files.userIdsList(mode));
   fullUsersList.sort((a, b) => b.pp - a.pp);
 
-  let users = uniqBy(fullUsersList, (user) => user.id);
-  if (DEBUG) users = users.slice(0, 100);
-  console.log(`Loaded ${users.length} users, reducing the number of users to fetch`);
-  // Skip users with near-identical pp totals to cut down on requests
-  users = users.filter(
-    (user, index) => index === 0 || user.pp < users[index - 1]!.pp - MIN_PP_GAP_BETWEEN_USERS
-  );
-  console.log(`Reduced to ${users.length} users`);
+  let allUsers = uniqBy(fullUsersList, (user) => user.id);
+  if (DEBUG) allUsers = allUsers.slice(0, 100);
+  console.log(`Loaded ${allUsers.length} users, reducing the number of users to fetch`);
+  // Skip users with near-identical pp totals to cut down on requests. The catch: players are
+  // packed far more densely in pp at low/mid skill than at the top, so a fixed pp gap removes a
+  // much larger fraction of low/mid players. This deflates farmability (`x`)
+  // and player-base (`usersPerPpBlock`) at low/mid levels and biases overweightness toward the
+  // hard maps. To fix this, each player has `weight` = how many skipped, near-identical-pp users
+  // it represents.
+  const users: { user: UserListEntry; weight: number }[] = [];
+  for (const [index, user] of allUsers.entries()) {
+    if (index === 0 || user.pp < allUsers[index - 1]!.pp - MIN_PP_GAP_BETWEEN_USERS) {
+      users.push({ user, weight: 1 });
+    } else {
+      // Near-identical pp to the previous user — fold into the last kept representative
+      users[users.length - 1]!.weight += 1;
+    }
+  }
+  console.log(`Reduced to ${users.length} kept users (representing ${allUsers.length} total)`);
 
   // mapModId ("<beatmapId>_<simplifiedMods>") -> aggregated farmability
   const maps = new Map<string, { m: number; b: number; x: number }>();
@@ -79,27 +90,27 @@ export async function fetchUserScores(mode: Mode): Promise<void> {
   const scoreStatsPerMap = new Map<string, Map<number, BeatmapScoreStats>>();
   const userScores: UserScoresFile = {};
   const userScoreDates: UserScoreDatesFile = {};
-  // pp block index -> number of users in that block
+  // pp block index -> weighted number of users in that block
   const usersPerPpBlock: number[] = [];
 
-  const recordScores = (scores: NormalizedScore[]) => {
-    // Count the user into their pp block (average pp of their top scores / block size)
-    const topPpSum = scores
-      .slice(0, PP_BLOCK_MAP_COUNT)
-      .reduce((sum, score) => sum + score.pp, 0);
+  const recordScores = (scores: NormalizedScore[], weight: number) => {
+    // Count the user — and the skipped near-pp users it represents — into their pp block
+    // (average pp of their top scores / block size)
+    const topPpSum = scores.slice(0, PP_BLOCK_MAP_COUNT).reduce((sum, score) => sum + score.pp, 0);
     const ppBlock = Math.floor(Math.round(topPpSum / PP_BLOCK_MAP_COUNT) / PP_BLOCK_SIZE);
-    usersPerPpBlock[ppBlock] = (usersPerPpBlock[ppBlock] ?? 0) + 1;
+    usersPerPpBlock[ppBlock] = (usersPerPpBlock[ppBlock] ?? 0) + weight;
 
     for (const [index, score] of scores.entries()) {
       const mapModId = `${score.beatmapId}_${score.simplifiedMods}`;
+      const magnitude = weight * magnitudeByIndex(index);
       const map = maps.get(mapModId);
       if (map) {
-        map.x += magnitudeByIndex(index);
+        map.x += magnitude;
       } else {
         maps.set(mapModId, {
           m: score.simplifiedMods,
           b: score.beatmapId,
-          x: magnitudeByIndex(index),
+          x: magnitude,
         });
       }
 
@@ -125,7 +136,10 @@ export async function fetchUserScores(mode: Mode): Promise<void> {
     }
   };
 
-  const processUser = async (user: UserListEntry, index: number) => {
+  const processUser = async (
+    { user, weight }: { user: UserListEntry; weight: number },
+    index: number
+  ) => {
     const shouldRecordScores = index < USERS_WITH_FULL_SCORES;
     try {
       const apiScores = await fetchUserBestScores(user.id, mode, shouldRecordScores ? 100 : 20);
@@ -151,7 +165,7 @@ export async function fetchUserScores(mode: Mode): Promise<void> {
         userScores[user.id] = scores.map((s) => `${s.beatmapId}_${s.mods}_${s.pp}`);
         userScoreDates[user.id] = Math.floor(Date.now() / 1000 / 60); // unix minutes
       }
-      recordScores(scores);
+      recordScores(scores, weight);
     } catch (error) {
       // Restricted users return 404 — log and move on
       const message = error instanceof Error ? error.message : String(error);
@@ -167,10 +181,7 @@ export async function fetchUserScores(mode: Mode): Promise<void> {
   for (const [mapModId, map] of maps) {
     const buckets = scoreStatsPerMap.get(mapModId)!;
     const pp99 = estimatePp99(buckets);
-    writeFile(
-      files.beatmapScores(mode, mapModId),
-      JSON.stringify(Object.fromEntries(buckets))
-    );
+    writeFile(files.beatmapScores(mode, mapModId), JSON.stringify(Object.fromEntries(buckets)));
     mapsList.push({
       m: map.m,
       b: map.b,
@@ -197,19 +208,14 @@ export async function fetchUserScores(mode: Mode): Promise<void> {
 export function estimatePp99(buckets: Map<number, BeatmapScoreStats>): number {
   if (buckets.size === 0) return 0;
 
-  const sorted = [...buckets.entries()].sort(
-    ([accuracyA, scoreA], [accuracyB, scoreB]) => {
-      // higher combo first
-      if (scoreA.maxcombo !== scoreB.maxcombo) return scoreB.maxcombo - scoreA.maxcombo;
-      // accuracy closer to 99% second
-      return Math.abs(accuracyA - 99) - Math.abs(accuracyB - 99);
-    }
-  );
+  const sorted = [...buckets.entries()].sort(([accuracyA, scoreA], [accuracyB, scoreB]) => {
+    // higher combo first
+    if (scoreA.maxcombo !== scoreB.maxcombo) return scoreB.maxcombo - scoreA.maxcombo;
+    // accuracy closer to 99% second
+    return Math.abs(accuracyA - 99) - Math.abs(accuracyB - 99);
+  });
 
   const sample = sorted.slice(0, PP99_SAMPLE_SIZE);
-  const ppPerAccuracySum = sample.reduce(
-    (sum, [accuracy, score]) => sum + score.pp * accuracy,
-    0
-  );
+  const ppPerAccuracySum = sample.reduce((sum, [accuracy, score]) => sum + score.pp * accuracy, 0);
   return truncateFloat(ppPerAccuracySum / sample.length / 99);
 }

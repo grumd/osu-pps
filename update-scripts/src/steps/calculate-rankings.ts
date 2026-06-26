@@ -10,6 +10,7 @@ import type {
 } from '../data/types.ts';
 import { readJson, writeFile, writeJson } from '../utils/io.ts';
 import { simplifyMods, trimModsToDtHt } from '../utils/mods.ts';
+import { overweightness } from '../utils/overweightness.ts';
 
 /** Maps with overweightness above this are counted towards the average. */
 const MIN_RELEVANT_OVERWEIGHTNESS = 0.00005;
@@ -21,10 +22,6 @@ const UNDERWEIGHTED_BONUS = 0.125;
 const PP_WEIGHT_DECAY = 0.95;
 /** Only this many top scores are kept in the legacy compressed rankings file. */
 const COMPRESSED_SCORES_LIMIT = 50;
-
-/** Overweightness: farmability normalized by player-base size at the map's level and map age. */
-const overweightness = (x: number, adj: number, hours: number) =>
-  x / Math.pow(adj || 1, 0.65) / Math.pow(hours || 1, 0.35);
 
 interface RecalculatedScore {
   /** "Artist - Title [Version]" */
