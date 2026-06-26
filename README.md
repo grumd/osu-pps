@@ -5,13 +5,14 @@ Supports osu!std, taiko, mania, fruits.
 
 # Setup
 
-You should have nodejs and npm installed first. I'm using node v8.9.  
-For initial setup, `npm i` in the root directory and in `/react-app` if you want to run front-end.  
-To run update scripts, you also need to create a `/update-scripts/config.json` file that looks like this:
+You should have nodejs and npm installed first. The update scripts require node v24+ (they run TypeScript natively).  
+For initial setup, run `npm i` in `/update-scripts` and in `/ui` if you want to run the front-end.  
+To run update scripts, you also need to create a `/update-scripts/config.json` file with your [osu! OAuth app](https://osu.ppy.sh/home/account/edit#oauth) credentials:
 
 ```json
 {
-  "apikey": "<your-osu-api-key>"
+  "client_id": 123,
+  "client_secret": "<your-oauth-client-secret>"
 }
 ```
 
@@ -20,10 +21,15 @@ Open `/ui` and run `npm start`.
 
 For debugging, you can change `VITE_LOCAL_FETCH` env variable in `/ui/.env` - front-end will search for json data files in `/react-app/public` instead of fething json from github.
 
-### Back-end (json update scripts)
-Open `/update-scripts` and run `node scheduler.js`.
+### Back-end (data update scripts)
+Open `/update-scripts` and run `npm start` (runs the daily scheduler), or
+`npm run update-mode -- osu` to update a single mode once.
 
-For debugging, you can change `DEBUG` variable in `/update-scripts/constants.js` - limits update process to just a few users/maps for debugging and testing purposes.
+For debugging, run with `npm run start:debug` (or add `--debug --no-push`) - limits the update
+process to just a few users/maps for testing, and doesn't push data to git.
+
+See [`/update-scripts/DOCUMENTATION.md`](update-scripts/DOCUMENTATION.md) for a full description
+of the update pipeline and all the data files it produces.
 
 # Contributing
 
