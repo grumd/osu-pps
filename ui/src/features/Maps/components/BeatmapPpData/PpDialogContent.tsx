@@ -65,7 +65,7 @@ export default function PpDialogContent({ beatmapId, modsBitmask }: PpDialogCont
   }
 
   const openScorePage = (score: DataPoint) => {
-    if (score.score_id) window.open(getScoreUrl(mode, score.score_id), '_blank');
+    if (score.score_id) window.open(getScoreUrl(score.score_id), '_blank');
     else window.open(getUserUrl(score.user_id), '_blank');
   };
 
