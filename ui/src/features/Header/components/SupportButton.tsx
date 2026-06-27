@@ -1,5 +1,6 @@
-import { FaHandHoldingHeart } from 'react-icons/fa';
-import { IoClose, IoLogoPaypal } from 'react-icons/io5';
+import { FaCoffee } from 'react-icons/fa';
+import { IoClose } from 'react-icons/io5';
+import { SiBuymeacoffee } from 'react-icons/si';
 
 import { Button } from '@/components/Button/Button';
 import {
@@ -28,10 +29,10 @@ const UnstyledButton = styled('button', {
   },
 });
 
-const IconDonate = styled(FaHandHoldingHeart, {
+const IconDonate = styled(FaCoffee, {
   width: '1.25em',
   height: '1.25em',
-  color: '#f15270',
+  color: '#8e4111',
 });
 
 const SupportLinks = styled('div', {
@@ -57,8 +58,9 @@ const SupportLink = styled(ExternalLink, {
   },
 });
 
-const PpLogo = styled(IoLogoPaypal, {
+const CoffeeLogo = styled(SiBuymeacoffee, {
   fontSize: fonts[125],
+  color: 'rgb(255, 221, 0)',
 });
 
 const Flag = styled('div', {
@@ -94,7 +96,7 @@ export const SupportButton = () => {
     <Dialog>
       <DialogTrigger asChild>
         <UnstyledButton>
-          <span>support</span>
+          <span>buy me a coffee</span>
           <IconDonate />
         </UnstyledButton>
       </DialogTrigger>
@@ -115,9 +117,9 @@ export const SupportButton = () => {
         </p>
         <p>You can choose to support me directly, or my country in these difficult times.</p>
         <SupportLinks>
-          <SupportLink url="https://www.paypal.com/donate/?hosted_button_id=778CECM6BGJ6C">
-            <PpLogo />
-            PayPal
+          <SupportLink url="https://buymeacoffee.com/grumd">
+            <CoffeeLogo />
+            Buy Me a Coffee
           </SupportLink>
           <SupportLink url="https://war.ukraine.ua/donate/">
             <Flag />
