@@ -37,7 +37,7 @@ export const fetchCsvWithProgress = async <T>({
   const apiResponse = DEBUG_FETCH
     ? { data: { size: 1, download_url: `${API_PREFIX}/${path}` } }
     : await axios.get<GithubFileApiResponse>(
-        `https://api.github.com/repos/grumd/osu-pps/contents/${path}?ref=data`
+        `https://api.github.com/repos/grumd/osu-pps/contents/${path}?ref=data`,
       );
   const contentSize = apiResponse.data.size;
   const downloadUrl = apiResponse.data.download_url;

@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "react", "jsx-a11y", "import", "jest"],
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "jest": true
+  },
+  "categories": {
+    "correctness": "error"
+  },
+  "ignorePatterns": [
+    "dist",
+    "build",
+    "node_modules",
+    "**/*.scss",
+    "**/*.css",
+    "vite.config.ts",
+    "jest.setup.ts",
+    "jest.config.js",
+    "test/__mocks__/fileMock.js",
+    "commitlint.config.js"
+  ]
+}

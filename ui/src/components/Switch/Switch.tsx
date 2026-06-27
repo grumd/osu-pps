@@ -1,6 +1,6 @@
 import * as SwitchPrimitive from '@radix-ui/react-switch';
 
-import { colors, space, styled } from '@/styles';
+import { colors, styled } from '@/styles';
 
 interface SwitchProps {
   value: boolean;

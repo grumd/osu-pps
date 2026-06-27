@@ -24,15 +24,15 @@ const useWorkerResult = (worker: Worker) => {
           worker.removeEventListener('message', onMessage);
         };
       },
-      [worker]
+      [worker],
     ),
-    () => data.current
+    () => data.current,
   );
 };
 
 export const useFilterWorker = (
   data: Beatmap[] | null | undefined,
-  filters: Filters
+  filters: Filters,
 ): Beatmap[] | null | undefined => {
   const mode = useMode();
 

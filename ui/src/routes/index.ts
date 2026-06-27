@@ -21,5 +21,5 @@ export const mode = route(
     maps,
     mappers,
     rankings,
-  }
+  },
 );

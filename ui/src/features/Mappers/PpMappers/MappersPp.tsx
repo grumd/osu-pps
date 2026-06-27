@@ -69,7 +69,7 @@ export function MappersPp() {
           id: map.id,
           text: map.text,
         })),
-      })
+      }),
     );
   }, [top20]);
 

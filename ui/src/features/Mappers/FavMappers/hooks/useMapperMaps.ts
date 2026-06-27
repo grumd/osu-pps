@@ -17,7 +17,7 @@ export const useMapperMaps = (mapperId: number) => {
       return fetchJson<FavMapperMap[]>({
         url: `${API_PREFIX}/data/mappers/${mode}/favored-mappers-maps/${mapperId}.json`,
       });
-    }
+    },
   );
 
   return {

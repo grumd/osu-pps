@@ -4,7 +4,7 @@ import type { StoreApi, UseBoundStore } from 'zustand';
 
 // Subscribes to a zustand state with a debounce function.
 export const useDebouncedStateSnapshot = <T extends object>(
-  useStore: UseBoundStore<StoreApi<T>>
+  useStore: UseBoundStore<StoreApi<T>>,
 ): T => {
   const [snapshot, setSnapshot] = useState<T>(useStore.getState());
 
@@ -13,7 +13,7 @@ export const useDebouncedStateSnapshot = <T extends object>(
   useEffect(() =>
     useStore.subscribe((newState) => {
       setSnapshotDebounced(newState);
-    })
+    }),
   );
 
   return snapshot;

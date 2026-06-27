@@ -14,8 +14,8 @@ export const useUseDirectStore = create<{
       name: 'use-direct-storage',
       partialize: (state) => ({ direct: state.direct }),
       version: 1,
-    }
-  )
+    },
+  ),
 );
 
 export const useOsuDirect = (): boolean => useUseDirectStore((state) => state.direct);

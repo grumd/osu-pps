@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "allowJs": false,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "noEmit": true,
+  },
+  "references": [{ "path": "./ui/tsconfig.json" }, { "path": "./update-scripts/tsconfig.json" }]
+}

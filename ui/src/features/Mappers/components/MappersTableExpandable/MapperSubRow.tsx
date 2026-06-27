@@ -55,7 +55,7 @@ export const MapperSubRow = ({ data, children, customHeaderRow, getUrl }: Mapper
             <thead>
               {customHeaderRow ?? (
                 <tr>
-                  <td></td>
+                  <td aria-label="map names"></td>
                   <td>
                     <Text bold>{data.length}</Text> maps; average points per map:{' '}
                     <Text bold>{truncateFloat(averagePoints)}</Text>
@@ -70,9 +70,15 @@ export const MapperSubRow = ({ data, children, customHeaderRow, getUrl }: Mapper
                     <td>
                       <ExternalLink url={getUrl(map.id)}>{map.text}</ExternalLink>
                     </td>
-                    <td>
+                    <td aria-label={String(truncateFloat(map.value, 10))}>
                       <MapCountBar progress={map.value / maxValue}>
-                        <div style={{ position: 'absolute', top: 0, left: '0.4em' }}>
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: '0.4em',
+                          }}
+                        >
                           {truncateFloat(map.value, 10)}
                         </div>
                       </MapCountBar>

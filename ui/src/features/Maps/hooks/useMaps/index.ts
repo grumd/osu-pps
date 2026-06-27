@@ -59,7 +59,7 @@ export const useMaps = () => {
     return beatmaps;
   };
 
-  const { isLoading, error, data } = usePersistQuery(['maps', mode], () => {
+  const { isLoading, error, data } = usePersistQuery(['maps', mode, 'version-2'], () => {
     return fetchData(mode);
   });
 

@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "semi": true,
+  "tabWidth": 2,
+  "singleQuote": true,
+  "useTabs": false,
+  "printWidth": 100,
+  "importOrder": [
+    "^@/(.*)$",
+    "^[./]"
+  ],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "sortPackageJson": false,
+  "ignorePatterns": [
+    "/node_modules",
+    "/dist",
+    "/build"
+  ]
+}

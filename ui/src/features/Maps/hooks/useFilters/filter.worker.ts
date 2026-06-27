@@ -47,7 +47,7 @@ const deepEqual = (x: unknown, y: unknown): boolean => {
   return x && y && typeof x === 'object' && typeof y === 'object'
     ? Object.keys(x).length === Object.keys(y).length &&
         Object.keys(x).every((key) =>
-          deepEqual((x as Record<string, unknown>)[key], (y as Record<string, unknown>)[key])
+          deepEqual((x as Record<string, unknown>)[key], (y as Record<string, unknown>)[key]),
         )
     : x === y;
 };
@@ -71,7 +71,7 @@ const getMods = (map: Beatmap) => ({
 const matchesMaxMin = (
   min: number | null | undefined,
   max: number | null | undefined,
-  value: number
+  value: number,
 ): boolean => (!min || value >= min) && (!max || value <= max);
 
 function modAllowed(selectValue: ModToggleState, hasMod: boolean) {
@@ -166,7 +166,7 @@ function filter({ filters, mode, mapsPerMode }: FilterWorkerState) {
       const realAr = getRealAr(
         map.ar,
         mods.hr ? 1.4 : mods.ez ? 0.5 : 1,
-        mods.dt ? 1.5 : mods.ht ? 0.75 : 1
+        mods.dt ? 1.5 : mods.ht ? 0.75 : 1,
       );
       return matchesMaxMin(ar[0], ar[1], realAr);
     });
@@ -224,7 +224,7 @@ self.onmessage = (
   e:
     | MessageEvent<['maps-mode', { data: Beatmap[] | null; mode: Mode }]>
     | MessageEvent<['filters', Filters]>
-    | MessageEvent<['mode', Mode | null]>
+    | MessageEvent<['mode', Mode | null]>,
 ) => {
   const [type, payload] = e.data;
 

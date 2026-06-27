@@ -18,7 +18,7 @@ const initialFilters: Filters = {
 const initialFiltersMap: Record<Mode, Filters> = Object.fromEntries(
   Object.values(Mode).map((mode) => {
     return [mode, initialFilters];
-  })
+  }),
 ) as Record<Mode, Filters>;
 
 interface FiltersStore {
@@ -72,14 +72,14 @@ export const useFiltersStore = create<FiltersStore>()(
                   ...persistedState.filters[mode],
                   count: currentState.filters[mode].count + 20,
                 },
-              ])
+              ]),
             ),
           },
         };
       },
       version: 4,
-    }
-  )
+    },
+  ),
 );
 
 export const useFilters = () => {

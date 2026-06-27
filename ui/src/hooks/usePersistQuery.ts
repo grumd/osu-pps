@@ -27,7 +27,7 @@ const savePersistData = async <TData>(key: readonly unknown[], data: TData, upda
 
 export const usePersistQuery = <TKey extends readonly unknown[], TData>(
   key: TKey,
-  fetchFn: () => Promise<TData | null>
+  fetchFn: () => Promise<TData | null>,
 ) => {
   const meta = useMetadata();
 
@@ -36,7 +36,7 @@ export const usePersistQuery = <TKey extends readonly unknown[], TData>(
     [...key, 'cached'],
     async () => {
       return (await getPersistData<TData>(key)) ?? null;
-    }
+    },
   );
   const { data: cachedData, updatedOn: cachedOn } = cachedStore ?? {};
 
@@ -56,7 +56,7 @@ export const usePersistQuery = <TKey extends readonly unknown[], TData>(
     {
       // Only start fetching from the server when we know if we have anything cached
       enabled: !!meta.data && !isLoadingCache,
-    }
+    },
   );
 
   return {

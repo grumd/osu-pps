@@ -70,7 +70,11 @@ interface ScoreTooltipProps {
   mode: Mode;
 }
 
-export const ScoreTooltip = ({ score, hideLinkText, mode }: ScoreTooltipProps): JSX.Element | null => {
+export const ScoreTooltip = ({
+  score,
+  hideLinkText,
+  mode,
+}: ScoreTooltipProps): JSX.Element | null => {
   if (!score || !score.statistics) {
     return null;
   }

@@ -43,7 +43,7 @@ export const useMapPpData = (beatmapId: number, modsBitmask: number) => {
 
   const { isLoading, error, data } = useQuery(
     getMapPpDataQueryKey(mode, beatmapId, modsBitmask),
-    () => fetchMapPpData(mode, beatmapId, modsBitmask)
+    () => fetchMapPpData(mode, beatmapId, modsBitmask),
   );
 
   return {

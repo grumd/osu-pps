@@ -216,7 +216,7 @@ export const BeatmapCard = memo(function _BeatmapCard({ map }: { map: Beatmap })
                 {getRealAr(
                   map.ar,
                   mods.hr ? 1.4 : mods.ez ? 0.5 : 1,
-                  mods.dt ? 1.5 : mods.ht ? 0.75 : 1
+                  mods.dt ? 1.5 : mods.ht ? 0.75 : 1,
                 )}
                 ,{' '}
               </dd>

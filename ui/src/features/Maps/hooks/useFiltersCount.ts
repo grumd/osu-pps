@@ -8,7 +8,7 @@ import type { Filters } from '../types';
 
 export const useFiltersCount = (
   mode: Mode,
-  filters: Filters
+  filters: Filters,
 ): { moreCount: number; filtersCount: number } => {
   return useMemo(() => {
     const moreCount = [
@@ -22,7 +22,7 @@ export const useFiltersCount = (
     const filtersCount = keys(filters)
       .filter(
         (key) =>
-          !['count', 'isShowingMore', mode !== Mode.mania ? 'maniaKeys' : null].includes(key)
+          !['count', 'isShowingMore', mode !== Mode.mania ? 'maniaKeys' : null].includes(key),
       )
       .reduce((sum, key) => {
         const value = filters[key];

@@ -17,7 +17,7 @@ export const useScores = (playerId: number) => {
       return fetchJson<Score[]>({
         url: `${API_PREFIX}/data/ranking/${mode}/player-scores/${playerId}.json`,
       });
-    }
+    },
   );
 
   return {

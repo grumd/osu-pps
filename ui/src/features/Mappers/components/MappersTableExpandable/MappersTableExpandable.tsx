@@ -41,14 +41,14 @@ export const MappersTableExpandable = <Item extends MapperItem>({
 
   const mappersWithExpanded = useMemo(() => {
     return mappers?.reduce(
-      (acc: ({ isExpandRow?: boolean } & typeof mappers[number])[], mapper) => {
+      (acc: ({ isExpandRow?: boolean } & (typeof mappers)[number])[], mapper) => {
         acc.push(mapper);
         if (expanded[mapper.id]) {
           acc.push({ ...mapper, isExpandRow: true });
         }
         return acc;
       },
-      []
+      [],
     );
   }, [mappers, expanded]);
 

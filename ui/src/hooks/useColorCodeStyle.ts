@@ -32,8 +32,8 @@ export const useColorCodeStyleStore = create<{
       name: 'color-code-style-storage',
       partialize: (state) => ({ style: state.style }),
       version: 1,
-    }
-  )
+    },
+  ),
 );
 
 export const useColorCodeStyle = (): ColorCodeStyle =>

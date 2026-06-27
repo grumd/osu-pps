@@ -49,11 +49,9 @@ const faqs = [
         has less overweightness points than an average map of that difficulty. Updated pp values for
         every map will range from 80% to 112.5% of original pp values. Small changes, but it adds
         up.
-        <br />
-        - Only includes players from official top ~11k rankings.
-        <br />
-        - Total pp of every player is lower than official because I only count top 100 scores, and
-        don't count bonus pp.
+        <br />- Only includes players from official top ~11k rankings.
+        <br />- Total pp of every player is lower than official because I only count top 100 scores,
+        and don't count bonus pp.
         <br />- This list can not replace the official rankings, because it can't even exist without
         it.
       </>

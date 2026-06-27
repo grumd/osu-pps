@@ -58,8 +58,10 @@ type InputTypes =
   | 'url'
   | 'week';
 
-interface InputProps<Type>
-  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'type'> {
+interface InputProps<Type> extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  'onChange' | 'type'
+> {
   type: Type;
   onChange: Type extends 'number'
     ? (value: number | null, event: ChangeEvent<HTMLInputElement>) => void
@@ -77,13 +79,13 @@ export function Input<Type extends InputTypes>(props: InputProps<Type>): JSX.Ele
         // TODO: seems to be working fine in TS 4.9, remove type casting when upgrading
         (onChange as InputProps<'number'>['onChange'])(
           event.target.value !== '' ? parseFloat(event.target.value) : null,
-          event
+          event,
         );
       } else {
         (onChange as InputProps<'text'>['onChange'])(event.target.value, event);
       }
     },
-    [type, onChange]
+    [type, onChange],
   );
 
   return (

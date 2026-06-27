@@ -92,7 +92,7 @@ const SelectContainer = styled('div', {
 });
 
 export const Select = <Option, IsMulti extends boolean, Group extends GroupBase<Option>>(
-  props: ReactSelectProps<Option, IsMulti, Group>
+  props: ReactSelectProps<Option, IsMulti, Group>,
 ) => {
   return (
     <SelectContainer>
