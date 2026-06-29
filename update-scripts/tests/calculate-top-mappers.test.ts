@@ -99,6 +99,8 @@ const mapsList: MapRecord[] = [
   { m: 0, b: 1, x: 100, pp99: 300, adj: 10 },
   { m: 64, b: 1, x: 50, pp99: 400, adj: 5 }, // same beatmap, DT — counted once per mapper
   { m: 0, b: 2, x: 80, pp99: 250, adj: 8 },
+  // same beatmap, DT — less farmable (x=70<80) but more overweight (far fewer players: adj=2<8)
+  { m: 64, b: 2, x: 70, pp99: 350, adj: 2 },
   { m: 0, b: 3, x: 60, pp99: 200, adj: 6 },
   { m: 0, b: 4, x: 40, pp99: 150, adj: 4 },
   { m: 0, b: 5, x: 30, pp99: 100, adj: 3 },
@@ -230,6 +232,21 @@ test('credits farmability points to all map owners, once per beatmap', () => {
 
   // mapper 400's username could not be fetched — the map is skipped entirely
   assert.equal(ppMappers.top20.some((mapper) => mapper.id === 400), false);
+});
+
+test('overweightness is taken from the most overweight mod combo, not the most farmable one', () => {
+  // beatmap 2: NoMod is the most farmable (x=80), DT is the most overweight (adj=2).
+  const adjHost = ppMappers.top20adj.find((mapper) => mapper.id === 100)!;
+  const map2adj = adjHost.mapsRecorded.find((map) => map.id === 2)!;
+  assert.equal(map2adj.m, 64);
+  assert.equal(map2adj.pp, 350);
+
+  // the farmability list still keeps the most farmable (NoMod) combo
+  const xHost = ppMappers.top20.find((mapper) => mapper.id === 100)!;
+  const map2x = xHost.mapsRecorded.find((map) => map.id === 2)!;
+  assert.equal(map2x.m, 0);
+  assert.equal(map2x.pp, 250);
+  assert.equal(map2x.ow, 80);
 });
 
 test('produces all three top lists', () => {

@@ -26,16 +26,20 @@ const logError = (...args: unknown[]) => console.error('Mapper stats error:', ..
 interface MapperMapRecord {
   /** beatmap id */
   id: number;
-  /** pp99 of the map */
-  pp: number;
-  /** raw farmability */
+  /** raw farmability (best mod combo) */
   x: number;
-  /** farmability per map age */
+  /** farmability per map age (peaks on the same combo as `x`, since the age divisor is constant per beatmap) */
   xAge: number;
-  /** overweightness-adjusted farmability */
-  xAdj: number;
-  /** mods bitmask */
+  /** pp99 of the most farmable mod combo */
+  pp: number;
+  /** mods bitmask of the most farmable mod combo */
   m: number;
+  /** overweightness-adjusted farmability (best mod combo) */
+  xAdj: number;
+  /** pp99 of the most overweight mod combo */
+  ppAdj: number;
+  /** mods bitmask of the most overweight mod combo */
+  mAdj: number;
 }
 
 interface PpMapper {
@@ -86,6 +90,8 @@ export async function calculateTopMappers(mode: Mode): Promise<void> {
   const formatTop = (
     pointsKey: 'points' | 'pointsAge' | 'pointsAdj',
     xKey: 'x' | 'xAge' | 'xAdj',
+    ppKey: 'pp' | 'ppAdj',
+    mKey: 'm' | 'mAdj',
     shouldTruncate = true
   ) => {
     return [...ppMappers]
@@ -104,17 +110,17 @@ export async function calculateTopMappers(mode: Mode): Promise<void> {
               id: map.id,
               text: `${cached.beatmapset.artist} - ${cached.beatmapset.title} [${cached.version}]`,
               ow: shouldTruncate ? truncateFloat(map[xKey]) : map[xKey],
-              pp: map.pp,
-              m: map.m,
+              pp: map[ppKey],
+              m: map[mKey],
             };
           }),
       }));
   };
 
   await writeJson(files.ppMappers(mode), {
-    top20: formatTop('points', 'x'),
-    top20age: formatTop('pointsAge', 'xAge'),
-    top20adj: formatTop('pointsAdj', 'xAdj', false),
+    top20: formatTop('points', 'x', 'pp', 'm'),
+    top20age: formatTop('pointsAge', 'xAge', 'pp', 'm'),
+    top20adj: formatTop('pointsAdj', 'xAdj', 'ppAdj', 'mAdj', false),
   });
   log(`Finished calculating TOP ${TOP_MAPPERS_COUNT} mappers!`);
 }
@@ -178,9 +184,16 @@ async function backfillMissingOwners(
   }
 }
 
-/** Accumulates farmability points per mapper over all maps they own (incl. guest diffs). */
-function collectPpMappers(maps: readonly MapRecord[], cache: MapInfoCache): PpMapper[] {
-  const mappers = new Map<number, PpMapper>();
+/**
+ * Collapses each beatmap's mod combinations into one record. The same beatmap appears once
+ * per mod combination; raw farmability and overweightness can peak on *different* combos
+ * (overweightness divides by the combo's player count), so each metric keeps its own best.
+ */
+function reduceToBeatmapRecords(
+  maps: readonly MapRecord[],
+  cache: MapInfoCache
+): Map<number, MapperMapRecord> {
+  const records = new Map<number, MapperMapRecord>();
 
   for (const map of maps) {
     const cached = cache[map.b]!;
@@ -190,16 +203,47 @@ function collectPpMappers(maps: readonly MapRecord[], cache: MapInfoCache): PpMa
     }
 
     const hours = hoursSince(cached.last_updated);
-    const record: MapperMapRecord = {
-      id: cached.id,
-      pp: map.pp99,
-      x: map.x,
-      xAge: (map.x / hours) * 10_000,
-      xAdj: overweightness(map.x, map.adj, hours),
-      m: map.m,
-    };
+    const xAge = (map.x / hours) * 10_000;
+    const xAdj = overweightness(map.x, map.adj, hours);
 
-    for (const owner of cached.owners) {
+    const existing = records.get(cached.id);
+    if (!existing) {
+      records.set(cached.id, {
+        id: cached.id,
+        x: map.x,
+        xAge,
+        pp: map.pp99,
+        m: map.m,
+        xAdj,
+        ppAdj: map.pp99,
+        mAdj: map.m,
+      });
+      continue;
+    }
+    // `xAge` peaks on the same combo as `x` (the age divisor is constant per beatmap).
+    if (map.x > existing.x) {
+      existing.x = map.x;
+      existing.xAge = xAge;
+      existing.pp = map.pp99;
+      existing.m = map.m;
+    }
+    if (xAdj > existing.xAdj) {
+      existing.xAdj = xAdj;
+      existing.ppAdj = map.pp99;
+      existing.mAdj = map.m;
+    }
+  }
+
+  return records;
+}
+
+/** Accumulates farmability points per mapper over all maps they own (incl. guest diffs). */
+function collectPpMappers(maps: readonly MapRecord[], cache: MapInfoCache): PpMapper[] {
+  const records = reduceToBeatmapRecords(maps, cache);
+  const mappers = new Map<number, PpMapper>();
+
+  for (const record of records.values()) {
+    for (const owner of cache[record.id]!.owners!) {
       const mapper = mappers.get(owner.id);
       if (!mapper) {
         mappers.set(owner.id, {
@@ -216,7 +260,7 @@ function collectPpMappers(maps: readonly MapRecord[], cache: MapInfoCache): PpMa
       if (record.id > Math.max(...mapper.mapsRecorded.map((m) => m.id))) {
         mapper.name = owner.username;
       }
-      // The same beatmap can appear with multiple mod combinations — count it once
+      // `owners` can list the same mapper id more than once (under different names) — count it once
       if (!mapper.mapsRecorded.some((m) => m.id === record.id)) {
         mapper.mapsRecorded.push(record);
         mapper.points += record.x;
