@@ -41,7 +41,10 @@ export interface MapRecord {
   x: number;
   /** estimated pp of a ~99% play */
   pp99: number;
-  /** number of players in this map's pp block (popularity adjustment) */
+  /**
+   * number of players in this map's pp block (popularity adjustment). Blocks below the player
+   * histogram's peak all share the peak's count — see `findHistogramTruncation`.
+   */
   adj: number;
 }
 

@@ -27,6 +27,8 @@ const USERS_WITH_FULL_SCORES = 11_000;
 const MIN_PP_GAP_BETWEEN_USERS = 0.05;
 /** How many accuracy buckets are averaged for the pp99 estimate. */
 const PP99_SAMPLE_SIZE = 7;
+/** Half-width (in pp blocks) of the window used to smooth the player histogram. */
+const PP_BLOCK_SMOOTHING_WINDOW = 2;
 
 /** A user's best score, normalized to the values the pipeline works with. */
 interface NormalizedScore {
@@ -176,6 +178,22 @@ export async function fetchUserScores(mode: Mode): Promise<void> {
   console.log('Fetching scores of all users to find the list of popular maps...');
   await runJobs({ items: users, job: processUser, minJobTime: DELAY_BETWEEN_USERS_MS });
 
+  const truncation = findHistogramTruncation(usersPerPpBlock);
+  console.log(
+    `Player histogram peaks at block ${truncation.block} ` +
+      `(${truncation.block * PP_BLOCK_SIZE}-${truncation.block * PP_BLOCK_SIZE + PP_BLOCK_SIZE - 1}pp), ` +
+      `using ${truncation.playerCount} players for every block below it`
+  );
+  /** Number of players who play at a map's level, guarded against the truncated low end. */
+  const playersAtLevel = (pp99: number) => {
+    const block = Math.floor(Math.round(pp99) / PP_BLOCK_SIZE);
+    const counted = usersPerPpBlock[block] ?? 1;
+    // Below the peak both numbers are lower bounds on the real player count — the block's own
+    // (truncated) tally and the peak's. Take the larger, so a block that happens to have been
+    // sampled above the peak is never pushed down and made to look farmier than it is.
+    return block <= truncation.block ? Math.max(counted, truncation.playerCount) : counted;
+  };
+
   console.log(`${maps.size} unique map+mods combinations found! Saving.`);
   const mapsList: MapRecord[] = [];
   for (const [mapModId, map] of maps) {
@@ -187,7 +205,7 @@ export async function fetchUserScores(mode: Mode): Promise<void> {
       b: map.b,
       x: truncateFloat(map.x),
       pp99,
-      adj: usersPerPpBlock[Math.floor(Math.round(pp99) / PP_BLOCK_SIZE)] ?? 1,
+      adj: playersAtLevel(pp99),
     });
   }
 
@@ -198,6 +216,43 @@ export async function fetchUserScores(mode: Mode): Promise<void> {
   await writeJson(files.userScoresList(mode), userScores);
   await writeJson(files.userScoresDates(mode), userScoreDates);
   console.log(`Done fetching list of beatmaps! (${mode.text})`);
+}
+
+/**
+ * Finds where the player histogram stops being trustworthy at the low end.
+ *
+ * The rankings are only walked down to ~1000pp, so the low blocks are missing most of their
+ * players and decay to 1. In reality the player base only grows as the level drops — the whole
+ * rise on the left of the histogram is an artifact of that cutoff, and its peak marks where the
+ * truncation stops biting. Left alone, maps below the tracked skill range divide by `adj = 1`
+ * and a single beginner's score is enough to top the farm list.
+ *
+ * Returns the peak's block index and the player count to use for every block at or below it.
+ * The histogram is smoothed first so the peak doesn't hop around the plateau (where neighbouring
+ * blocks hold near-identical player counts) on sampling noise alone.
+ */
+export function findHistogramTruncation(usersPerPpBlock: readonly (number | undefined)[]): {
+  block: number;
+  playerCount: number;
+} {
+  // No players recorded at all — leave every block on its own (clamped) count
+  if (usersPerPpBlock.length === 0) return { block: -1, playerCount: 1 };
+
+  // `Array.from` rather than `.map` — the histogram is sparse and `.map` would skip the holes
+  const smoothed = Array.from({ length: usersPerPpBlock.length }, (_, block) => {
+    let sum = 0;
+    for (let i = block - PP_BLOCK_SMOOTHING_WINDOW; i <= block + PP_BLOCK_SMOOTHING_WINDOW; i++) {
+      sum += usersPerPpBlock[i] ?? 0;
+    }
+    return sum / (2 * PP_BLOCK_SMOOTHING_WINDOW + 1);
+  });
+
+  let peak = 0;
+  for (const [block, count] of smoothed.entries()) {
+    if (count > smoothed[peak]!) peak = block;
+  }
+
+  return { block: peak, playerCount: Math.max(Math.round(smoothed[peak]!), 1) };
 }
 
 /**

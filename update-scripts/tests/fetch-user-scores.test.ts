@@ -83,7 +83,9 @@ const fetchUserBestScores = mock.fn(async (userId: number) => {
 });
 mock.module(srcUrl('osu-api/api.ts'), { namedExports: { fetchUserBestScores } });
 
-const { fetchUserScores, estimatePp99 } = await import('../src/steps/fetch-user-scores.ts');
+const { fetchUserScores, estimatePp99, findHistogramTruncation } = await import(
+  '../src/steps/fetch-user-scores.ts'
+);
 const { files } = await import('../src/paths.ts');
 const { modes } = await import('../src/modes.ts');
 
@@ -204,4 +206,36 @@ test('weights pp blocks by represented users so adj reflects the real, un-skippe
   for (const map of mapsList) {
     assert.ok(map.adj >= 1);
   }
+});
+
+test('finds the player histogram peak, ignoring noise spikes on the plateau', () => {
+  // A slice of a real osu histogram: blocks 0-5 are truncated to 1 by the ~1000pp ranking
+  // cutoff, the counts climb until block ~12 and then plateau.
+  const histogram = [
+    1, 1, 1, 1, 1, 1, 41, 1283, 6273, 4071, 9524, 10060, 9761, 7220, 10348, 9206, 10178, 7977,
+    9174, 8693, 6733,
+  ];
+  const { block, playerCount } = findHistogramTruncation(histogram);
+
+  // The raw maximum is block 14 (10348), but that's a sampling spike on a flat plateau -
+  // smoothing puts the peak at the start of the plateau instead, where it stays put run to run.
+  assert.equal(histogram.indexOf(Math.max(...histogram)), 14);
+  assert.equal(block, 12);
+  assert.equal(playerCount, 9383);
+});
+
+test('handles a sparse histogram without producing a hole or NaN', () => {
+  // The histogram is built by assigning to arbitrary indexes, so it is full of holes
+  const sparse: number[] = [];
+  sparse[7] = 1;
+  sparse[21] = 3;
+  const { block, playerCount } = findHistogramTruncation(sparse);
+
+  assert.equal(block, 19); // start of the window covering the only meaningful block
+  assert.equal(playerCount, 1); // 0.6 players smoothed, clamped up to 1
+});
+
+test('falls back to per-block counts when no players were recorded', () => {
+  // block -1 is below every real block, so nothing gets the floor applied
+  assert.deepEqual(findHistogramTruncation([]), { block: -1, playerCount: 1 });
 });
