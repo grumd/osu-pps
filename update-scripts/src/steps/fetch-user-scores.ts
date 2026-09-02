@@ -12,10 +12,11 @@ import type {
   UserScoreDatesFile,
   UserScoresFile,
 } from '../data/types.ts';
-import { readJson, writeFile, writeJson } from '../utils/io.ts';
+import { readJson, writeJson } from '../utils/io.ts';
 import { modAcronymsToBitmask, simplifyMods } from '../utils/mods.ts';
 import { truncateFloat, uniqBy } from '../utils/misc.ts';
 import { runJobs } from '../utils/run-jobs.ts';
+import { SHARD_COUNTS, writeShards } from '../utils/shards.ts';
 
 /** Users are grouped into pp blocks of this size (average pp of their top maps / 5). */
 const PP_BLOCK_SIZE = 5;
@@ -196,10 +197,11 @@ export async function fetchUserScores(mode: Mode): Promise<void> {
 
   console.log(`${maps.size} unique map+mods combinations found! Saving.`);
   const mapsList: MapRecord[] = [];
+  const scoresPerMap: [string, Record<number, BeatmapScoreStats>][] = [];
   for (const [mapModId, map] of maps) {
     const buckets = scoreStatsPerMap.get(mapModId)!;
     const pp99 = estimatePp99(buckets);
-    writeFile(files.beatmapScores(mode, mapModId), JSON.stringify(Object.fromEntries(buckets)));
+    scoresPerMap.push([mapModId, Object.fromEntries(buckets)]);
     mapsList.push({
       m: map.m,
       b: map.b,
@@ -208,6 +210,12 @@ export async function fetchUserScores(mode: Mode): Promise<void> {
       adj: playersAtLevel(pp99),
     });
   }
+
+  await writeShards({
+    directory: files.beatmapScoresDir(mode),
+    shardCount: SHARD_COUNTS.mapsScores,
+    entries: scoresPerMap,
+  });
 
   await writeJson(files.mapsList(mode), mapsList);
   console.log('Saving info about PP blocks too');

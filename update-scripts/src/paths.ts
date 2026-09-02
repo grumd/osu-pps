@@ -3,8 +3,8 @@ import path from 'node:path';
 import { PACKAGE_ROOT } from './config.ts';
 import type { Mode } from './modes.ts';
 
-/** The published data folder, committed to the `data` branch. */
-const DATA_ROOT = process.env.OSU_PPS_DATA_DIR ?? path.resolve(PACKAGE_ROOT, '..', 'data');
+/** The published data folder. */
+export const DATA_ROOT = process.env.OSU_PPS_DATA_DIR ?? path.resolve(PACKAGE_ROOT, '..', 'data');
 /** Local working files, gitignored. */
 const TEMP_ROOT = process.env.OSU_PPS_TEMP_DIR ?? path.join(PACKAGE_ROOT, 'temp');
 
@@ -32,16 +32,16 @@ export const files = {
   // published data files
   mapsetsCsv: (mode: Mode) => data('maps', mode, 'mapsets.csv'),
   diffsCsv: (mode: Mode) => data('maps', mode, 'diffs.csv'),
-  beatmapScores: (mode: Mode, mapModId: string) =>
-    data('maps', mode, 'maps-scores', `${mapModId}.json`),
+  /** Sharded by map+mods id — see utils/shards.ts */
+  beatmapScoresDir: (mode: Mode) => data('maps', mode, 'maps-scores'),
   ppMappers: (mode: Mode) => data('mappers', mode, 'pp-mappers.json'),
   favoredMappers: (mode: Mode) => data('mappers', mode, 'favored-mappers.json'),
-  favoredMappersMaps: (mode: Mode, mapperId: number | string) =>
-    data('mappers', mode, 'favored-mappers-maps', `${mapperId}.json`),
+  /** Sharded by mapper id — see utils/shards.ts */
+  favoredMappersMapsDir: (mode: Mode) => data('mappers', mode, 'favored-mappers-maps'),
   rankingsCompressed: (mode: Mode) => data('ranking', mode, 'compressed.json'),
   rankingsMapInfos: (mode: Mode) => data('ranking', mode, 'map-infos.json'),
   rankingsCsv: (mode: Mode) => data('ranking', mode, 'players.csv'),
-  rankingsPlayerScores: (mode: Mode, playerId: number | string) =>
-    data('ranking', mode, 'player-scores', `${playerId}.json`),
+  /** Sharded by player id — see utils/shards.ts */
+  rankingsPlayerScoresDir: (mode: Mode) => data('ranking', mode, 'player-scores'),
   metadata: (mode: Mode) => data('metadata', mode, 'metadata.json'),
 };

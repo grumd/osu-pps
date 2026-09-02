@@ -12,7 +12,7 @@ export const useFavMappers = () => {
 
   const { isLoading, error, data } = usePersistQuery(['fav-mappers', mode], () => {
     return fetchJson<FavMapper[]>({
-      url: `${API_PREFIX}/data/mappers/${mode}/favored-mappers.json`,
+      url: `${API_PREFIX}/mappers/${mode}/favored-mappers.json`,
     });
   });
 

@@ -3,7 +3,14 @@ import fs from 'node:fs';
 import { test } from 'node:test';
 
 import type { DetailedMapRecord } from '../src/data/types.ts';
-import { mockConfigModule, mockTimingsModule, readJsonFile, setupTestDirs } from './helpers.ts';
+import {
+  mockConfigModule,
+  mockTimingsModule,
+  readJsonFile,
+  readShardedEntry,
+  setupTestDirs,
+} from './helpers.ts';
+import { SHARD_COUNTS } from '../src/utils/shards.ts';
 
 const dirs = setupTestDirs();
 mockConfigModule(dirs.packageRoot);
@@ -73,8 +80,10 @@ fs.writeFileSync(files.mapsDetailedList(modes.osu), JSON.stringify(maps));
 await calculateRankings(modes.osu);
 
 test('penalizes scores on overweighted maps and boosts underweighted ones', () => {
-  const farmerScores = readJsonFile<Array<Record<string, unknown>>>(
-    files.rankingsPlayerScores(modes.osu, 10)
+  const farmerScores = readShardedEntry<Array<Record<string, unknown>>>(
+    files.rankingsPlayerScoresDir(modes.osu),
+    10,
+    SHARD_COUNTS.playerScores
   );
   const overweighted = farmerScores.find((score) => score.beatmapId === 1)!;
   assert.equal(overweighted.title, 'A - One [Easy]');
@@ -82,8 +91,10 @@ test('penalizes scores on overweighted maps and boosts underweighted ones', () =
   assert.equal(overweighted.ppOld, 500);
   assert.ok((overweighted.ppNew as number) < 500, 'overweighted score must lose pp');
 
-  const honestScores = readJsonFile<Array<Record<string, unknown>>>(
-    files.rankingsPlayerScores(modes.osu, 11)
+  const honestScores = readShardedEntry<Array<Record<string, unknown>>>(
+    files.rankingsPlayerScoresDir(modes.osu),
+    11,
+    SHARD_COUNTS.playerScores
   );
   const underweighted = honestScores[0]!;
   assert.equal(underweighted.ppOld, 400);
@@ -91,8 +102,10 @@ test('penalizes scores on overweighted maps and boosts underweighted ones', () =
 });
 
 test('passes scores on unknown beatmaps through unchanged', () => {
-  const farmerScores = readJsonFile<Array<Record<string, unknown>>>(
-    files.rankingsPlayerScores(modes.osu, 10)
+  const farmerScores = readShardedEntry<Array<Record<string, unknown>>>(
+    files.rankingsPlayerScoresDir(modes.osu),
+    10,
+    SHARD_COUNTS.playerScores
   );
   const unknown = farmerScores.find((score) => score.beatmapId === 999)!;
   assert.equal(unknown.title, '999');

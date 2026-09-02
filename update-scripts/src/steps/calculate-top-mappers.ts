@@ -11,6 +11,7 @@ import { readJson, writeFile, writeJson } from '../utils/io.ts';
 import { hoursSince, sumBy, truncateFloat, uniqBy } from '../utils/misc.ts';
 import { overweightness } from '../utils/overweightness.ts';
 import { runJobs } from '../utils/run-jobs.ts';
+import { SHARD_COUNTS, writeShards } from '../utils/shards.ts';
 
 /** Mappers need at least this many ranked mapsets for their favourites to count as votes. */
 const MIN_MAPSETS_FOR_VOTING = 3;
@@ -423,10 +424,17 @@ async function writeFavoredMappers(voters: readonly MapperStats[], mode: Mode): 
     }
   }
 
-  for (const favored of favoredMappers.values()) {
-    const mapsetsSorted = [...favored.mapsets.values()].sort((a, b) => b.count - a.count);
-    await writeJson(files.favoredMappersMaps(mode, favored.mapperId), mapsetsSorted);
-  }
+  await writeShards({
+    directory: files.favoredMappersMapsDir(mode),
+    shardCount: SHARD_COUNTS.favoredMappersMaps,
+    entries: [...favoredMappers.values()].map(
+      (favored) =>
+        [
+          favored.mapperId,
+          [...favored.mapsets.values()].sort((a, b) => b.count - a.count),
+        ] as const
+    ),
+  });
 
   const ranking = [...favoredMappers.values()]
     .sort((a, b) => b.count - a.count)

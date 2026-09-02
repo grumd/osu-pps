@@ -58,10 +58,11 @@ test('updates every mode and pushes after each one', async () => {
     stepCalls.filter((call) => call.startsWith('users:')),
     ['users:osu', 'users:mania', 'users:taiko', 'users:fruits']
   );
+  // each mode pushes its data to R2
   assert.equal(spawn.mock.callCount(), 4);
-  const [command, args] = spawn.mock.calls[0]!.arguments as unknown as [string, string[]];
-  assert.equal(command, 'bash');
-  assert.match(args[0]!, /push-safe\.sh$/);
+  const [, r2Args] = spawn.mock.calls[0]!.arguments as unknown as [string, string[]];
+  assert.match(r2Args[0]!, /push-r2\.ts$/);
+  assert.deepEqual(r2Args.slice(1), ['--mode', 'osu']);
 });
 
 test('does not push with skipPush or in debug mode', async () => {
@@ -78,7 +79,7 @@ test('continues with the other modes when one fails', async () => {
     throw new Error('osu fetch broke');
   });
   await runUpdateJob({ skipPush: false, debug: false });
-  // osu failed at the first step; the other 3 modes ran fully
+  // osu failed at the first step; the other 3 modes ran fully and pushed to R2
   assert.equal(stepCalls.length, 18);
   assert.equal(spawn.mock.callCount(), 3);
 });

@@ -122,7 +122,7 @@ async function osuApiGetWithRetries<T>(
       await delay(retryState.rateLimitWaitMs);
       return osuApiGetWithRetries(url, options, {
         ...retryState,
-        rateLimitWaitMs: retryState.rateLimitWaitMs * 1.5,
+        rateLimitWaitMs: retryState.rateLimitWaitMs * 2,
       });
     }
     if (retryState.retriesLeft >= 1) {

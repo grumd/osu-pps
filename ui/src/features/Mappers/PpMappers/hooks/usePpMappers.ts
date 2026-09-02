@@ -10,7 +10,7 @@ export const usePpMappers = () => {
 
   return usePersistQuery(['pp-mappers', mode], () => {
     return fetchJson<PpMappersBody>({
-      url: `${API_PREFIX}/data/mappers/${mode}/pp-mappers.json`,
+      url: `${API_PREFIX}/mappers/${mode}/pp-mappers.json`,
     });
   });
 };

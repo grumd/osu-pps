@@ -8,9 +8,11 @@ import {
   mockConfigModule,
   mockTimingsModule,
   readJsonFile,
+  readShardedEntry,
   setupTestDirs,
   srcUrl,
 } from './helpers.ts';
+import { SHARD_COUNTS } from '../src/utils/shards.ts';
 
 const dirs = setupTestDirs();
 mockConfigModule(dirs.packageRoot);
@@ -159,8 +161,10 @@ test('estimates pp99 from the recorded accuracy buckets', () => {
 });
 
 test('writes per-accuracy score stats with legacy statistics and the best combo', () => {
-  const stats = readJsonFile<Record<string, BeatmapScoreStats>>(
-    files.beatmapScores(modes.osu, '100_72')
+  const stats = readShardedEntry<Record<string, BeatmapScoreStats>>(
+    files.beatmapScoresDir(modes.osu),
+    '100_72',
+    SHARD_COUNTS.mapsScores
   );
   // two buckets: 99.1 (user 1) and 97 (user 3)
   assert.deepEqual(Object.keys(stats).sort(), ['97', '99.1']);

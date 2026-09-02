@@ -6,6 +6,7 @@ import type { Mode } from '@/constants/modes';
 import { useMode } from '@/hooks/useMode';
 import { fetchJson } from '@/utils/fetch';
 import { queryClient } from '@/utils/queryClient';
+import { SHARD_COUNTS, shardName } from '@/utils/shards';
 
 type PpData = {
   maxcombo: number;
@@ -27,23 +28,32 @@ export type MapPpData = Record<number, PpData>;
 
 export type DataPoint = PpData & { accuracy: number };
 
-const getMapPpDataQueryKey = (mode: Mode, beatmapId: number, modsBitmask: number) => {
-  return ['map-pp-data', mode, beatmapId, modsBitmask /*, metadata.data?.lastUpdated*/];
+/** A whole shard file: map+mods id -> that map's scores by accuracy. */
+type MapPpShard = Record<string, MapPpData>;
+
+const getMapModId = (beatmapId: number, modsBitmask: number) => `${beatmapId}_${modsBitmask}`;
+
+// Keyed by shard rather than by map, so the maps sharing a shard are fetched once between them.
+const getMapPpShardQueryKey = (mode: Mode, mapModId: string) => {
+  return ['map-pp-shard', mode, shardName(mapModId, SHARD_COUNTS.mapsScores)];
 };
 
-const fetchMapPpData = (mode: Mode, beatmapId: number, modsBitmask: number) => {
-  return fetchJson<MapPpData>({
-    url: `${API_PREFIX}/data/maps/${mode}/maps-scores/${beatmapId}_${modsBitmask}.json`,
+const fetchMapPpShard = (mode: Mode, mapModId: string) => {
+  const shard = shardName(mapModId, SHARD_COUNTS.mapsScores);
+  return fetchJson<MapPpShard>({
+    url: `${API_PREFIX}/maps/${mode}/maps-scores/${shard}.json`,
   });
 };
 
 export const useMapPpData = (beatmapId: number, modsBitmask: number) => {
   const mode = useMode();
   // const metadata = useMetadata();
+  const mapModId = getMapModId(beatmapId, modsBitmask);
 
   const { isLoading, error, data } = useQuery(
-    getMapPpDataQueryKey(mode, beatmapId, modsBitmask),
-    () => fetchMapPpData(mode, beatmapId, modsBitmask),
+    getMapPpShardQueryKey(mode, mapModId),
+    () => fetchMapPpShard(mode, mapModId),
+    { select: (shard: MapPpShard) => shard[mapModId] },
   );
 
   return {
@@ -54,8 +64,9 @@ export const useMapPpData = (beatmapId: number, modsBitmask: number) => {
 };
 
 export const prefetchMapPpData = async (mode: Mode, beatmapId: number, modsBitmask: number) => {
+  const mapModId = getMapModId(beatmapId, modsBitmask);
   await queryClient.prefetchQuery({
-    queryKey: getMapPpDataQueryKey(mode, beatmapId, modsBitmask),
-    queryFn: () => fetchMapPpData(mode, beatmapId, modsBitmask),
+    queryKey: getMapPpShardQueryKey(mode, mapModId),
+    queryFn: () => fetchMapPpShard(mode, mapModId),
   });
 };

@@ -10,7 +10,7 @@ import { useMode } from './useMode';
 const fetchMetadata = async (mode: Mode) => {
   if (mode) {
     return fetchJson<Metadata>({
-      url: `${API_PREFIX}/data/metadata/${mode}/metadata.json`,
+      url: `${API_PREFIX}/metadata/${mode}/metadata.json`,
     });
   }
 };

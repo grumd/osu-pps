@@ -7,9 +7,11 @@ import {
   mockConfigModule,
   mockTimingsModule,
   readJsonFile,
+  readShardedEntry,
   setupTestDirs,
   srcUrl,
 } from './helpers.ts';
+import { SHARD_COUNTS } from '../src/utils/shards.ts';
 
 const dirs = setupTestDirs();
 mockConfigModule(dirs.packageRoot);
@@ -270,8 +272,10 @@ test('ranks favored mappers weighted by the voter mapset count', () => {
   // names sorted by received weight: 'favored-mapper' got 1.1, 'favored-mapper-alt' got 0.4
   assert.deepEqual(favored[0]!.names, ['favored-mapper', 'favored-mapper-alt']);
 
-  const favoredMaps = readJsonFile<Array<Record<string, unknown>>>(
-    files.favoredMappersMaps(modes.osu, 500)
+  const favoredMaps = readShardedEntry<Array<Record<string, unknown>>>(
+    files.favoredMappersMapsDir(modes.osu),
+    500,
+    SHARD_COUNTS.favoredMappersMaps
   );
   assert.equal(favoredMaps.length, 3);
   assert.deepEqual(Object.keys(favoredMaps[0]!), [

@@ -3,6 +3,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { mock } from 'node:test';
 
+import * as shards from '../src/utils/shards.ts';
+
 /** Resolves a path inside src/ to the absolute URL used by mock.module. */
 export const srcUrl = (relativePath: string) =>
   new URL(`../src/${relativePath}`, import.meta.url).href;
@@ -69,3 +71,16 @@ export function mockTimingsModule(): void {
 
 export const readJsonFile = <T>(filePath: string): T =>
   JSON.parse(fs.readFileSync(filePath, 'utf8')) as T;
+
+/** Reads one entry out of a sharded folder, the way the UI does. */
+export const readShardedEntry = <T>(
+  directory: string,
+  key: string | number,
+  shardCount: number
+): T => {
+  const { shardName } = shards;
+  const shard = readJsonFile<Record<string, T>>(
+    path.join(directory, `${shardName(key, shardCount)}.json`)
+  );
+  return shard[String(key)]!;
+};

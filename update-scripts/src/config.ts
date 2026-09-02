@@ -4,12 +4,22 @@ import path from 'node:path';
 /** Root of the update-scripts package (the folder containing config.json). */
 export const PACKAGE_ROOT = path.resolve(import.meta.dirname, '..');
 
+/** Cloudflare R2 S3 API credentials, used by src/push-r2.ts. */
+export interface R2Config {
+  account_id: string;
+  bucket: string;
+  access_key_id: string;
+  secret_access_key: string;
+  endpoint: string;
+}
+
 interface Config {
   client_id: number;
   client_secret: string;
   /** Legacy API v1 key, only used by fun-scripts. */
   apikey?: string;
   debug?: boolean;
+  r2?: R2Config;
 }
 
 function loadConfig(): Config {

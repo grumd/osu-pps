@@ -1,6 +1,6 @@
 /**
  * Entry point: runs the full update once at startup and every day at 03:00.
- * Flags: --no-push (don't push data to git), --debug (tiny test run, implies no push).
+ * Flags: --no-push (don't push data to R2), --debug (tiny test run, implies no push).
  */
 import schedule from 'node-schedule';
 

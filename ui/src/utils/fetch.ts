@@ -3,17 +3,34 @@ import Papa from 'papaparse';
 
 import { API_PREFIX, DEBUG_FETCH } from '@/constants/api';
 
-interface GithubFileApiResponse {
-  size: number;
-  download_url: string;
-}
+/**
+ * Total size of a remote file, for the download progress bar.
+ * Prefers Content-Length from a HEAD request; falls back to a 1-byte Range
+ * request and reads the total from Content-Range ("bytes 0-0/12345").
+ * NOTE: the bucket's CORS config must expose Content-Length/Content-Range.
+ */
+const getRemoteFileSize = async (url: string): Promise<number> => {
+  const head = await fetch(url, { method: 'HEAD' });
+  if (!head.ok) throw Error(`HTTP Status ${head.status}`);
+  const length = head.headers.get('content-length');
+  if (length) {
+    const size = Number(length);
+    if (Number.isFinite(size) && size > 0) return size;
+  }
+  const ranged = await fetch(url, { headers: { Range: 'bytes=0-0' } });
+  const range = ranged.headers.get('content-range');
+  if (range) {
+    const size = Number(range.split('/')[1]);
+    if (Number.isFinite(size) && size > 0) return size;
+  }
+  throw Error(`Could not determine file size for ${url}`);
+};
 
 export const fetchJson = async <T>({ url }: { url: string }): Promise<T> => {
   try {
     const response = await fetch(url);
     if (response.status >= 200 && response.status < 300) {
       const data = (await response.json()) as T;
-      await new Promise((res) => setTimeout(res, 2000));
       return data;
     }
     throw Error(`HTTP Status ${response.status}`);
@@ -32,15 +49,9 @@ export const fetchCsvWithProgress = async <T>({
 }): Promise<T[]> => {
   setProgress(0);
 
-  // Github API
-  // https://api.github.com/repos/grumd/osu-pps/contents/data/maps/osu/diffs.csv?ref=data
-  const apiResponse = DEBUG_FETCH
-    ? { data: { size: 1, download_url: `${API_PREFIX}/${path}` } }
-    : await axios.get<GithubFileApiResponse>(
-        `https://api.github.com/repos/grumd/osu-pps/contents/${path}?ref=data`,
-      );
-  const contentSize = apiResponse.data.size;
-  const downloadUrl = apiResponse.data.download_url;
+  const downloadUrl = `${API_PREFIX}/${path}`;
+  // Local mode: size is unknown and irrelevant, keep the old placeholder value.
+  const contentSize = DEBUG_FETCH ? 1 : await getRemoteFileSize(downloadUrl);
 
   setProgress(0.1);
 

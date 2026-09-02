@@ -10,6 +10,7 @@ import type {
 } from '../data/types.ts';
 import { readJson, writeFile, writeJson } from '../utils/io.ts';
 import { simplifyMods, trimModsToDtHt } from '../utils/mods.ts';
+import { SHARD_COUNTS, writeShards } from '../utils/shards.ts';
 import { overweightness } from '../utils/overweightness.ts';
 
 /** Maps with overweightness above this are counted towards the average. */
@@ -166,6 +167,7 @@ export async function calculateRankings(mode: Mode): Promise<void> {
 
   console.log('Writing player rankings and per-player scores');
   const csvRows = [];
+  const scoresPerPlayer: [number, unknown][] = [];
   for (const player of rankings) {
     csvRows.push({
       id: player.id,
@@ -176,17 +178,22 @@ export async function calculateRankings(mode: Mode): Promise<void> {
       minuteUpdated: player.minuteUpdated,
     });
 
-    await writeJson(
-      files.rankingsPlayerScores(mode, player.id),
+    scoresPerPlayer.push([
+      player.id,
       player.scores.map((score) => ({
         title: score.name,
         mods: score.mods,
         beatmapId: score.beatmapId,
         ppOld: score.ppOld,
         ppNew: score.ppNew,
-      }))
-    );
+      })),
+    ]);
   }
+  await writeShards({
+    directory: files.rankingsPlayerScoresDir(mode),
+    shardCount: SHARD_COUNTS.playerScores,
+    entries: scoresPerPlayer,
+  });
   csvRows.sort((a, b) => Number(b.ppNew) - Number(a.ppNew));
   writeFile(files.rankingsCsv(mode), Papa.unparse(csvRows));
 

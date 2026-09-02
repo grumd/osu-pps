@@ -13,7 +13,7 @@ export const useRankings = () => {
 
   const fetchData = async (modeToFetch: Mode): Promise<Ranking[] | null> => {
     const rankings = await fetchCsvWithProgress<Ranking>({
-      path: `data/ranking/${modeToFetch}/players.csv`,
+      path: `ranking/${modeToFetch}/players.csv`,
       setProgress,
     });
     return rankings;

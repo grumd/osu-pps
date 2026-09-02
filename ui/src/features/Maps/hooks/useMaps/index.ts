@@ -25,11 +25,11 @@ export const useMaps = () => {
   const fetchData = async (modeToFetch: Mode): Promise<Beatmap[] | null> => {
     const [mapsetsInfo, diffsInfo] = await Promise.all([
       fetchCsvWithProgress<BeatmapSetLegacy | BeatmapSet>({
-        path: `data/maps/${modeToFetch}/mapsets.csv`,
+        path: `maps/${modeToFetch}/mapsets.csv`,
         setProgress: setMapsetsProgress,
       }),
       fetchCsvWithProgress<BeatmapDiffLegacy | BeatmapDiff>({
-        path: `data/maps/${modeToFetch}/diffs.csv`,
+        path: `maps/${modeToFetch}/diffs.csv`,
         setProgress: setDiffsProgress,
       }),
     ]);

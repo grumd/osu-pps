@@ -8,6 +8,7 @@
     "start": "node src/scheduler.ts",
     "start:debug": "node src/scheduler.ts --debug --no-push",
     "update-mode": "node src/run-mode.ts",
+    "push:r2": "node src/push-r2.ts",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-test-module-mocks --test tests/*.test.ts",
     "test:coverage": "node --experimental-test-module-mocks --test --experimental-test-coverage --test-coverage-exclude=tests/** tests/*.test.ts"
@@ -18,6 +19,7 @@
     "pps"
   ],
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1120.0",
     "@discoveryjs/json-ext": "^1.1.0",
     "axios": "^1.17.0",
     "node-schedule": "^2.1.1",

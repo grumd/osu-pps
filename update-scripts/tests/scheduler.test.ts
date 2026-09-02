@@ -9,7 +9,7 @@ mockTimingsModule();
 
 const runUpdateJob = mock.fn(async (_options: { skipPush: boolean; debug: boolean }) => {});
 mock.module(srcUrl('update-job.ts'), {
-  namedExports: { runUpdateJob, runPipelineForMode: async () => {}, pushDataToGit: async () => 0 },
+  namedExports: { runUpdateJob, runPipelineForMode: async () => {}, pushDataToR2: async () => 0 },
 });
 
 const scheduleJob = mock.fn((_cron: string, _job: () => Promise<void>) => {});

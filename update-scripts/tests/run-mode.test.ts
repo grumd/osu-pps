@@ -9,7 +9,7 @@ mockTimingsModule();
 
 const runPipelineForMode = mock.fn(async (_mode: { text: string; id: number }) => {});
 mock.module(srcUrl('update-job.ts'), {
-  namedExports: { runPipelineForMode, runUpdateJob: async () => {}, pushDataToGit: async () => 0 },
+  namedExports: { runPipelineForMode, runUpdateJob: async () => {}, pushDataToR2: async () => 0 },
 });
 
 process.argv[2] = 'taiko';

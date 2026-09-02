@@ -11,7 +11,7 @@ mock.module(srcUrl('update-job.ts'), {
   namedExports: {
     runPipelineForMode: async () => {},
     runUpdateJob: async () => {},
-    pushDataToGit: async () => 0,
+    pushDataToR2: async () => 0,
   },
 });
 

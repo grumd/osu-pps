@@ -11,7 +11,7 @@ import { calculateTopMappers } from './steps/calculate-top-mappers.ts';
 import { exportFrontendData } from './steps/export-frontend-data.ts';
 
 export interface UpdateJobOptions {
-  /** Don't commit/push the data folder (--no-push). */
+  /** Don't push the data folder to R2 (--no-push). */
   skipPush: boolean;
   /** Debug mode never pushes either. */
   debug: boolean;
@@ -28,9 +28,14 @@ export async function runPipelineForMode(mode: Mode): Promise<void> {
   await exportFrontendData(mode);
 }
 
-export function pushDataToGit(): Promise<number | null> {
+/** Publishes one mode's data to the R2 bucket (what the UI fetches from). */
+export function pushDataToR2(mode: Mode): Promise<number | null> {
   return new Promise((resolve) => {
-    const child = spawn('bash', [path.join(PACKAGE_ROOT, 'push-safe.sh')], { stdio: 'inherit' });
+    const child = spawn(
+      process.execPath,
+      [path.join(PACKAGE_ROOT, 'src', 'push-r2.ts'), '--mode', mode.text],
+      { stdio: 'inherit' }
+    );
     child.on('close', (code) => {
       console.log('Push script exited with code', code);
       resolve(code);
@@ -39,7 +44,7 @@ export function pushDataToGit(): Promise<number | null> {
 }
 
 /**
- * Runs the full pipeline for every mode, pushing the data to git after each mode so
+ * Runs the full pipeline for every mode, pushing the data to R2 after each mode so
  * fresh data is published as soon as it's ready. Won't start if already running.
  */
 export async function runUpdateJob({ skipPush, debug }: UpdateJobOptions): Promise<void> {
@@ -58,8 +63,8 @@ export async function runUpdateJob({ skipPush, debug }: UpdateJobOptions): Promi
       } else if (debug) {
         console.log(`Saved all ${mode.text} info, debug is on - not updating origin`);
       } else {
-        console.log(`Saved all ${mode.text} info, updating origin`);
-        await pushDataToGit();
+        console.log(`Saved all ${mode.text} info, pushing to R2`);
+        await pushDataToR2(mode);
       }
     } catch (error) {
       console.error(`Update failed for ${mode.text}:`, error);
