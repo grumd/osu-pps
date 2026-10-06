@@ -52,10 +52,11 @@ export function mockConfigModule(
 }
 
 /** Replaces src/timings.ts with (near-)zero waits so tests run instantly. */
-export function mockTimingsModule(): void {
+export function mockTimingsModule(overrides: Record<string, number> = {}): void {
   mock.module(srcUrl('timings.ts'), {
     namedExports: {
       REQUEST_TIMEOUT_MS: 1000,
+      MIN_TIME_BETWEEN_REQUESTS_MS: 0,
       RATE_LIMIT_WAIT_MS: 1,
       NETWORK_ERROR_WAIT_MS: 1,
       RETRY_WAIT_MS: 1,
@@ -65,6 +66,8 @@ export function mockTimingsModule(): void {
       DELAY_BETWEEN_MAPPER_NAME_FETCHES_MS: 0,
       DELAY_BETWEEN_MAPPERS_MS: 0,
       DELAY_BETWEEN_FAVOURITE_PAGES_MS: 0,
+      MOD_STAR_RATINGS_TIME_BUDGET_MS: 3 * 60 * 60 * 1000,
+      ...overrides,
     },
   });
 }

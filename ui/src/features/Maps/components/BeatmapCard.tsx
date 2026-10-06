@@ -312,7 +312,17 @@ export const BeatmapCard = memo(function _BeatmapCard({ map }: { map: Beatmap })
           kind={colorCodeStyle}
           color={getDiffColour(map.difficulty, colorOpacity)}
         >
-          {map.difficulty.toFixed(2)}
+          {map.difficultyPending ? (
+            <HoverCard css={{ flex: '1 1 0' }}>
+              <HoverCardTrigger>{map.difficulty.toFixed(2)}*</HoverCardTrigger>
+              <HoverCardContent>
+                <div>Star rating update in progress</div>
+                <div>Showing the no-mod star rating for now</div>
+              </HoverCardContent>
+            </HoverCard>
+          ) : (
+            map.difficulty.toFixed(2)
+          )}
         </ColorCodedCell>
         <TextCell aria-label="overweightness">{map.overweightness.toFixed(0)}</TextCell>
       </CardGridLayout>

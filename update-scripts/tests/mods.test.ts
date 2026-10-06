@@ -6,6 +6,7 @@ import {
   modAcronymsToBitmask,
   modBits,
   simplifyMods,
+  simplifyModsForStarRating,
   trimModsToDtHt,
 } from '../src/utils/mods.ts';
 
@@ -33,4 +34,16 @@ test('trimModsToDtHt keeps only DT and HT', () => {
   assert.equal(trimModsToDtHt(modBits.HD + modBits.DT + modBits.HR), modBits.DT);
   assert.equal(trimModsToDtHt(modBits.HT + modBits.FL), modBits.HT);
   assert.equal(trimModsToDtHt(modBits.HD), 0);
+});
+
+test('simplifyModsForStarRating keeps only star-rating-affecting mods', () => {
+  const all = modBits.EZ + modBits.HD + modBits.HR + modBits.DT + modBits.HT + modBits.FL;
+  // HD and FL change star rating in osu! only
+  assert.equal(simplifyModsForStarRating(all, modes.osu.id), all);
+  const withoutHdFl = modBits.EZ + modBits.HR + modBits.DT + modBits.HT;
+  assert.equal(simplifyModsForStarRating(all, modes.taiko.id), withoutHdFl);
+  assert.equal(simplifyModsForStarRating(all, modes.fruits.id), withoutHdFl);
+  assert.equal(simplifyModsForStarRating(all, modes.mania.id), withoutHdFl);
+  assert.equal(simplifyModsForStarRating(modBits.HD + modBits.FL, modes.taiko.id), 0);
+  assert.equal(simplifyModsForStarRating(modBits.NF + modBits.SD, modes.osu.id), 0);
 });

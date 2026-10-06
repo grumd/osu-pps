@@ -2,6 +2,7 @@ import axios, { AxiosError } from 'axios';
 
 import { config } from '../config.ts';
 import {
+  MIN_TIME_BETWEEN_REQUESTS_MS,
   NETWORK_ERROR_WAIT_MS,
   RATE_LIMIT_WAIT_MS,
   REQUEST_TIMEOUT_MS,
@@ -26,11 +27,31 @@ const http = axios.create({
 
 let accessToken: { value: string; expiresAtMs: number } | null = null;
 
+let lastRequestStartMs = 0;
+let lastRequestSlot: Promise<void> = Promise.resolve();
+
+/**
+ * Waits until at least {@link MIN_TIME_BETWEEN_REQUESTS_MS} has passed since the previous
+ * request started. Concurrent callers queue up and start one by one.
+ */
+function waitForRequestSlot(): Promise<void> {
+  lastRequestSlot = lastRequestSlot.then(async () => {
+    const slotMs = lastRequestStartMs + MIN_TIME_BETWEEN_REQUESTS_MS;
+    // timers can fire a millisecond early
+    while (Date.now() < slotMs) {
+      await delay(slotMs - Date.now());
+    }
+    lastRequestStartMs = Date.now();
+  });
+  return lastRequestSlot;
+}
+
 async function refreshToken(): Promise<void> {
   if (!config.client_id || !config.client_secret) {
     throw new Error('client_id/client_secret not found in config.json');
   }
 
+  await waitForRequestSlot();
   const { data } = await axios.post<{
     access_token: string;
     token_type: string;
@@ -55,6 +76,16 @@ export interface GetOptions {
   logRequests?: boolean;
 }
 
+export interface PostOptions extends GetOptions {
+  /** JSON request body. */
+  body?: unknown;
+}
+
+interface Request extends PostOptions {
+  method: 'get' | 'post';
+  url: string;
+}
+
 interface RetryState {
   rateLimitWaitMs: number;
   retriesLeft: number;
@@ -68,30 +99,38 @@ interface RetryState {
  * - throws on 400/404 and after running out of retries for other errors.
  */
 export async function osuApiGet<T>(url: string, options: GetOptions = {}): Promise<T> {
-  return osuApiGetWithRetries<T>(url, options, {
+  return osuApiRequest<T>({ ...options, method: 'get', url });
+}
+
+/** POST to an osu! API v2 endpoint, with the same authentication and retries as `osuApiGet`. */
+export async function osuApiPost<T>(url: string, options: PostOptions = {}): Promise<T> {
+  return osuApiRequest<T>({ ...options, method: 'post', url });
+}
+
+async function osuApiRequest<T>(request: Request): Promise<T> {
+  return osuApiRequestWithRetries<T>(request, {
     rateLimitWaitMs: RATE_LIMIT_WAIT_MS,
     retriesLeft: 2,
   });
 }
 
-async function osuApiGetWithRetries<T>(
-  url: string,
-  options: GetOptions,
-  retryState: RetryState
-): Promise<T> {
+async function osuApiRequestWithRetries<T>(request: Request, retryState: RetryState): Promise<T> {
+  const { method, url, params, body } = request;
   if (!accessToken || accessToken.expiresAtMs < Date.now()) {
     await refreshToken();
   }
 
-  if (options.logRequests) {
-    console.log('Fetching', url, options.params ?? '');
+  if (request.logRequests) {
+    console.log('Fetching', url, params ?? '');
   }
 
   try {
-    const response = await http.get<T>(url, {
-      params: options.params,
-      headers: { Authorization: accessToken!.value },
-    });
+    await waitForRequestSlot();
+    const requestConfig = { params, headers: { Authorization: accessToken!.value } };
+    const response =
+      method === 'post'
+        ? await http.post<T>(url, body, requestConfig)
+        : await http.get<T>(url, requestConfig);
     return response.data;
   } catch (error) {
     if (!(error instanceof AxiosError) || !error.response) {
@@ -101,12 +140,12 @@ async function osuApiGetWithRetries<T>(
       console.warn('Retrying...');
       await delay(NETWORK_ERROR_WAIT_MS);
       accessToken = null;
-      return osuApiGetWithRetries(url, options, retryState);
+      return osuApiRequestWithRetries(request, retryState);
     }
 
     const { status } = error.response;
     if (status === 400) {
-      console.error('400 Bad Request:', url, options.params);
+      console.error('400 Bad Request:', url, params, body);
       throw error;
     }
     if (status === 404) {
@@ -115,22 +154,22 @@ async function osuApiGetWithRetries<T>(
     }
     if (status === 401) {
       await refreshToken();
-      return osuApiGetWithRetries(url, options, retryState);
+      return osuApiRequestWithRetries(request, retryState);
     }
     if (status === 429) {
       console.warn('429 Too Many Requests, waiting for', retryState.rateLimitWaitMs, 'ms');
       await delay(retryState.rateLimitWaitMs);
-      return osuApiGetWithRetries(url, options, {
+      return osuApiRequestWithRetries(request, {
         ...retryState,
         rateLimitWaitMs: retryState.rateLimitWaitMs * 2,
       });
     }
     if (retryState.retriesLeft >= 1) {
-      console.warn(url, options.params);
+      console.warn(url, params, body);
       console.warn(error.message);
       console.warn(`Retrying ${retryState.retriesLeft - 1} more times after this...`);
       await delay(RETRY_WAIT_MS);
-      return osuApiGetWithRetries(url, options, {
+      return osuApiRequestWithRetries(request, {
         ...retryState,
         retriesLeft: retryState.retriesLeft - 1,
       });

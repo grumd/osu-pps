@@ -22,6 +22,7 @@ export const files = {
   userScoresList: (mode: Mode) => temp(mode, 'user-scores.json'),
   userScoresDates: (mode: Mode) => temp(mode, 'user-scores-dates.json'),
   mapInfoCache: (mode: Mode) => temp(mode, 'map-cache.json'),
+  modStarRatingsCache: (mode: Mode) => temp(mode, 'mod-star-ratings.json'),
   mapsList: (mode: Mode) => temp(mode, 'maps.json'),
   mapsDetailedList: (mode: Mode) => temp(mode, 'maps-detailed.json'),
   ppBlocks: (mode: Mode) => temp(mode, 'pp-blocks.json'),

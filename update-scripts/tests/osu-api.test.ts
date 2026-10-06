@@ -8,12 +8,19 @@ mockConfigModule(dirs.packageRoot);
 mockTimingsModule();
 
 const osuApiGet = mock.fn<(url: string, options?: any) => Promise<any>>();
+const osuApiPost = mock.fn<(url: string, options?: any) => Promise<any>>();
 mock.module(srcUrl('osu-api/http.ts'), {
-  namedExports: { osuApiGet, isNotFoundError: () => false },
+  namedExports: { osuApiGet, osuApiPost, isNotFoundError: () => false },
 });
 
-const { fetchCountryRanking, fetchUserBestScores, fetchBeatmaps, fetchUser, fetchUserFavourites } =
-  await import('../src/osu-api/api.ts');
+const {
+  fetchCountryRanking,
+  fetchUserBestScores,
+  fetchBeatmaps,
+  fetchBeatmapStarRating,
+  fetchUser,
+  fetchUserFavourites,
+} = await import('../src/osu-api/api.ts');
 const { modes } = await import('../src/modes.ts');
 
 const rankingEntry = (id: number, pp: number) => ({ pp, user: { id, username: `user${id}` } });
@@ -75,6 +82,16 @@ test('fetchBeatmaps requests batches and rejects oversized ones', async () => {
     fetchBeatmaps(Array.from({ length: 51 }, (_, i) => i)),
     /up to 50 beatmaps/
   );
+});
+
+test('fetchBeatmapStarRating posts the mods bitmask and ruleset', async () => {
+  osuApiPost.mock.resetCalls();
+  osuApiPost.mock.mockImplementation(async () => ({
+    attributes: { star_rating: 8.24, max_combo: 2385 },
+  }));
+  assert.equal(await fetchBeatmapStarRating(129891, 72, modes.fruits), 8.24);
+  assert.equal(osuApiPost.mock.calls[0]!.arguments[0], '/beatmaps/129891/attributes');
+  assert.deepEqual(osuApiPost.mock.calls[0]!.arguments[1]?.body, { mods: 72, ruleset: 'fruits' });
 });
 
 test('fetchUser', async () => {

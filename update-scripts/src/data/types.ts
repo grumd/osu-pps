@@ -61,8 +61,10 @@ export interface DetailedMapRecord extends MapRecord {
   /** drain length in seconds */
   l: number;
   bpm: number | null;
-  /** star rating */
+  /** star rating with the map's mods (no-mod star rating until the mod one is fetched) */
   d: number;
+  /** 1 when `d` is the no-mod star rating but the mods change it — not fetched yet */
+  dp?: 1;
   /** passcount */
   p: number;
   /** hours since the map was last updated/ranked */
@@ -88,6 +90,24 @@ export type CachedBeatmap = OsuApiBeatmap & {
 };
 
 export type MapInfoCache = Record<string, CachedBeatmap>;
+
+/** Star ratings of one beatmap, see `steps/fetch-mod-star-ratings.ts`. */
+export interface ModStarRatingsEntry {
+  /** no-mod star rating (`difficulty_rating`) when the entry was created */
+  nm: number;
+  /** star rating per star-rating-affecting mods bitmask */
+  sr: Record<string, number>;
+}
+
+/** `temp/<mode>/mod-star-ratings.json`, entries keyed by beatmap id. */
+export interface ModStarRatingsCache {
+  beatmaps: Record<string, ModStarRatingsEntry>;
+  /**
+   * Entries replaced because the star rating algorithm or the map changed.
+   * Only used as a fallback until the new values are fetched.
+   */
+  outdated: Record<string, ModStarRatingsEntry>;
+}
 
 /** `temp/<mode>/user-scores.json`: per user id, scores as "<beatmapId>_<modsBitmask>_<pp>". */
 export type UserScoresFile = Record<string, string[]>;

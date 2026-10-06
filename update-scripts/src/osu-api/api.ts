@@ -2,9 +2,10 @@ import { DEBUG } from '../config.ts';
 import { DELAY_BETWEEN_FAVOURITE_PAGES_MS, DELAY_BETWEEN_RANKING_PAGES_MS } from '../timings.ts';
 import type { Mode } from '../modes.ts';
 import { delay } from '../utils/misc.ts';
-import { osuApiGet } from './http.ts';
+import { osuApiGet, osuApiPost } from './http.ts';
 import type {
   OsuApiBeatmap,
+  OsuApiBeatmapAttributesResponse,
   OsuApiFavouriteBeatmapset,
   OsuApiRankingEntry,
   OsuApiRankingsResponse,
@@ -65,6 +66,22 @@ export async function fetchBeatmaps(beatmapIds: readonly number[]): Promise<OsuA
     params: { 'ids[]': [...beatmapIds] },
   });
   return response.beatmaps;
+}
+
+/**
+ * Fetches the star rating of a beatmap with the given mods (legacy bitmask), converted to
+ * the given mode if it's a map from another ruleset. Throws a 404 error for deleted beatmaps.
+ */
+export async function fetchBeatmapStarRating(
+  beatmapId: number,
+  mods: number,
+  mode: Mode
+): Promise<number> {
+  const response = await osuApiPost<OsuApiBeatmapAttributesResponse>(
+    `/beatmaps/${beatmapId}/attributes`,
+    { body: { mods, ruleset: mode.text } }
+  );
+  return response.attributes.star_rating;
 }
 
 export async function fetchUser(userId: number): Promise<OsuApiUser> {

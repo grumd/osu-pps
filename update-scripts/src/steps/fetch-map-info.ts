@@ -12,14 +12,15 @@ import type {
 import { fileExists, readJson, writeJson } from '../utils/io.ts';
 import { chunk, hoursSince, uniqBy } from '../utils/misc.ts';
 import { runJobs } from '../utils/run-jobs.ts';
+import { fetchModStarRatings, type StarRatingLookupResult } from './fetch-mod-star-ratings.ts';
 
 /** Save the cache to disk every N batches so a crash doesn't lose all progress. */
 const BATCHES_PER_CACHE_SAVE = 100;
 
 /**
  * Step 3: enriches the map list with beatmap metadata (artist, title, difficulty settings,
- * timestamps, mapper). Metadata is kept in a long-lived local cache; only new or stale
- * beatmaps are fetched, in batches of up to 50 per request.
+ * timestamps, mapper) and star ratings with mods. Metadata is kept in a long-lived local cache;
+ * only new or stale beatmaps are fetched, in batches of up to 50 per request.
  */
 export async function fetchMapInfo(mode: Mode): Promise<void> {
   console.log(`3. FETCHING MAP INFO - ${mode.text}`);
@@ -72,6 +73,10 @@ export async function fetchMapInfo(mode: Mode): Promise<void> {
     },
   });
 
+  await writeJson(files.mapInfoCache(mode), cache);
+
+  const starRatingOf = await fetchModStarRatings(mode, mapsList, cache);
+
   const detailedMaps: DetailedMapRecord[] = [];
   for (const map of mapsList) {
     const cached = cache[map.b];
@@ -79,12 +84,11 @@ export async function fetchMapInfo(mode: Mode): Promise<void> {
       console.warn(`No info for beatmap ${map.b}, skipping it`);
       continue;
     }
-    detailedMaps.push(buildDetailedMap(map, cached, mode));
+    detailedMaps.push(buildDetailedMap(map, cached, mode, starRatingOf(map.b, map.m)));
   }
   detailedMaps.sort((a, b) => b.x - a.x);
 
   await writeJson(files.mapsDetailedList(mode), detailedMaps);
-  await writeJson(files.mapInfoCache(mode), cache);
   console.log(`${detailedMaps.length} maps saved. Done fetching detailed map info! (${mode.text})`);
 }
 
@@ -117,7 +121,12 @@ function formatCacheDate(date: Date): string {
   return date.toISOString().replace('T', ' ').slice(0, 19);
 }
 
-function buildDetailedMap(map: MapRecord, beatmap: OsuApiBeatmap, mode: Mode): DetailedMapRecord {
+function buildDetailedMap(
+  map: MapRecord,
+  beatmap: OsuApiBeatmap,
+  mode: Mode,
+  starRating: StarRatingLookupResult
+): DetailedMapRecord {
   const detailed: DetailedMapRecord = {
     m: map.m,
     b: map.b,
@@ -130,7 +139,7 @@ function buildDetailedMap(map: MapRecord, beatmap: OsuApiBeatmap, mode: Mode): D
     s: beatmap.beatmapset_id,
     l: beatmap.hit_length,
     bpm: beatmap.bpm,
-    d: beatmap.difficulty_rating,
+    d: starRating.starRating ?? beatmap.difficulty_rating,
     p: beatmap.passcount,
     h: hoursSince(beatmap.last_updated),
     appr_h: Math.floor(new Date(beatmap.beatmapset.ranked_date ?? 0).getTime() / 1000 / 60 / 60),
@@ -140,6 +149,10 @@ function buildDetailedMap(map: MapRecord, beatmap: OsuApiBeatmap, mode: Mode): D
     drain: beatmap.drain, // hp
     mapper_id: beatmap.user_id,
   };
+
+  if (starRating.pending) {
+    detailed.dp = 1;
+  }
 
   // For mania-specific maps (not converts), circle size is the key count
   if (mode.id === modes.mania.id && beatmap.mode_int === modes.mania.id) {

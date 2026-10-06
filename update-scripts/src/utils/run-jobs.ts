@@ -8,6 +8,8 @@ interface RunJobsOptions<T> {
   minJobTime?: number;
   /** Log progress + ETA every 10% of items (default true). */
   logProgress?: boolean;
+  /** Checked before every job; when it returns true the remaining items are skipped. */
+  shouldStop?: () => boolean;
 }
 
 /**
@@ -19,11 +21,16 @@ export async function runJobs<T>({
   job,
   minJobTime,
   logProgress = true,
+  shouldStop,
 }: RunJobsOptions<T>): Promise<void> {
   const startTime = Date.now();
   const logEvery = Math.max(1, Math.floor(items.length / 10));
 
   for (let index = 0; index < items.length; index++) {
+    if (shouldStop?.()) {
+      console.log(`Stopping early, ${items.length - index} of ${items.length} items left`);
+      return;
+    }
     const item = items[index]!;
     if (minJobTime) {
       await Promise.all([job(item, index), delay(minJobTime)]);

@@ -55,6 +55,16 @@ mock.module(srcUrl('osu-api/api.ts'), {
   namedExports: { fetchBeatmaps, BEATMAP_BATCH_SIZE: 50 },
 });
 
+// beatmap 5: HD has a fetched star rating, DT is still pending; the rest is no-mod
+const fetchModStarRatings = mock.fn(async () => (beatmapId: number, mods: number) => {
+  if (beatmapId === 5 && mods === 8) return { starRating: 6.1, pending: false };
+  if (beatmapId === 5 && mods === 64) return { starRating: undefined, pending: true };
+  return { starRating: undefined, pending: false };
+});
+mock.module(srcUrl('steps/fetch-mod-star-ratings.ts'), {
+  namedExports: { fetchModStarRatings },
+});
+
 const { fetchMapInfo } = await import('../src/steps/fetch-map-info.ts');
 const { files } = await import('../src/paths.ts');
 const { modes } = await import('../src/modes.ts');
@@ -110,6 +120,8 @@ test('fetches new and stale beatmaps in batches and builds the detailed list', a
     mapRecord(3),
     mapRecord(4),
     mapRecord(5), // not cached at all — fetched
+    mapRecord(5, 8), // star rating with mods is known
+    mapRecord(5, 64), // star rating with mods not fetched yet
     mapRecord(404404), // deleted — fetched but not returned, then skipped
   ];
   fs.writeFileSync(files.mapsList(modes.osu), JSON.stringify(maps));
@@ -122,9 +134,9 @@ test('fetches new and stale beatmaps in batches and builds the detailed list', a
 
   const detailed = readJsonFile<DetailedMapRecord[]>(files.mapsDetailedList(modes.osu));
   // the deleted map is skipped; everything else is enriched
-  assert.deepEqual(detailed.map((map) => map.b).sort(), [1, 1, 2, 3, 4, 5]);
+  assert.deepEqual(detailed.map((map) => map.b).sort(), [1, 1, 2, 3, 4, 5, 5, 5]);
 
-  const map5 = detailed.find((map) => map.b === 5)!;
+  const map5 = detailed.find((map) => map.b === 5 && map.m === 0)!;
   assert.equal(map5.art, 'artist-5');
   assert.equal(map5.t, 'title-5');
   assert.equal(map5.v, 'diff-5');
@@ -142,6 +154,21 @@ test('fetches new and stale beatmaps in batches and builds the detailed list', a
   assert.equal(map5.drain, 5);
   assert.equal(map5.mapper_id, 777);
   assert.equal(map5.k, undefined); // not mania
+  assert.equal(map5.dp, undefined);
+  const map5hd = detailed.find((map) => map.b === 5 && map.m === 8)!;
+  assert.equal(map5hd.d, 6.1);
+  assert.equal(map5hd.dp, undefined);
+  // pending: no-mod star rating, flagged for the UI
+  const map5dt = detailed.find((map) => map.b === 5 && map.m === 64)!;
+  assert.equal(map5dt.d, 5.5);
+  assert.equal(map5dt.dp, 1);
+
+  // star ratings are fetched with the updated beatmap cache
+  const [starRatingMode, starRatingMaps, starRatingCache] =
+    fetchModStarRatings.mock.calls[0]!.arguments as unknown as [unknown, MapRecord[], object];
+  assert.equal(starRatingMode, modes.osu);
+  assert.equal(starRatingMaps.length, maps.length);
+  assert.ok('5' in starRatingCache);
 
   // the fresh cached map was reused without fetching
   const map1 = detailed.find((map) => map.b === 1 && map.m === 0)!;

@@ -10,6 +10,8 @@ export interface BeatmapDiffLegacy {
   s: number; // mapset id
   l: number;
   d: number;
+  /** 1 when `d` is the no-mod star rating but the mods change it (not fetched yet) */
+  dp?: number | null;
   p: number;
   h: number;
   appr_h: number;
@@ -40,6 +42,8 @@ export interface BeatmapDiff {
   version: string;
   length: number;
   difficulty: number;
+  /** `difficulty` is the no-mod star rating while the one with mods isn't fetched yet */
+  difficultyPending?: boolean;
   passCount: number;
   hoursSinceRanked: number;
   approvedHoursTimestamp: number;

@@ -99,6 +99,14 @@ export interface OsuApiBeatmap {
   beatmapset: OsuApiBeatmapset;
 }
 
+/** POST /beatmaps/{id}/attributes. Ruleset-specific attributes are omitted. */
+export interface OsuApiBeatmapAttributesResponse {
+  attributes: {
+    star_rating: number;
+    max_combo: number;
+  };
+}
+
 export interface OsuApiRankingEntry {
   pp: number;
   user: {

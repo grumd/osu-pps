@@ -50,3 +50,19 @@ test('errors from jobs propagate', async () => {
     /boom/
   );
 });
+
+test('skips the remaining items once shouldStop returns true', async () => {
+  const seen: number[] = [];
+  const log = mock.method(console, 'log', () => {});
+  await runJobs({
+    items: [1, 2, 3, 4],
+    job: async (item) => {
+      seen.push(item);
+    },
+    shouldStop: () => seen.length >= 2,
+    logProgress: false,
+  });
+  log.mock.restore();
+  assert.deepEqual(seen, [1, 2]);
+  assert.match(String(log.mock.calls[0]!.arguments[0]), /2 of 4 items left/);
+});

@@ -32,6 +32,7 @@ export const normalizeBeatmap = (diff: BeatmapDiff | BeatmapDiffLegacy): Beatmap
       version: diff.v,
       length: diff.l,
       difficulty: diff.d,
+      difficultyPending: diff.dp === 1,
       passCount: diff.p,
       hoursSinceRanked: diff.h,
       approvedHoursTimestamp: diff.appr_h,

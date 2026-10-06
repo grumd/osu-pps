@@ -37,6 +37,8 @@ export async function exportFrontendData(mode: Mode): Promise<void> {
     accuracy: map.accuracy,
     cs: map.cs,
     drain: map.drain,
+    // appended last to keep the legacy column order
+    dp: map.dp,
   }));
 
   writeFile(files.mapsetsCsv(mode), Papa.unparse(mapsets));

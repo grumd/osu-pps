@@ -12,14 +12,16 @@ const get = mock.fn<(url: string, config: Record<string, any>) => Promise<{ data
 const post = mock.fn(async () => ({
   data: { access_token: 'TOKEN', token_type: 'Bearer', expires_in: 3600 },
 }));
-const create = mock.fn((_config?: Record<string, unknown>) => ({ get }));
+const instancePost =
+  mock.fn<(url: string, body: unknown, config: Record<string, any>) => Promise<{ data: unknown }>>();
+const create = mock.fn((_config?: Record<string, unknown>) => ({ get, post: instancePost }));
 
 mock.module('axios', {
   defaultExport: { create, post, AxiosError },
   namedExports: { AxiosError },
 });
 
-const { osuApiGet, isNotFoundError } = await import('../src/osu-api/http.ts');
+const { osuApiGet, osuApiPost, isNotFoundError } = await import('../src/osu-api/http.ts');
 
 const httpError = (status: number) =>
   new AxiosError(`status ${status}`, 'ERR', undefined, undefined, { status } as any);
@@ -48,6 +50,24 @@ test('fetches a token and sends it as the Authorization header', async () => {
   assert.equal(url, '/some/url');
   assert.equal((requestConfig as any).headers.Authorization, 'Bearer TOKEN');
   assert.deepEqual((requestConfig as any).params, { a: 1 });
+});
+
+test('posts a JSON body with the token and retries like GET', async () => {
+  resetMocks();
+  let calls = 0;
+  instancePost.mock.mockImplementation(async () => {
+    calls += 1;
+    if (calls === 1) throw httpError(429);
+    return { data: { posted: true } };
+  });
+  const data = await osuApiPost('/beatmaps/1/attributes', { body: { mods: 64 } });
+  assert.deepEqual(data, { posted: true });
+  assert.equal(instancePost.mock.callCount(), 2);
+  const [url, body, requestConfig] = instancePost.mock.calls[1]!.arguments;
+  assert.equal(url, '/beatmaps/1/attributes');
+  assert.deepEqual(body, { mods: 64 });
+  assert.equal(requestConfig.headers.Authorization, 'Bearer TOKEN');
+  assert.equal(get.mock.callCount(), 0);
 });
 
 test('reuses the token while it is fresh', async () => {

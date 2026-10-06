@@ -40,7 +40,7 @@ const makeMap = (over: Partial<DetailedMapRecord>): DetailedMapRecord => ({
 // two diffs of the same mapset + one other mapset
 const maps = [
   makeMap({ b: 1, m: 0, s: 11 }),
-  makeMap({ b: 2, m: 64, s: 11, v: 'Insane' }),
+  makeMap({ b: 2, m: 64, s: 11, v: 'Insane', dp: 1 }),
   makeMap({ b: 3, m: 0, s: 22, art: 'Other', t: 'Song', bpm: 200 }),
 ];
 
@@ -57,8 +57,10 @@ test('writes mapsets.csv with one row per unique mapset', () => {
 test('writes diffs.csv with the legacy column order', () => {
   const csv = fs.readFileSync(files.diffsCsv(modes.osu), 'utf8');
   const [header, firstRow] = csv.split('\r\n');
-  assert.equal(header, 'm,b,x,pp99,adj,v,s,l,d,p,h,appr_h,ar,accuracy,cs,drain');
-  assert.equal(firstRow, '0,1,10.5,300.25,5,Hard,11,100,5.5,10000,1000,400000,9,8,4,5');
+  assert.equal(header, 'm,b,x,pp99,adj,v,s,l,d,p,h,appr_h,ar,accuracy,cs,drain,dp');
+  assert.equal(firstRow, '0,1,10.5,300.25,5,Hard,11,100,5.5,10000,1000,400000,9,8,4,5,');
+  // pending mod star rating
+  assert.match(csv.split('\r\n')[2]!, /,1$/);
   assert.equal(csv.split('\r\n').length, 4);
 });
 

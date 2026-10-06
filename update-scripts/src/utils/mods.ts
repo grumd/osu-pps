@@ -53,3 +53,16 @@ export function simplifyMods(bitmask: number, rulesetId: RulesetId): number {
 export function trimModsToDtHt(bitmask: number): number {
   return keepMods(bitmask, [modBits.DT, modBits.HT]);
 }
+
+/**
+ * Keeps only the mods that change star rating: the combinations ppy stores difficulty for
+ * (osu: EZ HD HR DT HT FL TD; taiko/fruits: EZ HR DT HT; mania: EZ HR DT HT + key mods).
+ * Meant for bitmasks already passed through {@link simplifyMods}, which drops TD, HR in mania, etc.
+ */
+export function simplifyModsForStarRating(bitmask: number, rulesetId: RulesetId): number {
+  const allowed =
+    rulesetId === modes.osu.id
+      ? [modBits.EZ, modBits.HD, modBits.HR, modBits.DT, modBits.HT, modBits.FL]
+      : [modBits.EZ, modBits.HR, modBits.DT, modBits.HT];
+  return keepMods(bitmask, allowed);
+}
